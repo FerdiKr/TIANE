@@ -1,3 +1,4 @@
 # TIANE
-This is the GitHub repository to our "Jugend forscht" project TIANE. 
-While it at the moment only consists of the documentation of the project, the program itself will be uploaded soon for the regional competition of "Jugend forscht".
+This is only a first release and the only documentation available at the moment are the two pdfs and a few README.txt. We're going to change that before the next competitive round of "Jugend forscht"...
+
+
