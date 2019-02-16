@@ -20,7 +20,7 @@ class TNetwork_Connection_Server:
         self.connected = False
         self.stopped = False
 
-        self.key = b"YOU CAN GET A KEY BY CALLING Crypto.Random.new_random_bytes(32)"
+        self.key = b"YOU CAN GET A KEY BY CALLING Crypto.Random.get_random_bytes(32)"
 
     def recvall(self, sock, count):
         buf = b''
