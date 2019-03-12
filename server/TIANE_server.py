@@ -5,7 +5,9 @@ import traceback
 import random
 import pkgutil
 import socket
+import base64
 import time
+import json
 import os
 
 class Modules:
@@ -18,13 +20,16 @@ class Modules:
         self.continuous_stopped = False
         self.continuous_threads_running = 0
 
+        self.modules_defined_vocabulary = []
+
     def load_modules(self):
+        self.modules_defined_vocabulary = []
         print('----- COMMON_MODULES -----')
-        self.common_modules = self.get_modules('modules/common')
+        self.common_modules = self.get_modules('modules')
         if self.common_modules == []:
             print('[INFO] -- (Keine vorhanden)')
         print('------ CONTINUOUS')
-        self.common_continuous_modules = self.get_modules('modules/common/continuous',continuous=True)
+        self.common_continuous_modules = self.get_modules('modules/continuous',continuous=True)
         if self.common_continuous_modules == []:
             print('[INFO] -- (Keine vorhanden)')
 
@@ -38,6 +43,7 @@ class Modules:
         self.user_continuous_modules = self.get_user_modules(continuous=True)
         if self.no_user_continuous_modules == True:
             print('[INFO] -- (Keine vorhanden)')
+        Local_storage['TIANE_Modules_defined_Vocabulary'] = self.modules_defined_vocabulary
 
     def get_modules(self, directory, continuous=False):
         dirname = os.path.dirname(os.path.abspath(__file__))
@@ -57,21 +63,21 @@ class Modules:
                 else:
                     print('[INFO] Modul {} geladen'.format(name))
                     modules.append(mod)
+                words = mod.WORDS if hasattr(mod, 'WORDS') else []
+                for word in words:
+                    if not word in self.modules_defined_vocabulary:
+                        self.modules_defined_vocabulary.append(word)
         modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY')
                      else 0, reverse=True)
         return modules
 
     def get_user_modules(self, continuous=False):
         usermodules = {}
-        for user in Userlist:
-            usermodules[user] = []
-        dirname = os.path.dirname(os.path.abspath(__file__))
-        location = os.path.join(dirname, 'modules/user')
-        subdirs = os.listdir(location)
-        for subdir in subdirs:
-            locations = [os.path.join(location, subdir)]
+        for username, userdata in Local_storage['users'].copy().items():
+            usermodules[username] = []
+            locations = [os.path.join(userdata['path'], 'modules')]
             if continuous == True:
-                locations = [os.path.join(location, subdir, 'continuous')]
+                locations = [os.path.join(userdata['path'], 'modules/continuous')]
             modules = []
             for finder, name, ispkg in pkgutil.walk_packages(locations):
                 try:
@@ -79,22 +85,23 @@ class Modules:
                     mod = loader.load_module(name)
                 except:
                     traceback.print_exc()
-                    print('[WARNING] Modul {} ist fehlerhaft und wurde übersprungen!'.format(name))
+                    print('[WARNING] Modul {} (Nutzer: {}) ist fehlerhaft und wurde übersprungen!'.format(name, username))
                 else:
                     if continuous == True:
-                        print('[INFO] Fortlaufendes Modul {} geladen'.format(name))
+                        print('[INFO] Fortlaufendes Modul {} (Nutzer: {}) geladen'.format(name, username))
                         modules.append(mod)
                         self.no_user_continuous_modules = False
                     else:
-                        print('[INFO] Modul {} geladen'.format(name))
+                        print('[INFO] Modul {} (Nutzer: {}) geladen'.format(name, username))
                         modules.append(mod)
                         self.no_user_modules = False
+                    words = mod.WORDS if hasattr(mod, 'WORDS') else []
+                    for word in words:
+                        if not word in self.modules_defined_vocabulary:
+                            self.modules_defined_vocabulary.append(word)
             modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY')
                          else 0, reverse=True)
-            try:
-                usermodules[subdir] = modules
-            except:
-                print('[ERROR] Die Namen der Benutzerliste stimmen nicht mit denen der Modulordner überein!')
+            usermodules[username] = modules
         return usermodules
 
     def query_threaded(self, user, name, text, direct=False, origin_room=None):
@@ -226,6 +233,7 @@ class Modules:
                 module.start(Tiane.continuous_modules[user][module.__name__], Tiane.local_storage)
                 print('[INFO] Modul {} (Nutzer: {}) gestartet'.format(module.__name__, user))
             except:
+                #traceback.print_exc()
                 pass
         Local_storage['module_counter'][user] = 0
         while True:
@@ -305,16 +313,18 @@ class Modulewrapper:
         self.userlist = Tiane.userlist
         self.room_list = Tiane.room_list
         self.server_name = Tiane.server_name
+        self.system_name = Tiane.system_name
+        self.path = Tiane.path
 
     def say(self, text, room=None, user=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
-        if user == None: # Immer noch? Kann durchaus sein...
+        if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
             room = self.room
         Tiane.route_say(self.text, text, room, user)
 
     def listen(self, user=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
         text = Tiane.route_listen(self.text, user)
         return text
@@ -323,12 +333,12 @@ class Modulewrapper:
         Tiane.end_Conversation(self.text)
 
     def start_module(self, user=None, name=None, text=None, room=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
         response = Tiane.start_module(user, name, text, room)
 
     def start_module_and_confirm(self, user=None, name=None, text=None, room=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
         return Tiane.start_module(user, name, text, room)
 
@@ -354,14 +364,16 @@ class Modulewrapper_continuous:
         self.userlist = Tiane.userlist
         self.room_list = Tiane.room_list
         self.server_name = Tiane.server_name
+        self.system_name = Tiane.system_name
+        self.path = Tiane.path
 
     def start_module(self, user=None, name=None, text=None, room=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
         response = Tiane.start_module(user, name, text, room)
 
     def start_module_and_confirm(self, user=None, name=None, text=None, room=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
         return Tiane.start_module(user, name, text, room)
 
@@ -381,16 +393,18 @@ class TIANE:
         self.userlist = Userlist
         self.room_list = Room_list
         self.server_name = Server_name
+        self.system_name = System_name
+        self.path = Local_storage['TIANE_PATH']
 
     def start_module(self, user, name, text, room):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = random.choice(self.userlist)
         return self.route_query_modules(user, name=name, text=text, room=room)
 
     def route_say(self, original_command, text, raum, user):
         if raum == None:
             # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wo der Text gesagt werden soll. Einfach beenden.
-            if user == None:
+            if user == None or user == 'Unknown':
                 print('[WARNING] Der Text "{}" konnte nicht gesagt werden, weil weder ein Raum noch ein Nutzer als Ziel angegeben wurden'.format(text))
                 return
             # Der Text soll zu einem bestimmten user gesagt werden
@@ -434,7 +448,7 @@ class TIANE:
 
     def route_listen(self, original_command, user):
         # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wem TIANE zuhören soll. Einfach beenden.
-        if user == None:
+        if user == None or user == 'Unknown':
             print('[WARNING] Für einen Aufruf von tiane.listen() konnte kein user als Ziel ermittelt werden.')
             return 'TIMEOUT_OR_INVALID'
         # Tiane soll einem bestimmten user zuhören
@@ -501,9 +515,8 @@ class TIANE:
     def get_context(self, user, name, text, room, direct, origin_room):
         # Lädt das zuletzt aufgerufene Modul, wenn der Nutzer seine Anfrage mit "und" beginnt.
         # Grundvoraussetzung, die gegeben sein muss: Das Modul muss per Sprachbefehl aufgerufen worden sein!
-        # Zur ZEit noch eher experimentell.
 
-        if name == None and not text == None and direct == True and not user == None:
+        if name == None and not text == None and direct == True and not (user == None or user == 'Unknwon'):
             if text.lower().startswith('und '):
                 # Es wird unterschieden zwischen drei Fällen:
                 # 1.: selber Nutzer, selbes Thema, ggf. anderer Raum (Wetter in ...; und in ...)
@@ -529,7 +542,7 @@ class TIANE:
                         return new_room, new_name
 
                 # Fall 1
-                if not user == None:
+                if not (user == None or user == 'Unknown'):
                     new_room = None
                     new_name = None
                     try:
@@ -565,8 +578,6 @@ class Room_Dock:
         self.Clientconnection = clientconnection
 
         self.name = ''
-        self.num_cameras = 0
-        self.speech = False
 
         self.users = []
 
@@ -724,6 +735,9 @@ class Room_Dock:
             time.sleep(0.03)
 
     def send_update_information(self):
+        # Verteilt die in keys_to_distribute festgelegten Daten aus dem Local_storage an die Räume,
+        # aber nur, wenn sich diese gegenüber dem letzten Aufruf tatsächlich verändert haben, um
+        # Ressourcen zu schonen.
         information_dict = {}
         for key in Tiane.local_storage['keys_to_distribute']:
             if not key in Tiane.local_storage.keys():
@@ -762,8 +776,6 @@ class Room_Dock:
             information_dict = self.Clientconnection.readanddelete('TIANE_room_info')
             if information_dict is not None:
                 self.name = information_dict['name']
-                self.num_cameras = information_dict['num_cameras']
-                self.speech = information_dict['speech']
                 Rooms[self.name] = Devices_connecting[self.addr]
                 del Devices_connecting[self.addr]
                 Room_list.append(self.name)
@@ -783,6 +795,12 @@ class Room_Dock:
         Room_list.remove(self.name)
         del Rooms[self.name]
         del Tiane.local_storage['rooms'][self.name]
+        for user in Local_storage['users'].values():
+            try:
+                if user['room'] == self.name:
+                    del user['room']
+            except KeyError:
+                pass
         print('[WARNING] Verbindung mit Raum {} unterbrochen'.format(self.name))
 
 
@@ -791,6 +809,7 @@ class Network_Device:
         self.conn = conn
         self.addr = addr
         self.Clientconnection = TNetwork_Connection_Server()
+        self.Clientconnection.key = TNetwork_Key
 
         self.type = ''
         self.name = ''
@@ -838,24 +857,39 @@ class Network_Device:
 
 
 
+#################################################-MAIN-#################################################
 
-#MAIN#
+# aus TIANE_config.json laden
+with open('TIANE_config.json', 'r') as config_file:
+    config_data = json.load(config_file)
+
+System_name = config_data['System_name']
+Server_name = config_data['Server_name']
+Local_storage = config_data['Local_storage']
+TNetwork_Key = base64.b64decode(config_data['TNetwork_Key'].encode('utf-8')) # sehr umständliche Decoder-Zeile. Leider nötig :(
+
+# Nutzer seperat aus dem users-Ordner laden
+Local_storage['users'] = {}
+dirname = os.path.dirname(os.path.abspath(__file__))
+Local_storage['TIANE_PATH'] = dirname
+location = os.path.join(dirname, 'users')
+subdirs = os.listdir(location)
+for subdir in subdirs:
+    userpath = os.path.join(location, subdir)
+    with open(userpath + '/User_Info.json', 'r') as user_file:
+        user_data = json.load(user_file)
+    user_data['User_Info']['path'] = userpath
+    Local_storage['users'][subdir] = user_data['User_Info']
+Userlist = []
+for name in Local_storage['users'].keys():
+    Userlist.append(name)
+
+
 Devices_connecting = {}
 Rooms = {}
 Other_devices = {}
 
 Room_list = []
-Server_name = 'TIANE_SERVER'
-Userlist = []
-
-# local_storage zu Anfang: {'users':{'USERNAME':{'name':'USERNAME', 'role':'ADMIN', 'uid':1 ...}, 'USERNAME':{'name':'USERNAME', ...}, ...}
-Local_storage = {'users':{},
-                 'rooms':{},
-                 'server_name':Server_name,
-                 'keys_to_distribute':['users','rooms','server_name']}
-for name in Local_storage['users'].keys():
-    Userlist.append(name)
-
 
 Modules = Modules()
 Analyzer = Sentence_Analyzer(room_list=Room_list)
@@ -865,10 +899,9 @@ Tiane.local_storage['TIANE_starttime'] = time.time()
 time.sleep(1)
 Tiane.Modules.start_continuous()
 
+# Setzt einen socket auf einem freien Port >= 50000 auf.
 port = 50000
-
 while True:
-    # Setzt einen socket auf einem freien Port >= 50000 auf.
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         sock.bind(('',port))
@@ -904,4 +937,4 @@ for room in Rooms.values():
 
 for device in Other_devices.values():
     device.Clientconnection.stop()
-print('\n[TIANE] Auf wiedersehen!\n')
+print('\n[{}] Auf wiedersehen!\n'.format(System_name.upper()))
