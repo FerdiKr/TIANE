@@ -1,0 +1,11 @@
+{
+    "Room_name": "",
+    "Server_IP": "",
+    "TNetwork_Key": "",
+    "Local_storage": {},
+    "Hotword_sensitivity": 0.4,
+    "Hotword_Audio_gain": 1.4,
+    "use_cameras": true,
+    "Cameras":{
+    }
+}
