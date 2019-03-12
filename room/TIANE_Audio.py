@@ -1,8 +1,9 @@
+from resources.snowboy import snowboydecoder
 from stt import Speech_to_Text
 from tts import Text_to_Speech
 from threading import Thread
 import speech_recognition as sr
-import snowboydecoder
+
 import pyaudio
 import wave
 import time
@@ -31,12 +32,12 @@ class Audio_Input:
         self.local_storage = local_storage
         self.userlist = []
         self.detector = None
-        self.stt = Speech_to_Text(self.local_storage['TIANE_modules_required_vocabulary'])
+        self.stt = Speech_to_Text(self.local_storage['TIANE_Modules_defined_Vocabulary'])
         self.hotword_models_and_names = []
         self.stopped = False
         self.hwobjects = []
 
-    def start_hotword_detection(self):
+    def start_hotword_detection(self, sensitivity=0.5, audio_gain=1):
         self.stopped = False
         self.local_storage['TIANE_Hotword_detected'] = {}
         self.local_storage['TIANE_recognized_text'] = ''
@@ -65,8 +66,8 @@ class Audio_Input:
                     callbacks.append(hobject.handle)
 
 ########### Die folgenden zwei Werte beeinflussen die Hotworderkennung erheblich; wenn sie unzuverlässig funktioniert, lohnt es sich, mit diesen Werten zu experimentieren! ###
-        sensitivity = 0.19*len(models)
-        audio_gain = 1.6
+        sensitivity = sensitivity*len(models)
+        audio_gain = audio_gain
 ###############################################################################################################################################################################
 
         snsrt = Thread(target=self.run_hotword_detection, args=(models, callbacks, sensitivity, audio_gain,))
