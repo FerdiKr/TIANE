@@ -1,0 +1,22 @@
+{
+    "System_name": "TIANE",
+    "Server_name": "",
+    "TNetwork_Key": "",
+    "use_cameras": true,
+    "use_facerec": true,
+    "use_interface": true,
+    "Local_storage": {
+        "users": {},
+        "server_name": "",
+        "system_name": "",
+        "keys_to_distribute": [
+            "users",
+            "rooms",
+            "server_name",
+            "system_name",
+            "TIANE_Modules_defined_Vocabulary"
+        ],
+        "rooms": {},
+        "TIANE_Modules_defined_Vocabulary": [],
+    }
+}
