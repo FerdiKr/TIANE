@@ -3,17 +3,19 @@ from TIANE_Audio import Audio_Output
 from TIANE_Audio import Audio_Input
 from analyze import Sentence_Analyzer
 from threading import Thread
-import snowboydecoder
+import resources.snowboy.snowboydecoder
 import traceback
-import random
 import pkgutil
+import random
+import base64
+import json
 import time
 import sys
 import os
 
 class Modules:
     def __init__(self):
-        self.load_modules()
+
 
         self.Modulewrapper = Modulewrapper
         self.Modulewrapper_continuous = Modulewrapper_continuous
@@ -21,7 +23,12 @@ class Modules:
         self.continuous_stopped = False
         self.continuous_threads_running = 0
 
+        self.modules_defined_vocabulary = []
+
+        self.load_modules()
+
     def load_modules(self):
+        self.modules_defined_vocabulary = []
         print('------ ROOM_MODULES ------')
         self.modules = self.get_modules('modules')
         if self.modules == []:
@@ -30,6 +37,13 @@ class Modules:
         self.continuous_modules = self.get_modules('modules/continuous',continuous=True)
         if self.continuous_modules == []:
             print('[INFO] -- (Keine vorhanden)')
+        Local_storage['TIANE_room_Modules_defined_Vocabulary'] = self.modules_defined_vocabulary
+        try:
+            for word in Local_storage['TIANE_room_Modules_defined_Vocabulary']:
+                if not word in Local_storage['TIANE_Modules_defined_Vocabulary']:
+                    Local_storage['TIANE_Modules_defined_Vocabulary'].append(word)
+        except KeyError:
+            Local_storage['TIANE_Modules_defined_Vocabulary'] = Local_storage['TIANE_room_Modules_defined_Vocabulary'].copy()
 
     def get_modules(self, directory, continuous=False):
         dirname = os.path.dirname(os.path.abspath(__file__))
@@ -49,6 +63,10 @@ class Modules:
                 else:
                     print('[INFO] Modul {} geladen'.format(name))
                     modules.append(mod)
+                words = mod.WORDS if hasattr(mod, 'WORDS') else []
+                for word in words:
+                    if not word in self.modules_defined_vocabulary:
+                        self.modules_defined_vocabulary.append(word)
         modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY')
                      else 0, reverse=True)
         return modules
@@ -194,8 +212,10 @@ class TIANE:
         self.room_name = room_name
         self.room_list = []
         self.server_name = ''
+        self.system_name = ''
         self.users = []
         self.userlist = []
+        self.path = Local_storage['TIANE_PATH']
 
     def start(self):
         srt = Thread(target=self.handle_online_requests)
@@ -371,21 +391,32 @@ class TIANE:
             self.local_storage[key] = value
 
         # ...und dann noch um Spezialfälle kümmern
-        room_list = []
-        for room in self.local_storage['rooms'].keys():
-            room_list.append(room)
-        self.room_list = room_list
-        self.Analyzer.room_list = self.room_list
+        if 'rooms' in information_dict.keys():
+            room_list = []
+            for room in self.local_storage['rooms'].keys():
+                room_list.append(room)
+            self.room_list = room_list
+            self.Analyzer.room_list = self.room_list
 
-        self.server_name = self.local_storage['server_name']
+            self.users = self.local_storage['rooms'][self.room_name]['users']
 
-        userlist = []
-        for user in self.local_storage['users'].keys():
-            userlist.append(user)
-        self.userlist = userlist
-        self.Audio_Input.userlist = userlist
+        if 'server_name' in information_dict.keys():
+            self.server_name = self.local_storage['server_name']
 
-        self.users = self.local_storage['rooms'][self.room_name]['users']
+        if 'system_name' in information_dict.keys():
+            self.system_name = self.local_storage['system_name']
+
+        if 'users' in information_dict.keys():
+            userlist = []
+            for user in self.local_storage['users'].keys():
+                userlist.append(user)
+            self.userlist = userlist
+            self.Audio_Input.userlist = userlist
+
+        if 'TIANE_Modules_defined_Vocabulary' in information_dict.keys():
+            for word in self.local_storage['TIANE_room_Modules_defined_Vocabulary']:
+                if not word in self.local_storage['TIANE_Modules_defined_Vocabulary']:
+                    self.local_storage['TIANE_Modules_defined_Vocabulary'].append(word)
 
 
     def start_module(self, user, name, text, room):
@@ -400,7 +431,7 @@ class TIANE:
 
     def say(self, original_command, text, room, user):
         self.Conversation.begin(original_command, user)
-        print('\n--TIANE:-- {}'.format(text))
+        print('\n--{}:-- {}'.format(self.system_name.upper(),text))
         self.Audio_Output.say(text)
 
 class Modulewrapper:
@@ -426,16 +457,18 @@ class Modulewrapper:
         self.userlist = Tiane.userlist
         self.local_storage = Tiane.local_storage
         self.server_name = Tiane.server_name
+        self.system_name = Tiane.system_name
+        self.path = Tiane.path
 
     def say(self, text, room=None, user=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
-        if user == None: # Immer noch? Kann durchaus sein...
+        if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
             room = self.room_name
         Tiane.request_say(self.text, text, room, user)
 
     def listen(self, user=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
         text = Tiane.request_listen(self.text, user)
         return text
@@ -444,12 +477,12 @@ class Modulewrapper:
         Tiane.request_end_Conversation(self.text)
 
     def start_module(self, user=None, name=None, text=None, room=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
         response = Tiane.start_module(user, name, text, room)
 
     def start_module_and_confirm(self, user=None, name=None, text=None, room=None):
-        if user == None:
+        if user == None or user == 'Unknown':
             user = self.user
         return Tiane.start_module(user, name, text, room)
 
@@ -474,6 +507,8 @@ class Modulewrapper_continuous:
         self.userlist = Tiane.userlist
         self.local_storage = Tiane.local_storage
         self.server_name = Tiane.server_name
+        self.system_name = Tiane.system_name
+        self.path = Tiane.path
 
     def start_module(self, user=None, name=None, text=None):
         response = Tiane.start_module(user, name, text)
@@ -521,32 +556,40 @@ class Conversation:
             self.user = ''
             self.original_command = ''
 
-#################################################-MAIN-#################################################
-#-----------Initialisieren-----------#
-#------------------------------------------------------------------------------------------------------#
-room_name = 'NAME_OF_ROOM_HERE'
-SERVER_IP = 'IP.OF.TIANE.SERVER.HERE'
-#------------------------------------------------------------------------------------------------------#
-num_cameras = 0
-speech = True
 
-Local_storage = {}
+#################################################-MAIN-#################################################
+
+# aus TIANE_config.json laden
+with open('TIANE_config.json', 'r') as config_file:
+    config_data = json.load(config_file)
+
+room_name = config_data['Room_name']
+server_ip = config_data['Server_IP']
+Local_storage = config_data['Local_storage']
+Hotword_sensitivity = config_data['Hotword_sensitivity']
+Hotword_Audio_gain = config_data['Hotword_Audio_gain']
+TNetwork_Key = base64.b64decode(config_data['TNetwork_Key'].encode('utf-8')) # sehr umständliche Decoder-Zeile. Leider nötig :(
+dirname = os.path.dirname(os.path.abspath(__file__))
+Local_storage['TIANE_PATH'] = dirname
+
 Modules = Modules()
-Local_storage['TIANE_modules_required_vocabulary'] = []
 Analyzer = Sentence_Analyzer()
 Serverconnection = TNetwork_Connection_Client()
+Serverconnection.key = TNetwork_Key
 Conversation = Conversation()
+
+Local_storage['TIANE_Modules_defined_Vocabulary'] = Local_storage['TIANE_room_Modules_defined_Vocabulary'].copy()
 Audioinput = Audio_Input(Serverconnection, Local_storage)
 Audiooutput = Audio_Output(Serverconnection, Local_storage, Audioinput)
 Tiane = TIANE()
 
 #-----------Daten mit dem Server austauschen-----------#
-print('[INFO] Versuche mit Server auf {} zu verbinden...'.format(SERVER_IP))
-Serverconnection.connect(SERVER_IP)
+print('[INFO] Versuche mit Server auf {} zu verbinden...'.format(server_ip))
+Serverconnection.connect(server_ip)
 
 # Informationen über den Raum an den Server senden...
 Serverconnection.send({'DEVICE_TYPE':'TIANE_ROOM'})
-Serverconnection.send({'TIANE_room_info':{'name':room_name, 'num_cameras':num_cameras, 'speech':speech}})
+Serverconnection.send({'TIANE_room_info':{'name':room_name}})
 # ...und auf Antwort warten, denn diese Informationen sind für den Betrieb wichtig.
 # Sobald einmal vorhanden, werden sie per get_update_information aktuell gehalten.
 while True:
@@ -560,7 +603,7 @@ print('[INFO] Verbindung mit Server "{}" ({}) hergestellt'.format(Tiane.server_n
 Modules.start_continuous()
 Audiooutput.start()
 Tiane.start()
-Audioinput.start_hotword_detection()
+Audioinput.start_hotword_detection(sensitivity=Hotword_sensitivity, audio_gain=Hotword_Audio_gain)
 time.sleep(0.75)
 
 time.sleep(1)
@@ -576,6 +619,7 @@ try:
             raise ConnectionAbortedError
         if not Tiane.Conversation.active == True:
             if not Local_storage['TIANE_Hotword_detected'] == {}:
+                # Wir haben noch keine wirkliche Konversation, aber wir blockieren sie schon mal
                 Tiane.Conversation.blocked = True
                 print('\n\nUser --{}-- detected'.format(Local_storage['TIANE_Hotword_detected']['user'].upper()))
                 # Server knows best. Einfach den schon mal fragen, dann wissen wir gleich (wenn der Text vorliegt), wer da überhaupt spricht...
@@ -603,4 +647,4 @@ finally:
     Audioinput.stop()
     Audiooutput.stop()
     Serverconnection.stop()
-    print('\n[TIANE] Auf wiedersehen!\n')
+    print('\n[{}] Auf wiedersehen!\n'.format(Tiane.system_name.upper()))
