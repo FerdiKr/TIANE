@@ -1,24 +1,25 @@
 {
     "System_name": "TIANE",
-    "Server_name": "TIANE_SERVER",
-    "TNetwork_Key": "5AMQHw+mE7MrnhTEPvXuNB/A0ATwYNMlEZ2NbFU4oSI=",
-    "Home_location": "Weitersburg",
+    "Server_name": "",
+    "TNetwork_Key": "",
+    "Home_location": "",
     "use_cameras": true,
     "use_facerec": true,
     "use_interface": true,
     "Local_storage": {
         "users": {},
-        "system_name": "TIANE",
-        "server_name": "TIANE_SERVER",
+        "system_name": "",
+        "server_name": "",
         "keys_to_distribute": [
             "users",
             "rooms",
             "server_name",
             "system_name",
+            "home_location",
             "TIANE_Modules_defined_Vocabulary"
         ],
         "rooms": {},
         "TIANE_Modules_defined_Vocabulary": [],
-        "home_location": "Weitersburg"
+        "home_location": ""
     }
 }
