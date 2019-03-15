@@ -106,6 +106,28 @@ config_data['Local_storage']['server_name'] = server_name
 print('Okay, dein {}-Server wird {} heißen.\n'.format(system_name, server_name))
 time.sleep(1)
 
+default_location = config_data['Home_location']
+if not default_location == 'None':
+    location = input('\nBitte gib deinen Wohnort ein (optional, hilfreich für Funktionen wie Wettervorhersagen) [Standard ist "{}"]: '.format(default_location))
+    if location == '' or location == ' ' or type(location) != type('text'):
+        config_data['Home_location'] = default_name
+        location = default_location
+    else:
+        config_data['Home_location'] = location
+else:
+    location = input('\nBitte gib deinen Wohnort ein (optional, hilfreich für Funktionen wie Wettervorhersagen): ')
+    if location == '' or location == ' ' or type(location) != type('text'):
+        config_data['Home_location'] = default_name
+        location = default_location
+    else:
+        config_data['Home_location'] = location
+config_data['Local_storage']['home_location'] = location
+if location == 'None':
+    print('Okay, du hast keinen Wohnort festgelegt.\n')
+else:
+    print('Okay, {} wird "{}" als deinen Wohnort annehmen.\n'.format(system_name, location))
+time.sleep(1)
+
 print('Als nächstes geht es um die Generierung eines Schlüssels für die sichere Kommunikation zwischen deinen {}-Geräten.'.format(system_name))
 text = input('[ENTER drücken zum fortfahren]')
 if not config_data['TNetwork_Key'] == '':
