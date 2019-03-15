@@ -1,4 +1,4 @@
-from picotts import PicoTTS
+from resources.picotts import PicoTTS
 import pyaudio
 import wave
 import io
