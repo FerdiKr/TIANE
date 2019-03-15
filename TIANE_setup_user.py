@@ -75,6 +75,10 @@ def end_config(config_data, system_name):
     sys.exit()
 
 ########################### ANFANG ###########################
+try:
+    os.remove('server/users/README.txt')
+except:
+    pass
 
 if not os.path.exists('server/resources/user_default/User_Info.json'):
     print('\n[ERROR] Die nötigen Dateien (Ordner "server/resources/user_default") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
