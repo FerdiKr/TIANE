@@ -64,14 +64,18 @@ def run(tiane, profile):
         for user in users:
             if not user == 'Unknown':
                 try:
-                    if profile['users'][user]['last_seen_room'] == room and user not in assigned_users:
-                        assign(user, room, tiane, profile)
-                        assigned_users.append(user)
-                        #print('{} {} wegen oft gesehen'.format(user,room))
+                    if profile['users'][user]['last_seen_room'] == room:
+                        profile['users'][user]['last_seen_counter'] += 1
+                        if profile['users'][user]['last_seen_counter'] >= 2 and user not in assigned_users:
+                            assign(user, room, tiane, profile)
+                            assigned_users.append(user)
+                            #print('{} {} wegen oft gesehen'.format(user,room))
                     else:
                         profile['users'][user]['last_seen_room'] = room
+                        profile['users'][user]['last_seen_counter'] = 0
                 except KeyError:
                     profile['users'][user]['last_seen_room'] = room
+                    profile['users'][user]['last_seen_counter'] = 0
                     continue
 
     for room, user in profile['TIANE_voice_recognized_users'].copy().items():
