@@ -15,4 +15,5 @@ def run(tiane, profile):
             dic = {'Benutzer': benutzer, 'Text': ausgabe}
             if differenz.total_seconds() >= 0:
                 tiane.start_module(name='weckerausgabe', text=dic)
-
+                erinnerungen.remove(item)
+                tiane.local_storage['Wecker'] = erinnerungen
