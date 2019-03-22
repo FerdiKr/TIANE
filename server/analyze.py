@@ -317,6 +317,43 @@ class Sentence_Analyzer:
         return minute
 
 
+    def get_minute_rel(self, text):
+        text = text.lower()
+        now = datetime.datetime.now()
+        satz = self.get_text(text)
+        minute = '01'
+        if ' in ' in text and ' minuten ' in text:
+            for i, w in satz.items():
+                if w == 'minuten':
+                    m_ind = i
+                    try:
+                        if int(satz.get(m_ind - 1)) >= 0:
+                            zeit = int(satz.get(m_ind - 1))
+                    except TypeError:
+                        minute = '00'
+        if minute != '00':
+            m = now.minute
+            add = m + zeit
+            if add >= 60:
+                ubertrag = add - 60
+                hour = 1
+                if ubertrag <= 9:
+                    minute = '0' + str(ubertrag)
+                else:
+                    minute = str(ubertrag)
+            else:
+                minute = add
+                if minute <= 9:
+                    minute = '0' + str(minute)
+                else:
+                    minute = str(minute)
+                hour = 0
+        dictionary = {'minute': minute, 'hour': hour}
+        return dictionary
+            
+            
+
+
     def get_year_rel(self, text): 
         text = text.lower()
         now = datetime.datetime.now()
@@ -1001,6 +1038,7 @@ class Sentence_Analyzer:
 
 
     def analyze(self, text):
+        now = datetime.datetime.now()
         r = self.get_room(text) 
         t = self.get_town(text)
         m = self.get_month_abs(text) 
@@ -1016,7 +1054,13 @@ class Sentence_Analyzer:
         if y == 'None':
             y = self.get_year_rel(text) 
         h = self.get_hour_abs(text)
-        mi = self.get_minute_abs(text) 
+        mi = self.get_minute_abs(text)
+        if mi == 'None':
+            minute = self.get_minute_rel(text)
+            hour = minute.get('hour')
+            stunde = now.hour
+            h = stunde + hour
+            mi = minute.get('minute')
         dic = {}
         dic['town'] = t
         dic['room'] = r
@@ -1031,7 +1075,7 @@ class Sentence_Analyzer:
 
 def main():
     Analyzer = Sentence_Analyzer(room_list=['Küche', 'Wohnzimmer', 'Bad'])
-    eingabe = 'Erinner mich am 24.12 um 16:45 an Weihnachten' 
+    eingabe = 'Erinner mich in 20 Minuten daran dass die Präsentation zu Ende ist' 
     print (Analyzer.analyze(eingabe))
 
 if __name__ == '__main__':
