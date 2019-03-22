@@ -567,7 +567,19 @@ class Sentence_Analyzer:
                         v = u - 30
                         if v >= 32:
                             w = v - 31
-                            day = w
+                            if w >= 31:
+                                x = w - 30
+                                if x >= 32:
+                                    y = x - 31
+                                    if y >= 32:
+                                        z = y - 31
+                                        day = z
+                                    else:
+                                        day = y
+                                else:
+                                    day = x
+                            else:
+                                day = w
                         else:
                             day = v
                     else:
@@ -583,7 +595,19 @@ class Sentence_Analyzer:
                             v = u - 30
                             if v >= 32:
                                 w = v - 31
-                                day = w
+                                if w >= 31:
+                                    x = w - 30
+                                    if x >= 32:
+                                        y = x - 31
+                                        if y >= 32:
+                                            z = y - 31
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
                             else:
                                 day = v
                         else:
@@ -599,7 +623,19 @@ class Sentence_Analyzer:
                             v = u - 30
                             if v >= 32:
                                 w = v - 31
-                                day = w
+                                if w >= 31: 
+                                    x = w - 30
+                                    if x >= 32:
+                                        y = x - 31
+                                        if y >= 32:
+                                            z = y - 31
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
                             else:
                                 day = v
                         else:
@@ -610,13 +646,25 @@ class Sentence_Analyzer:
                             v = u - 31
                             if v >= 32:
                                 w = v - 31
-                                day = w
+                                if w >= 31:
+                                    x = w - 30
+                                    if x >= 32:
+                                        y = x - 31
+                                        if y >= 32:
+                                            z = y - 31
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
                             else:
                                 day = v
                         else:
                             day = u
                     else: day = t
-            elif now.month == 3 or now.month == 8:
+            elif now.month == 3:
                 if day >= 32:
                     t = day - 31
                     if t >= 31:
@@ -625,14 +673,57 @@ class Sentence_Analyzer:
                             v = u - 31
                             if v >= 31:
                                 w = v - 30
-                                day = w
+                                if w >= 32:
+                                    x = w - 31
+                                    if x >= 32:
+                                        y = x - 31 
+                                        if y >= 31:
+                                            z = y - 30
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
                             else:
                                 day = v
                         else:
                             day = u
                     else:
                         day = t
-            elif now.month == 5 or now.month == 10:
+            elif now.month == 8:
+                if day >= 32:
+                    t = day - 31
+                    if t >= 31:
+                        u = t - 30
+                        if u >= 32:
+                            v = u - 31
+                            if v >= 31:
+                                w = v - 30
+                                if w >= 32:
+                                    x = w - 31
+                                    if x >= 32:
+                                        y = x - 31 
+                                        if (now.year + 1) % 4 == 0 and y >= 30:
+                                            z = y - 29
+                                            day = z
+                                        elif (now.year + 1) % 4 != 0 and y >= 29:
+                                            z = y - 28
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
+                            else:
+                                day = v
+                        else:
+                            day = u
+                    else:
+                        day = t
+            elif now.month == 5:
                 if day >= 32:
                     t = day - 31
                     if t >= 31:
@@ -640,15 +731,66 @@ class Sentence_Analyzer:
                         if u >= 32:
                             v = u - 31
                             if v >= 32:
-                                w = v - 31
-                                day = w
+                                w = v - 31 
+                                if w >= 31:
+                                    x = w - 30
+                                    if x >= 32:
+                                        y = x - 31
+                                        if y >= 31:
+                                            z = y - 30
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
                             else:
                                 day = v
                         else:
                             day = u
                     else:
                         day = t
-            elif now.month == 7 or now.month == 12:
+            elif now.month == 10:
+                if day >= 32:
+                    t = day - 31
+                    if t >= 31:
+                        u = t - 30
+                        if u >= 32:
+                            v = u - 31
+                            if v >= 32:
+                                w = v - 31 
+                                if (now.year + 1) % 4 == 0 and w >= 30:
+                                    x = w - 29
+                                    if x >= 32:
+                                        y = x - 31
+                                        if y >= 31:
+                                            z = y - 30
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                elif (now.year + 1) % 4 != 0 and w >= 30:
+                                    x = w - 28
+                                    if x >= 32:
+                                        y = x - 31
+                                        if y >= 31:
+                                            z = y - 30
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
+                            else:
+                                day = v
+                        else:
+                            day = u
+                    else:
+                        day = t
+            elif now.month == 7:
                 if day >= 32:
                     t = day - 31
                     if t >= 32:
@@ -657,13 +799,72 @@ class Sentence_Analyzer:
                             v = u - 30
                             if v >= 32:
                                 w = v - 31
-                                day = w
+                                if w >= 31:
+                                    x = w - 30
+                                    if x >= 32:
+                                        y = x - 31
+                                        if y >= 32:
+                                            z = y - 31
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
                             else:
                                 day = v
                         else:
                             day = u
                     else:
                         day = t
+            elif now.month == 12: 
+                if day >= 32:
+                    t = day - 31
+                    if t >= 32:
+                        u = t - 31
+                        if (now.year + 1) % 4 == 0 and u >= 30:
+                            v = u - 29
+                            if v >= 32:
+                                w = v - 31
+                                if w >= 31:
+                                    x = w - 30
+                                    if x >= 32:
+                                        y = x - 31
+                                        if y >= 31:
+                                            z = y - 30
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
+                            else:
+                                day = v
+                        elif (now.year + 1) % 4 != 0 and u >= 29:
+                            v = u - 28
+                            if v >= 32:
+                                w = v - 31
+                                if w >= 31:
+                                    x = w - 30
+                                    if x >= 32:
+                                        y = x - 31
+                                        if y >= 31:
+                                            z = y - 30
+                                            day = z
+                                        else:
+                                            day = y
+                                    else:
+                                        day = x
+                                else:
+                                    day = w
+                            else:
+                                day = v
+                        else:
+                            day = u
+                    else:
+                        day = t       
             else: 
                 if day >= 31:
                     t = day - 30
@@ -835,4 +1036,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
