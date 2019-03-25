@@ -102,7 +102,7 @@ def uhrzeit(dicanalyse):
 
          minute = '00'
 
-    zeit = jahr + '-' + monat + '-' + tag + ' ' + stunde + ':' + minute + ':' + '00.000000'
+    zeit = str(jahr) + '-' + str(monat) + '-' + str(tag) + ' ' + str(stunde) + ':' + str(minute) + ':' + '00.000000'
 
     return zeit
 
