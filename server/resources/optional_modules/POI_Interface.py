@@ -57,7 +57,7 @@ def poi_image(frame, x, y, w, h, sub_type):
     h += 60
     return overlayimg(frame, box, x, y, w, h)
 
-def poi_infobox(frame, x, y, subject_number, subject_name, subject_type):
+def poi_infobox(frame, x, y, subject_number, subject_name, subject_type, proba):
     if subject_type == 'ADMIN' or subject_type == 'ANALOG' or subject_type == 'AUX_ADMIN':
         id_colour = (58, 238, 247)
     elif subject_type == 'USER':
@@ -65,11 +65,11 @@ def poi_infobox(frame, x, y, subject_number, subject_name, subject_type):
     elif subject_type == 'THREAT':
         id_colour = (000, 000, 255)
     else:
-        id_colour = (000, 000, 1)
+        id_colour = (225, 225, 225)
     multiple = 0.60
-    infobox_path = "resources/POI_Interface/infobox_slim_short_out.tif"
+    infobox_path = "resources/POI_Interface/infobox_slim_short_out_transparent.tif"
     infobox = cv2.imread(infobox_path)
-    grey_path = "resources/POI_Interface/infobox_slim_in_short.tif"
+    grey_path = "resources/POI_Interface/infobox_slim_in_short_transparent.tif"
     grey = cv2.imread(grey_path)
 
     w = int(400 * multiple)
@@ -81,10 +81,17 @@ def poi_infobox(frame, x, y, subject_number, subject_name, subject_type):
     id_type = "{} IDENTIFIED".format(subject_type)
     id_alias = "NAME: {}".format(subject_name)
     id_num = "***-***-{}".format(str(subject_number).zfill(3))
+    proba = str(round(proba * 100, 2))
+    if len(proba) < 5:
+        proba = proba + '0%'
+    else:
+        proba = proba + '%'
     cv2.putText(infobox, id_type, (15, 45), cv2.FONT_HERSHEY_SIMPLEX, 1, id_colour, 2)
     cv2.putText(infobox, id_alias, (15, 92), cv2.FONT_HERSHEY_SIMPLEX, 1, (12, 12, 12), 2)
-    cv2.putText(infobox, "UID:", (15, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
-    cv2.putText(infobox, id_num, (125, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+    cv2.putText(infobox, "PROBABILITY:", (15, 145), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+    cv2.putText(infobox, proba, (265, 145), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+    cv2.putText(infobox, "UID:", (15, 188), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+    cv2.putText(infobox, id_num, (170, 188), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
     return overlayimg(frame, infobox, x, y, w, h)
 
@@ -156,7 +163,7 @@ def run(tiane, profile):
     # Latenzen durchaus vorkommen kann) soll sich noch nicht direkt das Fenster verkleinern, sondern es wird noch für kurze Zeit mit dem
     # letzten Bild gearbeitet, das der Raum geliefert hat.
     for roomname, roomcams in profile['TIANE_cams'].copy().items():
-        profile['TIANE_prev_room_camframes'][roomname] = roomcams
+        profile['TIANE_prev_room_camframes'][roomname] = (roomcams, profile['TIANE_face_boxes_names'][roomname])
         roomnames.append(roomname)
         if not roomname in profile['TIANE_prev_roomnames']:
             profile['TIANE_prev_roomnames'].append(roomname)
@@ -171,17 +178,18 @@ def run(tiane, profile):
     for roomname in profile['TIANE_prev_roomnames']:
         if not roomname in roomnames:
             if profile['TIANE_room_cam_timeout'][roomname] <= 25:
-                for camname, camframe in profile['TIANE_prev_room_camframes'][roomname].items():
-                    cam = (camframe, camname, [], roomname)
+                roomcams, camdata = profile['TIANE_prev_room_camframes'][roomname]
+                for camname, camframe in roomcams.items():
+                    cam = (camframe, camname, camdata[camname], roomname)
                     cams.append(cam)
                 profile['TIANE_room_cam_timeout'][roomname] += 1
             else:
                 profile['TIANE_prev_roomnames'].remove(roomname)
                 del profile['TIANE_prev_room_camframes'][roomname]
+
     if not cams == []:
         coordinates_combined_bordered = []
         profile['TIANE_cam_offline_counter'] = 0
-
         if len(cams) == 1:
             # kleinen Rahmen machen
             frame_combined = cv2.copyMakeBorder(cams[0][0], 50,50,
@@ -195,7 +203,7 @@ def run(tiane, profile):
                 y = top + 200
                 w = right - left
                 h = bottom - top
-                coordinates_combined_bordered.append((x,y,w,h,name))
+                coordinates_combined_bordered.append((x,y,w,h,name,proba))
 
         elif len(cams) == 2:
             frames = []
@@ -214,7 +222,7 @@ def run(tiane, profile):
                         y = top + 200
                         w = right - left
                         h = bottom - top
-                        coordinates_combined_bordered.append((x,y,w,h,name))
+                        coordinates_combined_bordered.append((x,y,w,h,name,proba))
                 else:
                     x = 0
                     for frame in frames[:i]:
@@ -224,17 +232,17 @@ def run(tiane, profile):
                         y = top + 200
                         w = right - left
                         h = bottom - top
-                        coordinates_combined_bordered.append((x,y,w,h,name))
+                        coordinates_combined_bordered.append((x,y,w,h,name,proba))
                 i += 1
             # Bildhöhen vereinheitlichen
             max_frame_height = max([frame.shape[0] for frame in frames])
-            for frame in frames:
-                if frame.shape[0] < max_frame_height:
-                    frame = cv2.copyMakeBorder(frame, 0, max_frame_height - frame.shape[0],
-                                               0,0, cv2.BORDER_CONSTANT,
-                                               (0,0,0,0))
+            for i in range(len(frames)):
+                if frames[i].shape[0] < max_frame_height:
+                    frames[i] = cv2.copyMakeBorder(frames[i], 0,
+                                                   max_frame_height - frames[i].shape[0], cv2.BORDER_CONSTANT,0,0,
+                                                   (0,0,0,0))
             # Bilder kombinieren
-            frame_combined = np.hstack((frames[0], frames[1]))
+            frame_combined = np.hstack(frames)
 
         else:
             top_row = []
@@ -256,7 +264,7 @@ def run(tiane, profile):
                         y = top + 200
                         w = right - left
                         h = bottom - top
-                        coordinates_combined_bordered.append((x,y,w,h,name))
+                        coordinates_combined_bordered.append((x,y,w,h,name,proba))
                 else:
                     x = 0
                     for frame in top_row[:i]:
@@ -266,19 +274,18 @@ def run(tiane, profile):
                         y = top + 200
                         w = right - left
                         h = bottom - top
-                        coordinates_combined_bordered.append((x,y,w,h,name))
+                        coordinates_combined_bordered.append((x,y,w,h,name,proba))
                 i += 1
             # Bildhöhen vereinheitlichen
             max_frame_height = max([frame.shape[0] for frame in top_row])
-            for frame in top_row:
-                if frame.shape[0] < max_frame_height:
-                    frame = cv2.copyMakeBorder(frame, 0, max_frame_height - frame.shape[0],
-                                               0,0, cv2.BORDER_CONSTANT,
-                                               (0,0,0,0))
+            for j in range(len(top_row)):
+                if top_row[j].shape[0] < max_frame_height:
+                    top_row[j] = cv2.copyMakeBorder(top_row[j], 0,
+                                                   max_frame_height - top_row[j].shape[0], cv2.BORDER_CONSTANT,0,0,
+                                                   (0,0,0,0))
             # Bilder kombinieren
-            top_frame = top_row[0]
-            for frame in top_row[1:]:
-                top_frame = np.hstack((top_frame, frame))
+            top_frame = np.hstack(top_row)
+
             # UNTERE REIHE
             for cam in cams[(columns+remainder):]:
                 # kleinen Rahmen machen
@@ -289,15 +296,15 @@ def run(tiane, profile):
                 cv2.putText(bottom_row[-1], cams[i][3] + ' - ' + cams[i][1], (50,45), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (235,235,235), 1)
                 # Gesichtskoordinaten umrechnen (für kombiniert und mit großem Rahmen!)
                 # Dafür brauchen wir diesmal die Höhe der oberen Reihe:
-                shapes = [frame.shape for frame in top_row]
-                top_row_height = max([shape[0] for shape in shapes])
+                #shapes = [frame.shape for frame in top_row]
+                top_row_height = top_frame.shape[0]
                 if i == len(top_row):
                     for top,right,bottom,left,name,proba in cams[i][2]:
                         x = left + 300
                         y = top + 200 + top_row_height
                         w = right - left
                         h = bottom - top
-                        coordinates_combined_bordered.append((x,y,w,h,name))
+                        coordinates_combined_bordered.append((x,y,w,h,name,proba))
                 else:
                     x = 0
                     for frame in bottom_row[:(i-len(top_row))]:
@@ -307,19 +314,17 @@ def run(tiane, profile):
                         y = top + 200 + top_row_height
                         w = right - left
                         h = bottom - top
-                        coordinates_combined_bordered.append((x,y,w,h,name))
+                        coordinates_combined_bordered.append((x,y,w,h,name,proba))
                 i += 1
             # Bildhöhen vereinheitlichen
             max_frame_height = max([frame.shape[0] for frame in bottom_row])
-            for frame in bottom_row:
-                if frame.shape[0] < max_frame_height:
-                    frame = cv2.copyMakeBorder(frame, 0, max_frame_height - frame.shape[0],
-                                               0,0, cv2.BORDER_CONSTANT,
-                                               (0,0,0,0))
+            for j in range(len(bottom_row)):
+                if bottom_row[j].shape[0] < max_frame_height:
+                    bottom_row[j] = cv2.copyMakeBorder(bottom_row[j], 0,
+                                                    max_frame_height - bottom_row[j].shape[0], cv2.BORDER_CONSTANT,0,0,
+                                                    (0,0,0,0))
             # Bilder kombinieren
-            bottom_frame = bottom_row[0]
-            for frame in bottom_row[1:]:
-                bottom_frame = np.hstack((bottom_frame, frame))
+            bottom_frame = np.hstack(bottom_row)
 
             # Reihenbreiten vereinheitlichen
             max_row_width = max([top_frame.shape[1], bottom_frame.shape[1]])
@@ -345,17 +350,17 @@ def run(tiane, profile):
                     if box[4] not in users_detected:
                         users_detected.append(box[4])
             frame_combined_bordered = poi_statusbox(frame_combined_bordered, 60, frame_combined_bordered.shape[0] - 150, get_time(profile), len(users_detected))
-        for x,y,w,h,name in coordinates_combined_bordered:
+        for x,y,w,h,name,proba in coordinates_combined_bordered:
             if name == 'Unknown':
                 if profile['TIANE_POI_INTERFACE_OPTIONS']['boxes'] == True:
                     frame_combined_bordered = poi_image(frame_combined_bordered,x,y,w,h,'UNKNOWN')
                 if profile['TIANE_POI_INTERFACE_OPTIONS']['infoboxes'] == True:
-                    frame_combined_bordered = poi_infobox(frame_combined_bordered, x+w+30, y+int(h*.5-50), 0, 'Unknown','UNKNOWN')
+                    frame_combined_bordered = poi_infobox(frame_combined_bordered, x+w+30, y+int(h*.5-50), 0, 'Unknown','UNKNOWN',proba)
             else:
                 if profile['TIANE_POI_INTERFACE_OPTIONS']['boxes'] == True:
                     frame_combined_bordered = poi_image(frame_combined_bordered,x,y,w,h,profile['users'][name]['role'])
                 if profile['TIANE_POI_INTERFACE_OPTIONS']['infoboxes'] == True:
-                    frame_combined_bordered = poi_infobox(frame_combined_bordered, x+w+30, y+int(h*.5-50), profile['users'][name]['uid'], profile['users'][name]['name'],profile['users'][name]['role'])
+                    frame_combined_bordered = poi_infobox(frame_combined_bordered, x+w+30, y+int(h*.5-50), profile['users'][name]['uid'], profile['users'][name]['name'],profile['users'][name]['role'],proba)
 
         cv2.imshow('TIANE',frame_combined_bordered)
 
