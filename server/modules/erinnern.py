@@ -1,7 +1,5 @@
 import datetime
 
-WORDS = ['Erinner', 'mich']
-PRIORITY = 1
 
 def uhrzeit(dicanalyse):
     now = datetime.datetime.now()
@@ -57,19 +55,35 @@ def uhrzeit(dicanalyse):
     zeit = jahr + '-' + monat + '-' + tag + ' ' + stunde + ':' + minute + ':' + '00.000000'
     return zeit
 
+
+
 def get_text(tiane, text):
     remembrall = ''
     e_ind = 0
     text = text.lower()
-    remembrall = text.replace('zu', (''))
-    remembrall = remembrall.replace(' ans ', (' '))
+    if ' zu ' not in text:
+        remembrall = text.replace('zu', (''))
+        remembrall = remembrall.replace(' ans ', (' '))
+    else:
+        remembrall = text.replace(' ans ', (' '))
+    if ' in ' in text and ' minuten' in text:
+        remembrall = remembrall.replace(' minuten ', (' '))
+        remembrall = remembrall.replace(' in ', (' '))
+        s = str.split(remembrall)
+        for t in s:
+            try:     
+                if int(t) >= 0:
+                    remembrall = remembrall.replace(t, (''))
+            except ValueError:
+                remembrall = remembrall
     satz = {}
     ausgabe = ''
     ind = 1
     i = str.split(remembrall)
+
     for w in i:
         satz[ind] = w
-        ind += 1
+        ind += 1              
     if ' am ' in satz.items():
         for index, word in satz.items():
             if word == 'am':
@@ -91,6 +105,27 @@ def get_text(tiane, text):
                             summand += 1
                         except TypeError:
                             ausgabe = ausgabe
+    elif ' daran das' in text:
+        for ind, w in satz.items():
+            if w == 'daran':
+                reminder = ''
+                n = 1
+                try:
+                    try:
+                        while n < 30:                  
+                            if satz.get(ind + n) != None:
+                                reminder = reminder + str(satz.get(ind + n)) + ' '
+                                n += 1
+                            else:
+                                reminder = reminder
+                                break
+                    except KeyError:
+                        reminder = reminder
+                        break
+                except ValueError:
+                    reminder = reminder
+                    break
+                ausgabe = reminder                   
     else:
         for index, word in satz.items():
             if word == 'erinner' or word == 'erinnere':
@@ -108,6 +143,9 @@ def get_text(tiane, text):
     ausgabe = ausgabe.replace('morgen ', (' '))
     ausgabe = ausgabe.replace('daran ', (' '))
     return ausgabe
+
+
+
 
 
 def get_time_for_reply(dicanalyse):
@@ -164,6 +202,8 @@ def get_time_for_reply(dicanalyse):
     zeit = {'year': jahr, 'month': monat, 'day': tag, 'hour': stunde, 'minute': minute}
     return zeit
 
+
+
 def get_reply(tiane, dicanalyse):
     time = get_time_for_reply(dicanalyse)
     jahr = time.get('year')
@@ -197,11 +237,11 @@ def get_reply(tiane, dicanalyse):
     day = tage.get(tag)
     month = Monate.get(monat)
     hour = Stunden.get(stunde)
-    zeit_der_erinnerung = str(day) + ' ' + str(month) + ' um ' + str(hour) + ' Uhr ' + str(mine)             
-    reply = 'Alles klar, ich sage dir am ' + zeit_der_erinnerung + ' bescheid, dass du '
+    zeit_der_erinnerung = str(day) + ' ' + str(month) + ' um ' + str(hour) + ' Uhr ' + str(mine)
+    reply = 'Alles klar, ich sage dir am ' + zeit_der_erinnerung + ' bescheid, ' 
     return reply
-    
 
+    
 
 
 def handle(text, tiane, profile):
@@ -215,7 +255,10 @@ def handle(text, tiane, profile):
         else:
             tiane.local_storage['Erinnerungen'] = [E_eins]
         rep = get_reply(tiane, tiane.analysis)
-        antwort = rep + r + ' musst.'
+        if 'dass ' in r:
+            antwort = rep + r + '.'
+        else:
+            antwort = ' dass du ' + rep + r + ' musst.'
         tiane.say(antwort)
     else:
         liste = tiane.local_storage.get('Erinnerungen')
@@ -232,8 +275,10 @@ def handle(text, tiane, profile):
                     del liste[len(liste) - 2]
                 else:
                     del liste[len(liste) - 3]
+
         
-        
+
+
 
 def isValid(text):
     text = text.lower()
@@ -242,21 +287,29 @@ def isValid(text):
     else:
         return False
 
+
+
 class Tiane:
     def __init__(self):
         self.local_storage = {}
         self.user = 'Baum'
-        self.analysis = {'room': 'None', 'time': {'month': 'None', 'hour': 'None', 'year': '2020', 'minute': 'None', 'day': 'None'}, 'town': 'None'}
+        self.analysis = {'room': 'None', 'time': {'month': 'None', 'hour': '21', 'year': '2020', 'minute': '08', 'day': 'None'}, 'town': 'None'}
+
+
 
     def say(self, text):
         print (text)
+
         
 
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Bitte Erinnere mich daran für die Prüfung zu lernen', tiane, profile)
+    handle('Erinner mich in 20 Minuten daran dass die Präsentation zu Ende ist', tiane, profile)
+
     
+
     
+
 if __name__ == "__main__":
     main()
