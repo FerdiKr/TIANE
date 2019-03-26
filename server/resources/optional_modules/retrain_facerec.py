@@ -63,6 +63,12 @@ def handle(text, tiane, local_storage):
     f.write(pickle.dumps(data))
     f.close()
 
+    print('[INFO] Gegenbeispiele werden ergänzt...')#
+    unknown_data = pickle.loads(open(local_storage['TIANE_PATH'] +'/resources/face_encodings_unknown.pickle', 'rb').read())
+    for encoding in unknown_data['encodings']:
+        data['encodings'].append(encoding)
+        data['names'].append('Unknown')
+
     # encode the labels
     le = LabelEncoder()
     labels = le.fit_transform(data["names"])
