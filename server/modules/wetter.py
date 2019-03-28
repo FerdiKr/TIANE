@@ -68,7 +68,7 @@ def handle(text, tiane, profile):
         else:
             antwort = antwort.lower()
             if len(antwort.split()) == 1:
-                o = antwort 
+                o = antwort
             elif 'hier' in antwort or 'zu hause' in antwort:
                 o = 'weitersburg'
             else:
@@ -77,10 +77,10 @@ def handle(text, tiane, profile):
                 mind = 0
                 falsches_in = 0
                 i = str.split(antwort)
-                ind = 1 
+                ind = 1
                 for w in i:
-                    satz[ind] = w 
-                    ind += 1 
+                    satz[ind] = w
+                    ind += 1
                 for iindex, word in satz.items():
                     if word in sonst:
                         mind = mind + iindex
@@ -89,7 +89,7 @@ def handle(text, tiane, profile):
                         falsches_in = falsches_in + iindex
                 if falsches_in >= 1:
                     del satz[falsches_in]
-                for iindex, word in satz.items(): #findet Wort 'in''s key 
+                for iindex, word in satz.items(): #findet Wort 'in''s key
                     if word == 'in':
                         in_index = iindex
                         myind = in_index + 1
@@ -100,34 +100,38 @@ def handle(text, tiane, profile):
                         o = satz.get(myind)
     else:
         o = o
-    ort = o.lower()
-    web = 'http://api.openweathermap.org/data/2.5/weather?q=' + ort + '&appid=bd4d17c6eedcff6efc70b9cefda99082'
-    request = Request(web)
-    try:
-        response = urlopen(request)
-    except:
-        tiane.say('Ich konnte das Wetter für den Ort {} leider nicht aufrufen.'.format(o))
-        return
-    html = response.read()
-    html = str(html)
-    ohneb = html[2:len(html)-1]
-    dictionary = ast.literal_eval(ohneb)
-    
-    line = dictionary.get("weather")
-    des = line[0].get("description")
-    line2 = dictionary.get("main")
-    des2 = line2.get("temp")
-    weatherdescription = get_weather(des)
-    temperature = get_temperature(int(des2))
-    if temperature[1] == '.':
-        temperature = temperature[0]
-    if weatherdescription == 'bedeckt' or weatherdescription == 'teils wolkig' or weatherdescription == 'wolkig' or weatherdescription == 'klar' or weatherdescription == 'regnerisch' or weatherdescription == 'neblig' or weatherdescription == 'einen Waldbrand geben' or weatherdescription == 'stürmisch':
-        wetter = 'Es ist ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
-    else:
-        wetter = 'Es gibt ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
-    tiane.say(wetter)
+    if o != 'None':
+        ort = o.lower()
+        web = 'http://api.openweathermap.org/data/2.5/weather?q=' + ort + '&appid=bd4d17c6eedcff6efc70b9cefda99082'
+        request = Request(web)
+        try:
+            response = urlopen(request)
+        except:
+            tiane.say('Ich konnte das Wetter für den Ort {} leider nicht aufrufen.'.format(o))
+            return
+        html = response.read()
+        html = str(html)
+        ohneb = html[2:len(html)-1]
+        dictionary = ast.literal_eval(ohneb)
 
-    response.close()
+        line = dictionary.get("weather")
+        des = line[0].get("description")
+        line2 = dictionary.get("main")
+        des2 = line2.get("temp")
+        weatherdescription = get_weather(des)
+        temperature = get_temperature(int(des2))
+        if temperature[1] == '.':
+            temperature = temperature[0]
+        if weatherdescription == 'bedeckt' or weatherdescription == 'teils wolkig' or weatherdescription == 'wolkig' or weatherdescription == 'klar' or weatherdescription == 'regnerisch' or weatherdescription == 'neblig' or weatherdescription == 'einen Waldbrand geben' or weatherdescription == 'stürmisch':
+            wetter = 'Es ist ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
+        else:
+            wetter = 'Es gibt ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
+        tiane.say(wetter)
+
+        response.close()
+
+    else:
+        tiane.say('Ich konnte den Ort leider nicht verstehen')
 
 def isValid(text):
     text = text.lower()
@@ -151,8 +155,7 @@ def main():
     profile = {}
     tiane = Tiane()
     handle('Wie ist das Wetter', tiane, profile)
-    
-    
+
+
 if __name__ == "__main__":
     main()
-    

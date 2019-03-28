@@ -137,7 +137,7 @@ def get_text(tiane, text):
         for t in s:
 
             try:
-                
+
                 if int(t) >= 0:
 
                     remembrall = remembrall.replace(t, (''))
@@ -158,7 +158,7 @@ def get_text(tiane, text):
 
         satz[ind] = w
 
-        ind += 1              
+        ind += 1
 
     if ' am ' in satz.items():
 
@@ -205,7 +205,7 @@ def get_text(tiane, text):
     elif ' daran das' in text:
 
         for ind, w in satz.items():
-            
+
             if w == 'daran':
 
                 reminder = ''
@@ -217,7 +217,7 @@ def get_text(tiane, text):
                     try:
 
                         while n < 30:
-                            
+
                             if satz.get(ind + n) != None:
 
                                 reminder = reminder + str(satz.get(ind + n)) + ' '
@@ -244,7 +244,7 @@ def get_text(tiane, text):
 
                 ausgabe = reminder
 
-                        
+
     else:
 
         for index, word in satz.items():
@@ -325,11 +325,25 @@ def get_time_for_reply(dicanalyse):
 
              stunde = '0' + stunde
 
+         else:
+
+             stunde = str(stunde)
+
     minute = time.get('minute')
 
     if minute == 'None':
 
          minute = '00'
+
+    else:
+
+        if int(minute) <= 9:
+
+            minute = '0' + str(minute)
+
+        else:
+
+            minute = str(minute)
 
     zeit = {'year': jahr, 'month': monat, 'day': tag, 'hour': stunde, 'minute': minute}
 
@@ -351,6 +365,10 @@ def get_reply(tiane, dicanalyse):
 
     minute = time.get('minute')
 
+    if minute == 'None':
+
+        minute = '0'
+
     tage = {'01': 'ersten', '02': 'zweiten', '03': 'dritten', '04': 'vierten', '05': 'fünften',
                 '06': 'sechsten', '07': 'siebten', '08': 'achten', '09': 'neunten', '10': 'zehnten',
                 '11': 'elften', '12': 'zwölften', '13': 'dreizehnten', '14': 'vierzehnten', '15': 'fünfzehnten',
@@ -369,7 +387,7 @@ def get_reply(tiane, dicanalyse):
                '18': 'achtzehn', '19': 'neunzehn', '20': 'zwanzig', '21': 'einundzwanzig', '22': 'zweiundzwanzig',
                '23': 'dreiundzwanzig', '24': 'vierundzwanzig'}
 
-    if minute[0] == '0':
+    '''if minute[0] == '0':
 
         mine = minute[1]
 
@@ -383,7 +401,7 @@ def get_reply(tiane, dicanalyse):
 
     else:
 
-        mine = minute
+        mine = minute'''
 
     day = tage.get(tag)
 
@@ -391,13 +409,13 @@ def get_reply(tiane, dicanalyse):
 
     hour = Stunden.get(str(stunde))
 
-    zeit_der_erinnerung = str(day) + ' ' + str(month) + ' um ' + str(hour) + ' Uhr ' + str(mine)
+    zeit_der_erinnerung = str(day) + ' ' + str(month) + ' um ' + str(hour) + ' Uhr ' + str(minute)
 
-    reply = 'Alles klar, ich sage dir am ' + zeit_der_erinnerung + ' bescheid, ' 
+    reply = 'Alles klar, ich sage dir am ' + zeit_der_erinnerung + ' bescheid, '
 
     return reply
 
-    
+
 
 
 
@@ -467,9 +485,9 @@ def handle(text, tiane, profile):
 
                     del liste[len(liste) - 3]
 
-        
 
-        
+
+
 
 
 
@@ -490,7 +508,7 @@ class Tiane:
 
 
     def say(self, text):
-        print (text)   
+        print (text)
 
 
 
@@ -498,7 +516,7 @@ def main():
     profile = {}
     tiane = Tiane()
     handle('Erinner mich in 20 Minuten dass die Präsentation zu Ende ist', tiane, profile)
-    
+
 
 if __name__ == "__main__":
     main()
