@@ -1,120 +1,78 @@
 import datetime
 
+
+
 def uhrzeit(dicanalyse):
-
     now = datetime.datetime.now()
-
     time = dicanalyse.get('time')
-
     jahr = time.get('year')
-
     if jahr == 'None':
-
         jahr = str(now.year)
-
     tag = time.get('day')
-
     if tag == 'None':
-
         tag = str(now.day)
-
         if int(tag) <= 9:
-
             tag = '0' + tag
-
     monat = time.get('month')
-
     if monat == 'None':
-
         if int(tag) == 28:
-
             if now.month == 2:
-
                 if int(jahr) / 4 == 0:
-
                     monat = '03'
-
                 else:
-
                     monat = '02'
-
             else:
-
                 monat = str(now.month)
-
                 if int(monat) <= 9:
-
                     monat = '0' + monat
-
         elif int(tag) == 29:
-
             if now.month == 2:
-
                 monat = '03'
-
             else:
-
                 monat = str(now.month)
-
                 if int(monat) <= 9:
-
                     monat = '0' + monat
-
         elif int(tag) == 30:
-
             if now.month == 4 or now.month == 6 or now.month == 9 or now.month == 11:
-
                 monat = str(now.month + 1)
-
             else:
-
                 monat = str(now.month)
-
             if int(monat) <= 9:
-
                 monat = '0' + monat
-
         elif int(tag) == 31:
-
             monat = str(now.month + 1)
-
             if int(monat) <= 9:
-
                 monat = '0' + monat
-
         else:
-
             monat = str(now.month)
-
             if int(monat) <= 9:
-
                 monat = '0' + monat
-
     stunde = time.get('hour')
-
     if stunde == 'None':
-
          stunde = '08'
-
     minute = time.get('minute')
-
     if minute == 'None':
-
          minute = '00'
-
-    zeit = str(jahr) + '-' + str(monat) + '-' + str(tag) + ' ' + str(stunde) + ':' + str(minute) + ':' + '00.000000'
-
+    zeit = jahr + '-' + monat + '-' + tag + ' ' + stunde + ':' + minute + ':' + '00.000000'
     return zeit
 
 
 
-def get_text(tiane, text):
-
+def get_text(tiane, txt):
     remembrall = ''
-
     e_ind = 0
-
-    text = text.lower()
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
 
     if ' zu ' not in text:
 
@@ -137,7 +95,7 @@ def get_text(tiane, text):
         for t in s:
 
             try:
-
+                
                 if int(t) >= 0:
 
                     remembrall = remembrall.replace(t, (''))
@@ -158,7 +116,7 @@ def get_text(tiane, text):
 
         satz[ind] = w
 
-        ind += 1
+        ind += 1              
 
     if ' am ' in satz.items():
 
@@ -205,7 +163,7 @@ def get_text(tiane, text):
     elif ' daran das' in text:
 
         for ind, w in satz.items():
-
+            
             if w == 'daran':
 
                 reminder = ''
@@ -217,7 +175,7 @@ def get_text(tiane, text):
                     try:
 
                         while n < 30:
-
+                            
                             if satz.get(ind + n) != None:
 
                                 reminder = reminder + str(satz.get(ind + n)) + ' '
@@ -244,7 +202,7 @@ def get_text(tiane, text):
 
                 ausgabe = reminder
 
-
+                        
     else:
 
         for index, word in satz.items():
@@ -271,7 +229,7 @@ def get_text(tiane, text):
 
                         ausgabe = ausgabe
 
-    ausgabe = ausgabe.replace('übermorgen ', (' '))
+    ausgabe = ausgabe.replace('Ã¼bermorgen ', (' '))
 
     ausgabe = ausgabe.replace('morgen ', (' '))
 
@@ -325,25 +283,11 @@ def get_time_for_reply(dicanalyse):
 
              stunde = '0' + stunde
 
-         else:
-
-             stunde = str(stunde)
-
     minute = time.get('minute')
 
     if minute == 'None':
 
          minute = '00'
-
-    else:
-
-        if int(minute) <= 9:
-
-            minute = '0' + str(minute)
-
-        else:
-
-            minute = str(minute)
 
     zeit = {'year': jahr, 'month': monat, 'day': tag, 'hour': stunde, 'minute': minute}
 
@@ -365,29 +309,37 @@ def get_reply(tiane, dicanalyse):
 
     minute = time.get('minute')
 
-    if minute == 'None':
+    tage = {'01': 'ersten', '02': 'zweiten', '03': 'dritten', '04': 'vierten', '05': 'fÃ¼nften',
 
-        minute = '0'
-
-    tage = {'01': 'ersten', '02': 'zweiten', '03': 'dritten', '04': 'vierten', '05': 'fünften',
                 '06': 'sechsten', '07': 'siebten', '08': 'achten', '09': 'neunten', '10': 'zehnten',
-                '11': 'elften', '12': 'zwölften', '13': 'dreizehnten', '14': 'vierzehnten', '15': 'fünfzehnten',
-                '16': 'sechzehnten', '17': 'siebzehnten', '18': 'achtzehnten', '19': 'neunzehnten', '20': 'zwanzigsten',
-                '21': 'einundzwanzigsten', '22': 'zweiundzwanzigsten', '23': 'dreiundzwanzigsten', '24': 'vierundzwanzigsten',
-                '25': 'fünfundzwanzigsten', '26': 'sechsundzwanzigsten', '27': 'siebenundzwanzigsten', '28': 'achtundzwanzigsten',
-                '29': 'neunundzwanzigsten', '30': 'dreißigsten', '31': 'einunddreißigsten', '32': 'zweiunddreißigsten'}
 
-    Monate = {'01': 'Januar', '02': 'Februar', '03': 'März', '04': 'April', '05': 'Mai', '06': 'Juni',
+                '11': 'elften', '12': 'zwÃ¶lften', '13': 'dreizehnten', '14': 'vierzehnten', '15': 'fÃ¼nfzehnten',
+
+                '16': 'sechzehnten', '17': 'siebzehnten', '18': 'achtzehnten', '19': 'neunzehnten', '20': 'zwanzigsten',
+
+                '21': 'einundzwanzigsten', '22': 'zweiundzwanzigsten', '23': 'dreiundzwanzigsten', '24': 'vierundzwanzigsten',
+
+                '25': 'fÃ¼nfundzwanzigsten', '26': 'sechsundzwanzigsten', '27': 'siebenundzwanzigsten', '28': 'achtundzwanzigsten',
+
+                '29': 'neunundzwanzigsten', '30': 'dreiÃŸigsten', '31': 'einunddreiÃŸigsten', '32': 'zweiunddreiÃŸigsten'}
+
+    Monate = {'01': 'Januar', '02': 'Februar', '03': 'MÃ¤rz', '04': 'April', '05': 'Mai', '06': 'Juni',
+
                   '07': 'Juli', '08': 'August', '09': 'September', '10': 'Oktober', '11': 'November',
+
                   '12': 'Dezember'}
 
-    Stunden = {'01': 'ein', '02': 'zwei', '03': 'drei', '04': 'vier', '05': 'fünf', '06': 'sechs',
-               '07': 'sieben', '08': 'acht', '09': 'neun', '10': 'zehn', '11': 'elf', '12': 'zwölf',
-               '13': 'dreizehn', '14': 'vierzehn', '15': 'fünfzehn', '16': 'sechzehn', '17': 'siebzehn',
+    Stunden = {'01': 'ein', '02': 'zwei', '03': 'drei', '04': 'vier', '05': 'fÃ¼nf', '06': 'sechs',
+
+               '07': 'sieben', '08': 'acht', '09': 'neun', '10': 'zehn', '11': 'elf', '12': 'zwÃ¶lf',
+
+               '13': 'dreizehn', '14': 'vierzehn', '15': 'fÃ¼nfzehn', '16': 'sechzehn', '17': 'siebzehn',
+
                '18': 'achtzehn', '19': 'neunzehn', '20': 'zwanzig', '21': 'einundzwanzig', '22': 'zweiundzwanzig',
+
                '23': 'dreiundzwanzig', '24': 'vierundzwanzig'}
 
-    '''if minute[0] == '0':
+    if minute[0] == '0':
 
         mine = minute[1]
 
@@ -401,7 +353,7 @@ def get_reply(tiane, dicanalyse):
 
     else:
 
-        mine = minute'''
+        mine = minute
 
     day = tage.get(tag)
 
@@ -409,19 +361,13 @@ def get_reply(tiane, dicanalyse):
 
     hour = Stunden.get(str(stunde))
 
-    zeit_der_erinnerung = str(day) + ' ' + str(month) + ' um ' + str(hour) + ' Uhr ' + str(minute)
+    zeit_der_erinnerung = str(day) + ' ' + str(month) + ' um ' + str(hour) + ' Uhr ' + str(mine)
 
-    reply = 'Alles klar, ich sage dir am ' + zeit_der_erinnerung + ' bescheid, '
+    reply = 'Alles klar, ich sage dir am ' + zeit_der_erinnerung + ' bescheid, ' 
 
     return reply
 
-
-
-
-
-
-
-
+   
 
 def handle(text, tiane, profile):
 
@@ -485,14 +431,21 @@ def handle(text, tiane, profile):
 
                     del liste[len(liste) - 3]
 
+    
 
-
-
-
-
-
-def isValid(text):
-    text = text.lower()
+def isValid(txt):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     if 'erinner' in text or 'erinnere' in text:
         return True
     else:
@@ -511,12 +464,8 @@ class Tiane:
         print (text)
 
 
-
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Erinner mich in 20 Minuten dass die Präsentation zu Ende ist', tiane, profile)
+    handle('Erinner mich in 20 Minuten dass die PrÃ¤sentation zu Ende ist', tiane, profile)
 
-
-if __name__ == "__main__":
-    main()
