@@ -37,7 +37,7 @@ def get_weather(place):
     elif 'smoke' in place:
         w = w + 'einen Waldbrand geben'
     elif 'storm' or 'stormy' in place:
-        w = w + 'stürmisch'
+        w = w + 'stÃ¼rmisch'
     elif 'thunderstorm' in place:
         w = w + 'Gewitter'
     elif 'snow' or 'snowy' or 'snowfall' in place:
@@ -85,7 +85,7 @@ def zeitabfrage(dic):
     zeit = datetime.datetime.strptime(zeit, '%Y-%m-%d %H:%M:%f')
     differenz = zeit - now
     if differenz.total_seconds() >= 40*10800:
-        zeit = 'Ich kann leider nicht so weit in die Zukunft sehen.' #Möchtest du wissen, wie das Wetter in 5 Tagen wird?
+        zeit = 'Ich kann leider nicht so weit in die Zukunft sehen.' #MÃ¶chtest du wissen, wie das Wetter in 5 Tagen wird?
     return zeit
         
 
@@ -94,7 +94,7 @@ def handle(text, tiane, profile):
     now = datetime.datetime.now()
     o = tiane.analysis['town']
     if o == 'None':
-        tiane.say('Für welchen Ort möchtest du das Wetter erfahren?')
+        tiane.say('FÃ¼r welchen Ort mÃ¶chtest du das Wetter erfahren?')
         antwort = tiane.listen()
         if antwort == 'TIMEOUT_OR_INVALID':
             tiane.say('Ich konnte den Ort leider nicht verstehen')
@@ -127,9 +127,9 @@ def handle(text, tiane, profile):
                         in_index = iindex
                         myind = in_index + 1
                         o = satz.get(myind)
-                    elif word == 'für':
-                        für_index = iindex
-                        myind = für_index + 1
+                    elif word == 'fÃ¼r':
+                        fÃ¼r_index = iindex
+                        myind = fÃ¼r_index + 1
                         o = satz.get(myind)
     else:
         o = o
@@ -139,14 +139,14 @@ def handle(text, tiane, profile):
     try:
         response = urlopen(request)
     except:
-        tiane.say('Ich konnte das Wetter für den Ort {} leider nicht aufrufen.'.format(o))
+        tiane.say('Ich konnte das Wetter fÃ¼r den Ort {} leider nicht aufrufen.'.format(o))
         return
     html = response.read()
     html = str(html)
     ohneb = html[2:len(html)-1]
     wetterdictionary = ast.literal_eval(ohneb)
     zeit = zeitabfrage(tiane.analysis) #dt_txt = zeit
-    if zeit == 'Ich kann leider nicht so weit in die Zukunft sehen.': #Möchtest du wissen, wie das Wetter in 5 Tagen wird muss ich noch rauslassen, weil ich nicht weiß, wie ich dann mit der Antwort umgehen muss
+    if zeit == 'Ich kann leider nicht so weit in die Zukunft sehen.': #MÃ¶chtest du wissen, wie das Wetter in 5 Tagen wird muss ich noch rauslassen, weil ich nicht weiÃŸ, wie ich dann mit der Antwort umgehen muss
         tiane.say(zeit)
         '''antwort = tiane.listen()
         antwort = antwort.lower()
@@ -175,7 +175,7 @@ def handle(text, tiane, profile):
                 beschreibung = wetterdictionary.get("description")
                 weatherdescription = get_weather(beschreibung)
                 break
-        if weatherdescription == 'bedeckt' or weatherdescription == 'teils wolkig' or weatherdescription == 'wolkig' or weatherdescription == 'klar' or weatherdescription == 'regnerisch' or weatherdescription == 'neblig' or weatherdescription == 'einen Waldbrand geben' or weatherdescription == 'stürmisch':
+        if weatherdescription == 'bedeckt' or weatherdescription == 'teils wolkig' or weatherdescription == 'wolkig' or weatherdescription == 'klar' or weatherdescription == 'regnerisch' or weatherdescription == 'neblig' or weatherdescription == 'einen Waldbrand geben' or weatherdescription == 'stÃ¼rmisch':
             if minimum != maximum:
                 wetter = 'Es wird ' + weatherdescription + ' bei ' + minimum + ' bis ' + maximum + ' Grad Celsius.'
             else:
@@ -189,8 +189,19 @@ def handle(text, tiane, profile):
 
     response.close()
 
-def isValid(text):
-    text = text.lower()
+def isValid(txt):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     if 'wird' in text:
         if 'wetter' in text or 'temperatur' in text or ' warm ' in text or ' kalt ' in text:
             return True
@@ -215,4 +226,3 @@ def main():
     
 if __name__ == "__main__":
     main()
-    
