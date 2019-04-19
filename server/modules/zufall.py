@@ -1,14 +1,22 @@
 import random
-import re
 
-WORDS = ['Würfel', 'Münze', 'Kopf', 'Zahl']
-PRIORITY = 1
 
-def output(text, tiane):
+def output(txt, tiane):
     output = ''
-    text = text.lower()
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     t = str.split(text)
-    if 'wirf die münze' in text or 'was sagt die münze' in text or 'frag die münze' in text:
+    if 'wirf die mÃ¼nze' in text or 'was sagt die mÃ¼nze' in text or 'frag die mÃ¼nze' in text:
         q = random.randint(1,2)
         if q == 1:
             output = 'kopf'
@@ -20,7 +28,7 @@ def output(text, tiane):
             output = 'kopf'
         else:
             output = 'zahl'
-    elif 'würfel' in text or 'alea iacta est' in text:
+    elif 'wÃ¼rfel' in text or 'alea iacta est' in text:
         q = random.randint(1,6)
         if q == 1:
             output = 'eins'
@@ -31,7 +39,7 @@ def output(text, tiane):
         elif q == 4:
             output = 'vier'
         elif q == 5:
-            output = 'fünf'
+            output = 'fÃ¼nf'
         else:
             output = 'sechs'
     return output
@@ -40,8 +48,21 @@ def handle(text, tiane, profile):
     ausgabe = output(text, tiane)
     tiane.say(ausgabe)
 
-def isValid(text):
-    return bool(re.search(r'\würfel\b', text, re.IGNORECASE))
+def isValid(txt):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
+    if 'mÃ¼nze' in text or 'kopf' in text or 'zahl' in text or 'wÃ¼rfel' in text:
+        return True
 
 class Tiane:
     def __init__(self):
@@ -58,7 +79,7 @@ class Tiane:
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Tiane wirf die münze', tiane, profile)
+    handle('Tiane wirf die mÃ¼nze', tiane, profile)
 
 if __name__ == '__main__':
     main()
