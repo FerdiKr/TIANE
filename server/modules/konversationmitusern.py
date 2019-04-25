@@ -1,12 +1,24 @@
 import datetime
 import random
 
-def get_inhalt(text, tiane):
+def get_inhalt(txt, tiane):
     inhalt = ''
     start_index = 0
     satz = {}
     ind = 1
     sag_ind = 0
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     i = str.split(text)
     nutzer = ''
     for w in i:
@@ -69,7 +81,7 @@ def get_aufruf(text, tiane):
     inhalt = inhalt.replace('er', 'du')
     inhalt = inhalt.replace('sie', 'du')
     nutzer = i_und_n[1]
-    aufruf = nutzer + ', ' + tiane.user + ' möchte dir sagen, dass ' + inhalt
+    aufruf = nutzer + ', ' + tiane.user + ' mÃ¶chte dir sagen, dass ' + inhalt
     x = aufruf[-1:]
     if x == ' ':
         aufruf = aufruf[:-1]
@@ -105,16 +117,27 @@ def handle(text, tiane, profile):
             usersdictionary = tiane.local_storage.get('users')
             user = usersdictionary.get(tiane.user)
             raum = user.get('room')
-            if raum == 'Küche':
-                zweite_antwort = random.choice([tiane.user + ' ist gerade in der Küche', tiane.user + ' ist momentan in der Küche'])
+            if raum == 'KÃ¼che':
+                zweite_antwort = random.choice([tiane.user + ' ist gerade in der KÃ¼che', tiane.user + ' ist momentan in der KÃ¼che'])
             else:
                 zweite_antwort = random.choice([tiane.user + ' ist gerade im ' + raum, tiane.user + ' ist momentan im ' + raum])
             tiane.say(zweite_antwort, user = nutzer)
             
                     
 
-def isValid(text):
-    text = text.lower()
+def isValid(txt):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     if 'sag ' in text or 'sage ' in text or 'ruf ' in text or 'rufe ' in text:
         return True
     else:
@@ -127,7 +150,7 @@ class Tiane:
                                                   'room': 'Wohnzimmer'},
                                         'Klara': {'name': 'Klara',
                                                   'uid': 2,
-                                                  'room': 'Küche'}
+                                                  'room': 'KÃ¼che'}
                                         }
                               }
         self.user = 'Klara'
@@ -143,7 +166,7 @@ class Tiane:
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Sag Ferdi Bescheid dass er zu mir in die Küche kommen soll', tiane, profile)
+    handle('Sag Ferdi Bescheid dass er zu mir in die KÃ¼che kommen soll', tiane, profile)
     
     
 if __name__ == "__main__":
