@@ -2,9 +2,20 @@ import datetime
 from datetime import date
 import random
 
-def get_item(text, tiane):
+def get_item(txt, tiane):
     item = ''
-    eingabe = text.lower()
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    eingabe = tt.lower()
     satz = {}
     mind = 1 
     i = str.split(eingabe)
@@ -23,9 +34,9 @@ def get_item(text, tiane):
                             mind += 1
                         else:
                             break
-    elif 'füg' in eingabe and 'zu' in eingabe:
+    elif 'fÃ¼g' in eingabe and 'zu' in eingabe:
         for iindex, word in satz.items():
-            if word == 'füg' or word == 'füge':
+            if word == 'fÃ¼g' or word == 'fÃ¼ge':
                 start = iindex
                 for iindex, word in satz.items():
                     if iindex == start + mind:
@@ -44,9 +55,20 @@ def get_item(text, tiane):
     return item
 
 
-def get_aussage(text, tiane): #Imperfection
+def get_aussage(txt, tiane): #Imperfection
     aussage = ''
-    eingabe = text.lower()
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    eingabe = tt.lower()
     nutzer = tiane.user
     usersdictionary = tiane.local_storage.get('users')
     nutzerdictionary = usersdictionary.get(nutzer)
@@ -69,9 +91,20 @@ def get_aussage(text, tiane): #Imperfection
     return aussage
 
 
-def get_aussage_gemeinsam(text, tiane): #fertig und sollte laufen
+def get_aussage_gemeinsam(txt, tiane): #fertig und sollte laufen
     aussage = ''
-    eingabe = text.lower()
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    eingabe = tt.lower()
     liste = tiane.local_storage.get('liste')
     i = 0
     while i < len(liste) - 1:
@@ -82,10 +115,21 @@ def get_aussage_gemeinsam(text, tiane): #fertig und sollte laufen
     return aussage
 
 
-def handle(text, tiane, profile):
-    text = text.lower()
+def handle(txt, tiane, profile):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     if 'gemeinsame' in text and 'liste' in text:
-        if 'setze' in text and 'auf die' in text or 'füge' in text and 'zu' in text:
+        if 'setze' in text and 'auf die' in text or 'fÃ¼ge' in text and 'zu' in text:
             item = get_item(text, tiane)
             if text != '_UNDO_':
                 ausgabe = ''
@@ -94,7 +138,7 @@ def handle(text, tiane, profile):
                     tiane.local_storage['liste'].append(item)
                 else:
                     tiane.local_storage['liste'] = item
-                ausgabe = random.choice(['In Ordnung, ich habe ' + str(item) + 'zur gemeinsamen Liste hinzugefügt.', 'Alles klar, ich habe ' + str(item) + 'auf die gemeinsame Liste gesetzt.', 'Alles klar, {}, ich habe '.format(tiane.user) + str(item) + 'zur gemeinsamen Liste hinzugefügt.', 'In Ordnung, {}, ich habe '.format(tiane.user) + str(item) + 'auf die gemeinsame Liste gesetzt.']) #
+                ausgabe = random.choice(['In Ordnung, ich habe ' + str(item) + 'zur gemeinsamen Liste hinzugefÃ¼gt.', 'Alles klar, ich habe ' + str(item) + 'auf die gemeinsame Liste gesetzt.', 'Alles klar, {}, ich habe '.format(tiane.user) + str(item) + 'zur gemeinsamen Liste hinzugefÃ¼gt.', 'In Ordnung, {}, ich habe '.format(tiane.user) + str(item) + 'auf die gemeinsame Liste gesetzt.']) #
                 tiane.say(ausgabe)
         elif 'steht' in text and 'auf' in text or 'was sagt die' in text or 'gibt' in text and 'auf' in text:
             aussage = get_aussage_gemeinsam(text, tiane)
@@ -104,7 +148,7 @@ def handle(text, tiane, profile):
                 ausgabe = random.choice(['Aktuell steht nichts auf der gemeinsamen Liste.', 'Aktuell steht nichts auf der gemeinsamen Liste, {}.'.format(tiane.user), 'Gerade steht nichts auf der gemeinsamen Liste.', 'Gerade steht nichts auf der gemeinsamen Liste, {}.'.format(tiane.user)])
             tiane.say(ausgabe) #so weit, so gut
     else:
-        if 'setze' in text and 'auf die' in text or 'füge' in text and 'zu' in text:
+        if 'setze' in text and 'auf die' in text or 'fÃ¼ge' in text and 'zu' in text:
             item = get_item(text, tiane)
             if text != '_UNDO_':
                 ausgabe = ''
@@ -115,21 +159,32 @@ def handle(text, tiane, profile):
                     nutzerdictionary['liste'].append(item)
                 else:
                     nutzerdictionary['liste'] = item
-                ausgabe = random.choice(['In Ordnung, ich habe ' + str(item) + 'zur Liste hinzugefügt.', 'Alles klar, ich habe ' + str(item) + 'auf die Liste gesetzt.', 'Alles klar, {}, ich habe '.format(tiane.user) + str(item) + 'zur Liste hinzugefügt.', 'In Ordnung, {}, ich habe '.format(tiane.user) + str(item) + 'auf die Liste gesetzt.']) #
+                ausgabe = random.choice(['In Ordnung, ich habe ' + str(item) + 'zur Liste hinzugefÃ¼gt.', 'Alles klar, ich habe ' + str(item) + 'auf die Liste gesetzt.', 'Alles klar, {}, ich habe '.format(tiane.user) + str(item) + 'zur Liste hinzugefÃ¼gt.', 'In Ordnung, {}, ich habe '.format(tiane.user) + str(item) + 'auf die Liste gesetzt.']) #
                 tiane.say(ausgabe)
         elif 'steht' in text and 'auf' in text or 'was sagt die' in text or 'gibt' in text and 'auf' in text:
             aussage = get_aussage(text, tiane)
             if aussage != '':
-                ausgabe = 'Auf der Liste steht für dich ' + aussage + ', {}.'.format(tiane.user)
+                ausgabe = 'Auf der Liste steht fÃ¼r dich ' + aussage + ', {}.'.format(tiane.user)
             else:
-                ausgabe = random.choice(['Für dich steht aktuell nichts auf der Liste.', 'Für dich steht aktuell nichts auf der Liste, {}.'.format(tiane.user), 'Für dich steht gerade nichts auf der Liste.', 'Für dich steht gerade nichts auf der Liste, {}.'.format(tiane.user)])
+                ausgabe = random.choice(['FÃ¼r dich steht aktuell nichts auf der Liste.', 'FÃ¼r dich steht aktuell nichts auf der Liste, {}.'.format(tiane.user), 'FÃ¼r dich steht gerade nichts auf der Liste.', 'FÃ¼r dich steht gerade nichts auf der Liste, {}.'.format(tiane.user)])
             tiane.say(ausgabe)
 
 
-def isValid(text):
-    text = text.lower()
+def isValid(txt):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     if 'liste' in text:
-        if 'setze' in text and 'auf die' in text or 'füge' in text and 'zu' in text:
+        if 'setze' in text and 'auf die' in text or 'fÃ¼ge' in text and 'zu' in text:
             return True
         elif 'steht' in text and 'auf' in text or 'was sagt die' in text or 'gibt' in text and 'auf' in text:
             return True
@@ -139,7 +194,7 @@ def isValid(text):
 
 class Tiane:
     def __init__(self):
-        self.local_storage = {'liste': ['Mehl', 'Butter', 'Cornflakes', 'Äpfel kaufen'], 'users':{'Ferdi': {'name': 'Ferdi', 'liste': ['gefrorene himbeeren', 'chips und cola', 'Schokolade', 'Nudeln']},
+        self.local_storage = {'liste': ['Mehl', 'Butter', 'Cornflakes', 'Ã„pfel kaufen'], 'users':{'Ferdi': {'name': 'Ferdi', 'liste': ['gefrorene himbeeren', 'chips und cola', 'Schokolade', 'Nudeln']},
                                                                                                   'Klara': {'name': 'Klara', 'liste': ['zur oma gehen', 'Kuchen backen']}}}
         self.user = 'Ferdi'
         self.analysis = {'room': 'None', 'time': {'month': '09', 'hour': '05', 'year': '2018', 'minute': '00', 'day': '19'}, 'town': 'None'}
@@ -156,5 +211,3 @@ def main():
     handle('Was steht auf der Einkaufsliste', tiane, profile)
 if __name__ == '__main__':
     main()
-
-
