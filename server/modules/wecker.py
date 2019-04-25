@@ -146,7 +146,7 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    if 'weck ' or 'wecke ' in text:
+    if 'weck ' in text or 'wecke ' in text:
         return True
 
 class Tiane:
