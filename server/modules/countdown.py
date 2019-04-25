@@ -61,38 +61,6 @@ def get_date(text, tiane):
             tagesdifferenz = 'in ' + str(tagesanzahl) + ' Tagen'
     return tagesdifferenz
 
-def get_birthday(text, tiane):
-    now = datetime.datetime.now()
-    Tage = {'01': 'ersten', '02': 'zweiten', '03': 'dritten', '04': 'vierten', '05': 'fünften',
-            '06': 'sechsten', '07': 'siebten', '08': 'achten', '09': 'neunten', '10': 'zehnten',
-            '11': 'elften', '12': 'zwölften', '13': 'dreizehnten', '14': 'vierzehnten', '15': 'fünfzehnten',
-            '16': 'sechzehnten', '17': 'siebzehnten', '18': 'achtzehnten', '19': 'neunzehnten', '20': 'zwanzigsten',
-            '21': 'einundzwanzigsten', '22': 'zweiundzwanzigsten', '23': 'dreiundzwanzigsten', '24': 'vierundzwanzigsten',
-            '25': 'fünfundzwanzigsten', '26': 'sechsundzwanzigsten', '27': 'siebenundzwanzigsten', '28': 'achtundzwanzigsten',
-            '29': 'neunundzwanzigsten', '30': 'dreißigsten', '31': 'einunddreißigsten', '32': 'zweiunddreißigsten'}
-
-    Monate = {'01': 'Januar', '02': 'Februar', '03': 'März', '04': 'April', '05': 'Mai', '06': 'Juni',
-              '07': 'Juli', '08': 'August', '09': 'September', '10': 'Oktober', '11': 'November',
-              '12': 'Dezember'}
-    benutzer = tiane.user
-    date = benutzer.get('date_of_birth')
-    b_day = date.get('day')
-    b_month = date.get('month')
-    if b_day == 0 or b_month == 0:
-        antwort = 'Ich weiß leider nicht, wann der Geburtstag ist.'
-    else:
-        if b_day <= 9:
-            b_day = '0' + str(b_day)
-        else:
-            b_day = str(b_day)
-        tag = Tage.get(b_day)
-        if b_month <= 9:
-            b_month = '0' + str(b_month)
-        else:
-            b_month = str(b_month)
-        monat = Monate.get(b_month)
-        antwort = 'Geburtstag ist am ' + tag + ' ' + monat + '.'
-    return antwort
 
 def get_past_date(text, tiane):
     now = datetime.datetime.now()
@@ -155,10 +123,21 @@ def handle(text, tiane, profile):
         ausgabe = random.choice([datum + ' ist das Ereignis.', 'Das Ereignis ist ' + datum + '.'])
     tiane.say(ausgabe)
 
-def isValid(text):
-    text = text.lower()
+def isValid(txt):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     if 'wie' in text:
-        if 'lange' in text or 'tage' in text and 'viele' in text or 'wann' in text and 'geburtstag' in text:
+        if 'lange' in text or 'tage' in text and 'viele' in text:
             return True
 
 class Tiane:
@@ -179,3 +158,4 @@ def main():
     handle('Vor wie vielen Tagen war Ferdis Geburtstag', tiane, profile)
 if __name__ == '__main__':
     main()
+
