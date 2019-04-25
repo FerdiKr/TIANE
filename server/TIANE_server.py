@@ -56,6 +56,7 @@ class Modules:
             except:
                 traceback.print_exc()
                 print('[WARNING] Modul {} ist fehlerhaft und wurde übersprungen!'.format(name))
+                continue
             else:
                 if continuous == True:
                     print('[INFO] Fortlaufendes Modul {} geladen'.format(name))
@@ -86,6 +87,7 @@ class Modules:
                 except:
                     traceback.print_exc()
                     print('[WARNING] Modul {} (Nutzer: {}) ist fehlerhaft und wurde übersprungen!'.format(name, username))
+                    continue
                 else:
                     if continuous == True:
                         print('[INFO] Fortlaufendes Modul {} (Nutzer: {}) geladen'.format(name, username))
@@ -104,7 +106,7 @@ class Modules:
             usermodules[username] = modules
         return usermodules
 
-    def query_threaded(self, user, name, text, direct=False, origin_room=None):
+    def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None): #direct: True = Sprachaufruf
         if text == None or text == '':
             text = random.randint(0,1000000000)
             analysis = {}
@@ -122,7 +124,7 @@ class Modules:
             # Modul wurde direkt aufgerufen
             for module in self.common_modules:
                 if module.__name__ == name:
-                    Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room)
+                    Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                     mt = Thread(target=self.run_threaded_module, args=(text,module,))
                     mt.daemon = True
                     mt.start()
@@ -131,7 +133,7 @@ class Modules:
                     return True
             for module in self.user_modules[user]:
                 if module.__name__ == name:
-                    Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room)
+                    Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                     mt = Thread(target=self.run_threaded_module, args=(text,module,))
                     mt.daemon = True
                     mt.start()
@@ -140,10 +142,25 @@ class Modules:
                     return True
 
         # Kein Direktaufruf? Ganz normal die Module durchgehen...
+        # Bei Telegram-Aufrufen zuerst die entsprechenden telegram_isValids abklappern:
+        if origin_room == 'Telegram':
+            for module in self.common_modules:
+                try:
+                    if module.telegram_isValid(data):
+                        Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
+                        mt = Thread(target=self.run_threaded_module, args=(text,module,))
+                        mt.daemon = True
+                        mt.start()
+                        if direct:
+                            Tiane.add_to_context(user, module.__name__, Tiane.server_name, origin_room)
+                        return True
+                except:
+                    continue
+        # Ansonsten halt ohne spezielle Telegram-Features
         for module in self.common_modules:
             try:
                 if module.isValid(text):
-                    Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room)
+                    Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                     mt = Thread(target=self.run_threaded_module, args=(text,module,))
                     mt.daemon = True
                     mt.start()
@@ -153,13 +170,28 @@ class Modules:
             except:
                 traceback.print_exc()
                 print('[ERROR] Modul {} konnte nicht abgefragt werden!'.format(module.__name__))
-        if user is not None:
+
+        if user is not None and user in Userlist:
             # ... Und wenn wir nen Nutzer haben, können wir auch noch in seinen Modulen suchen
             if not user == 'Unknown':
+                # Bei Telegram-Aufrufen zuerst die entsprechenden telegram_isValids abklappern:
+                if origin_room == 'Telegram':
+                    for module in self.user_modules[user]:
+                        try:
+                            if module.telegram_isValid(data):
+                                Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
+                                mt = Thread(target=self.run_threaded_module, args=(text,module,))
+                                mt.daemon = True
+                                mt.start()
+                                if direct:
+                                    Tiane.add_to_context(user, module.__name__, Tiane.server_name, origin_room)
+                                return True
+                        except:
+                            continue
                 for module in self.user_modules[user]:
                     try:
                         if module.isValid(text):
-                            Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room)
+                            Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                             mt = Thread(target=self.run_threaded_module, args=(text,module,))
                             mt.daemon = True
                             mt.start()
@@ -176,7 +208,7 @@ class Modules:
         # korrekt interpretiert werden!
         if not analysis == {}:
             if not analysis['room'] == 'None':
-                return Tiane.route_query_modules(user, name, text, analysis['room'], direct=direct, origin_room=origin_room)
+                return Tiane.route_query_modules(user, name, text, analysis['room'], direct=direct, origin_room=origin_room, data=data)
 
         return False
 
@@ -299,11 +331,15 @@ class Modulewrapper:
     # halten müssen, z.B. welcher Nutzer das Modul aufgerufen hat. Diese Informationen
     # ergänzt diese Klasse und schleift ansonsten einfach alle von Modulen aus aufrufbaren
     # Funktionen an die Hauptinstanz von Tiane durch.
-    def __init__(self, text, analysis, user, origin_room):
+    def __init__(self, text, analysis, user, origin_room, data):
         self.text = text # original_command
         self.analysis = analysis
         self.user = user
         self.room = origin_room
+
+        self.telegram_data = data
+        self.telegram_call = True if data is not None else False
+        self.telegram = Tiane.telegram
 
         self.core = Tiane
         self.Analyzer = Tiane.Analyzer
@@ -316,18 +352,30 @@ class Modulewrapper:
         self.system_name = Tiane.system_name
         self.path = Tiane.path
 
-    def say(self, text, room=None, user=None):
+    def say(self, text, room=None, user=None, output='auto'):
         if user == None or user == 'Unknown':
             user = self.user
         if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
             room = self.room
-        Tiane.route_say(self.text, text, room, user)
+        if output == 'auto':
+            output = 'telegram' if self.room == 'Telegram' else 'speech'
+        Tiane.route_say(self.text, text, room, user, output)
 
-    def listen(self, user=None):
+    def listen(self, user=None, input='auto'):
         if user == None or user == 'Unknown':
             user = self.user
-        text = Tiane.route_listen(self.text, user)
+        if input == 'telegram' or (input == 'auto' and self.room == 'Telegram'):
+            response = Tiane.route_listen(self.text, user, telegram=True)
+            text = response['text']
+        else:
+            text = Tiane.route_listen(self.text, user)
         return text
+
+    def telegram_listen(self, user=None):
+        if user == None or user == 'Unknown':
+            user = self.user
+        response = Tiane.route_listen(self.text, user, telegram=True)
+        return response
 
     def end_Conversation(self):
         Tiane.end_Conversation(self.text)
@@ -356,6 +404,8 @@ class Modulewrapper_continuous:
         self.counter = 0
         self.user = user
 
+        self.telegram = Tiane.telegram
+
         self.core = Tiane
         self.Analyzer = Tiane.Analyzer
         self.rooms = Tiane.rooms
@@ -382,12 +432,15 @@ class TIANE:
     def __init__(self):
         self.Modules = Modules
         self.Analyzer = Analyzer
+        self.telegram = None
 
         self.active_modules = {}
         self.continuous_modules = {}
         self.rooms = Rooms
         self.other_devices = Other_devices
         self.devices_connecting = Devices_connecting
+        self.telegram_queued_users = [] # Bei diesen Nutzern wird auf eine Antwort gewartet
+        self.telegram_queue_output = {}
 
         self.local_storage = Local_storage
         self.userlist = Userlist
@@ -395,13 +448,76 @@ class TIANE:
         self.server_name = Server_name
         self.system_name = System_name
         self.path = Local_storage['TIANE_PATH']
+        self.open_mode = Open_mode
+
+    def telegram_thread(self):
+        # Verarbeitet eingehende Telegram-Nachrichten, weist ihnen Nutzer zu etc.
+        while True:
+            for msg in self.telegram.messages.copy():
+                #print(msg)
+
+                # Den TIANE-Nutzernamen aus der entsprechenden Tabelle laden
+                try:
+                    user = self.local_storage['TIANE_telegram_allowed_id_table'][msg['from']['id']]
+                except KeyError:
+                    # Nicht gefunden? Dürfen denn Nachrichten von Fremden angenommen werden?
+                    if self.open_mode:
+                        # Den Telegram-Nutzernamen als temporären Nutzernamen laden
+                        try:
+                            user = msg['from']['username']
+                        except KeyError:
+                            user = ''
+                        if user == '':
+                            # Gibt's auch nicht? Pech gehabt!
+                            print('[WARNING] Telegram-Nutzer-ID {} kann nicht auf {} zugreifen. \n'
+                                  'Unregistrierte Nutzer müssen einen Telegram-Benutzernamen eingerichtet haben!'.format(msg['from']['id'], self.system_name))
+                            self.telegram.messages.remove(msg)
+                            continue
+                        else:
+                            self.local_storage['TIANE_telegram_name_to_id_table'][user] = msg['from']['id']
+                    else:
+                        # Wenn kein Zugriff erlaubt ist, legen wir die Nachricht trotzdem auf die Halde, vielleicht hat irgendein Modul Verwendung dafür...
+                        self.local_storage['rejected_telegram_messages'].append(msg)
+                        try:
+                            print('[WARNING] Nachricht von unbekanntem Telegram-Nutzer {} ({}). Zugriff verweigert.'.format(msg['from']['username'], msg['from']['id']))
+                        except KeyError:
+                            print('[WARNING] Nachricht von unbekanntem Telegram-Nutzer ({}). Zugriff verweigert.'.format(msg['from']['id']))
+                        self.telegram.messages.remove(msg)
+                        continue
+
+                response = True
+                # Nachricht ist definitiv eine (ggf. eingeschobene) "neue Anfrage" ("Hey TIANE,...")
+                if msg['text'].lower().startswith(self.local_storage['activation_phrase'].lower()):
+                    response = self.route_query_modules(user, text=msg['text'], direct=True, origin_room='Telegram', data=msg)
+                # Nachricht ist gar keine Anfrage, sondern eine Antwort (bzw. ein Modul erwartet eine solche)
+                elif user in self.telegram_queued_users:
+                    self.telegram_queue_output[user] = msg
+                # Nachricht ist eine normale Anfrage
+                else:
+                    response = self.route_query_modules(user, text=msg['text'], direct=True, origin_room='Telegram', data=msg)
+                if response == False:
+                    self.telegram.say('Das habe ich leider nicht verstanden.', self.local_storage['TIANE_telegram_name_to_id_table'][user])
+                self.telegram.messages.remove(msg)
+            time.sleep(0.5)
 
     def start_module(self, user, name, text, room):
-        if user == None or user == 'Unknown':
-            user = random.choice(self.userlist)
         return self.route_query_modules(user, name=name, text=text, room=room)
 
-    def route_say(self, original_command, text, raum, user):
+    def route_say(self, original_command, text, raum, user, output):
+        if 'telegram' in output.lower():
+            if self.telegram is not None:
+                # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, an wen der Text gesendet werden soll. Einfach beenden.
+                if user == None or user == 'Unknown':
+                    print('[WARNING] Der Text "{}" konnte nicht gesendet werden, da kein Nutzer als Ziel angegeben wurde'.format(text))
+                    return
+                try:
+                    self.telegram.say(text, self.local_storage['TIANE_telegram_name_to_id_table'][user], output=output)
+                except KeyError:
+                    print('[WARNING] Der Text "{}" konnte nicht gesendet werden, da für den Nutzer "{}" keine Telegram-ID angegeben wurde'.format(text, user))
+                return
+            else:
+                print('[ERROR] Der Text "{}" sollte via Telegram gesendet werden, obwohl Telegram nicht eingerichtet ist!'.format(text))
+                return
         if raum == None:
             # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wo der Text gesagt werden soll. Einfach beenden.
             if user == None or user == 'Unknown':
@@ -446,48 +562,66 @@ class TIANE:
                         time.sleep(0.03)
                     return
 
-    def route_listen(self, original_command, user):
+    def route_listen(self, original_command, user, telegram=False):
         # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wem TIANE zuhören soll. Einfach beenden.
         if user == None or user == 'Unknown':
             print('[WARNING] Für einen Aufruf von tiane.listen() konnte kein user als Ziel ermittelt werden.')
             return 'TIMEOUT_OR_INVALID'
         # Tiane soll einem bestimmten user zuhören
         current_waiting_room = ('',None)
+        if self.telegram is not None:
+            if telegram:
+                # Dem Telegram-Thread Bescheid sagen, dass man auf eine Antwort wartet,
+                # aber erst, wenn kein anderer mehr wartet
+                while True:
+                    if not user in self.telegram_queued_users:
+                        self.telegram_queued_users.append(user)
+                        break
+                    time.sleep(0.03)
+        else:
+            telegram = False
         while True:
-            for name, room in self.rooms.items():
-                if user in room.users:
-                    if current_waiting_room[0] == '':
-                        current_waiting_room = (name,room)
-                        room.request_listen(original_command,user,send=True)
-                    if not name == current_waiting_room[0]:
-                        # Der Benutzer hat gerade den Raum gewechselt, das Gespräch muss folgen!
-                        current_waiting_room[1].request_listen(original_command,user,cancel=True,send=True)
-                        while True:
-                            cancel_response = current_waiting_room[1].request_listen(original_command, user, cancel=True)
-                            if not cancel_response == 'ongoing':
-                                break
-                            time.sleep(0.03)
-                        if not cancel_response == True:
-                            # Konnte nicht abgebrochen werden, wurde bereits gesagt
-                            return cancel_response # , die in diesem Fall nämlich praktischerweise die Antwort des Nutzers enthält...
-                        # Alles okay, wir fragen bei einem anderen Raum nach
-                        current_waiting_room[1].request_end_Conversation(original_command)
-                        current_waiting_room = (name,room)
-                        room.request_listen(original_command,user,send=True)
-                    response = room.request_listen(original_command, user)
-                    if not response == False:
-                        return response
-                time.sleep(0.03)
+            if telegram:
+                # Schauen, ob die Telegram-Antwort eingegangen ist
+                response = self.telegram_queue_output.pop(user, None)
+                if response is not None:
+                    self.telegram_queued_users.remove(user)
+                    return response
+            else:
+                for name, room in self.rooms.items():
+                    if user in room.users:
+                        if current_waiting_room[0] == '':
+                            current_waiting_room = (name,room)
+                            room.request_listen(original_command,user,send=True)
+                        if not name == current_waiting_room[0]:
+                            # Der Benutzer hat gerade den Raum gewechselt, das Gespräch muss folgen!
+                            current_waiting_room[1].request_listen(original_command,user,cancel=True,send=True)
+                            while True:
+                                cancel_response = current_waiting_room[1].request_listen(original_command, user, cancel=True)
+                                if not cancel_response == 'ongoing':
+                                    break
+                                time.sleep(0.03)
+                            if not cancel_response == True:
+                                # Konnte nicht abgebrochen werden, wurde bereits gesagt
+                                return cancel_response # , die in diesem Fall nämlich praktischerweise die Antwort des Nutzers enthält...
+                            # Alles okay, wir fragen bei einem anderen Raum nach
+                            current_waiting_room[1].request_end_Conversation(original_command)
+                            current_waiting_room = (name,room)
+                            room.request_listen(original_command,user,send=True)
+                        response = room.request_listen(original_command, user)
+                        if not response == False:
+                            return response
+            time.sleep(0.03)
 
-    def route_query_modules(self, user, name=None, text=None, room=None, direct=False, origin_room=None):
+    def route_query_modules(self, user, name=None, text=None, room=None, direct=False, origin_room=None, data=None): #direct: True = Sprachaufruf
         room, name = self.get_context(user, name, text, room, direct, origin_room)
         if not room == None:
             if room == self.server_name:
-                return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room)
+                return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room, data=data)
             else:
                 for room_name, raum in self.rooms.items():
                     if room_name.lower() == room.lower():
-                        response = raum.request_query_modules(user, name=name, text=text, direct=direct)
+                        response = raum.request_query_modules(user, name=name, text=text, direct=direct, origin_room=origin_room, data=data)
                         # Bin mir mit dem folgenden Abschnitt noch nicht ganz sicher. Eigentlich ist ein möglicher Zielraum doch (bei Sprachaufruf) das letzte,
                         # was durchsucht werden muss... oder meint get_context was anderes..? Sagen wir mal, das hier kann man entfernen, wenn das Programm mal gut über mehrere Räume getestet ist :)
                         '''if response == False:
@@ -640,12 +774,12 @@ class Room_Dock:
             else:
                 return False
 
-    def request_query_modules(self, user, name=None, text=None, direct=False):
+    def request_query_modules(self, user, name=None, text=None, direct=False, origin_room=None, data=None):
         if not text == None:
             original_command = text
         else:
             original_command = name
-        self.Clientconnection.send_buffer({'TIANE_room_query_modules':[{'original_command':original_command, 'user':user, 'text':text, 'name':name, 'direct':direct}]})
+        self.Clientconnection.send_buffer({'TIANE_room_query_modules':[{'original_command':original_command, 'user':user, 'text':text, 'name':name, 'direct':direct, 'origin_room':origin_room, 'data':data}]})
         while True:
             response = self.Clientconnection.readanddelete('TIANE_room_confirms_query_modules_{}'.format(original_command))
             if response is not None:
@@ -753,11 +887,11 @@ class Room_Dock:
             self.Clientconnection.send({'TIANE_server_info':information_dict})
 
     def thread_say(self, request):
-        Tiane.route_say(request['original_command'],request['text'],request['room'],request['user'])
+        Tiane.route_say(request['original_command'],request['text'],request['room'],request['user'], request['output'])
         self.Clientconnection.send({'TIANE_server_confirms_say_{}'.format(request['original_command']):True})
 
     def thread_listen(self, request):
-        response = Tiane.route_listen(request['original_command'],request['user'])
+        response = Tiane.route_listen(request['original_command'],request['user'], telegram=request['telegram'])
         self.Clientconnection.send({'TIANE_server_confirms_listen_{}'.format(request['original_command']):response})
 
     def recvall(self, sock, count):
@@ -885,6 +1019,12 @@ for name in Local_storage['users'].keys():
     Userlist.append(name)
 
 
+# !!!!!!!!!!!!!!!!! ACHTUNG !!!!!!!!!!!!!!!!! #
+# Open_mode ist nur für Vorführungen und stellt ein enormes Sicherheitsrisiko dar,
+# da so auch unautorisierte Nutzer Zugriff via Telegram haben!
+Open_mode = config_data['Open_mode']
+
+
 Devices_connecting = {}
 Rooms = {}
 Other_devices = {}
@@ -896,7 +1036,35 @@ Analyzer = Sentence_Analyzer(room_list=Room_list)
 Tiane = TIANE()
 Tiane.local_storage['TIANE_starttime'] = time.time()
 
-time.sleep(1)
+
+time.sleep(2)
+
+# ggf. das Telegram-Interface starten:
+if config_data['telegram']:
+    print('\n[INFO] Starte Telegram...\n')
+    if config_data['telegram_key'] == '':
+        print('[ERROR] Kein Telegram-Bot-Token angegeben!')
+    else:
+        from resources.telegram import TelegramInterface
+        Tiane.telegram = TelegramInterface(config_data['telegram_key'])
+        Tiane.telegram.start()
+        tgt = Thread(target=Tiane.telegram_thread)
+        tgt.daemon = True
+        tgt.start()
+        # Alle Nutzer, für die Telegram eingerichtet ist, unter ihren IDs speichern, und umgekehrt
+        telegram_id_table = {}
+        telegram_name_to_id_table = {}
+        for name, user in Local_storage['users'].items():
+            try:
+                if not user['telegram_id'] == 0:
+                    telegram_id_table[user['telegram_id']] = name
+                    telegram_name_to_id_table[name] = user['telegram_id']
+            except KeyError:
+                pass
+        Local_storage['TIANE_telegram_allowed_id_table'] = telegram_id_table
+        Local_storage['TIANE_telegram_name_to_id_table'] = telegram_name_to_id_table
+
+
 Tiane.Modules.start_continuous()
 
 # Setzt einen socket auf einem freien Port >= 50000 auf.
@@ -923,7 +1091,7 @@ while True:
     except KeyboardInterrupt:
         print('\n')
         break
-    # Ein entsprechendes Raum-Objekt erstellen und ihm die Verbindung überlassen
+    # Ein entsprechendes Geräte-Objekt erstellen und ihm die Verbindung überlassen
     Devices_connecting[addr] = Network_Device(conn, addr)
 
 sock.close()
