@@ -146,6 +146,18 @@ user_config_data['User_Info']['role'] = user_role
 print('Okay, der Nutzer "{}" wird "{}" sein.\n'.format(user_name, user_role))
 time.sleep(1)
 
+if server_config_data['telegram']:
+    default_id = user_config_data['User_Info']['telegram_id']
+    telegram_id = frage_nach_zahl('Bitte gib die Telegram-ID-Nummer dieses Nutzers ein (oder 0, wenn für diesen Nutzer kein Telegram-Zugang eingerichtet werden soll). '
+                                  'Tipp: Um deine ID herauszufinden, kannst du deinen Sprachassistenten einfach schon mal anschreiben und die ID aus der unvermeidlichen '
+                                  'Fehlermeldung entnehmen. [Standard ist "{}"]: '.format(default_id), default_id)
+    user_config_data['User_Info']['telegram_id'] = telegram_id
+    if telegram_id == 0:
+        print('Okay, für diesen Nutzer wird kein Telegram-Zugang eingerichtet.\n')
+    else:
+        print('Okay, {} wird den Nutzer "{}" an der Telegram-ID "{}" erkennen.\n'.format(system_name, user_name, telegram_id))
+    time.sleep(1)
+
 print('Die wichtigsten Schritte zur Einrichtung dieses Nutzers sind damit abgeschlossen.\n'
       'Im Anschluss werden nun noch einige persönliche Daten über den Nutzer abgefragt, die von bestimmten Modulen verwendet werden.\n'
       'Wenn du zu einer Frage keine Angaben machen möchtest, kannst du auch einfach [ENTER] drücken, ohne etwas einzugeben.\n'

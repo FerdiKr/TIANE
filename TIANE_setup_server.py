@@ -24,6 +24,21 @@ def ja_nein_frage(fragentext, default):
         else:
             print('Das habe ich leider nicht verstanden.')
 
+def frage_erfordert_antwort(fragentext):
+    while True:
+        eingabe = input(fragentext)
+        if eingabe == '' or eingabe == ' ':
+            print('Bitte gib etwas ein.')
+        else:
+            return eingabe
+
+def frage_mit_default(fragentext, default):
+    eingabe = input(fragentext)
+    if eingabe == '' or eingabe == ' ':
+        return default
+    else:
+        return eingabe
+
 def frage_nach_zahl(fragentext, default, allowed_answers=None):
     while True:
         eingabe = input(fragentext)
@@ -106,6 +121,22 @@ config_data['Local_storage']['server_name'] = server_name
 print('Okay, dein {}-Server wird {} heißen.\n'.format(system_name, server_name))
 time.sleep(1)
 
+default_phrase = config_data['Activation_Phrase']
+if default_phrase == '':
+    default_phrase = 'Hey ' + system_name + '!'
+activation_phrase = input('\nWie möchtest du {} in Zukunft ansprechen? [Standard ist "{}"]: '.format(system_name, default_phrase))
+if activation_phrase == '' or activation_phrase == ' ' or type(activation_phrase) != type('text'):
+    config_data['Activation_Phrase'] = default_phrase
+    activation_phrase = default_phrase
+else:
+    config_data['Activation_Phrase'] = activation_phrase
+config_data['Local_storage']['activation_phrase'] = activation_phrase
+print('Okay, du kannst {} später mit "{}" ansprechen.'.format(system_name, activation_phrase))
+time.sleep(0.5)
+print('(Info: Damit dein Sprachassistent auf diese Ansprache auch tatsächlich reagiert, musst du '
+      'zunächst ein Stimmmodell trainieren (siehe Installationsanleitung))\n')
+time.sleep(1)
+
 default_location = config_data['Home_location']
 if not default_location == 'None':
     location = input('\nBitte gib deinen Wohnort ein (optional, hilfreich für Funktionen wie Wettervorhersagen) [Standard ist "{}"]: '.format(default_location))
@@ -117,7 +148,7 @@ if not default_location == 'None':
 else:
     location = input('\nBitte gib deinen Wohnort ein (optional, hilfreich für Funktionen wie Wettervorhersagen): ')
     if location == '' or location == ' ' or type(location) != type('text'):
-        config_data['Home_location'] = default_name
+        config_data['Home_location'] = default_location
         location = default_location
     else:
         config_data['Home_location'] = location
@@ -152,9 +183,27 @@ else:
     key_len = frage_nach_zahl('Länge des Sicherheitsschlüssels (8, 16 oder 32) [Standard ist 32]: ', 32, allowed_answers=[8,16,32])
     print('Ein neuer Schlüssel der Länge {} wird generiert...\n'.format(key_len))
     config_data['TNetwork_Key'] = generate_key(key_len)
+    time.sleep(1.5)
+
+default = config_data['telegram']
+antwort = ja_nein_frage('Möchtest du deinen Sprachassistenten via Telegram anschreiben können (Voraussetzung: telepot installiert) [Ja / Nein]? [Standard ist "{}"]: '.format(tf2jn(default)), default)
+config_data['telegram'] = antwort
+if antwort == True:
+    print('Okay, du wirst später mit {} auf Telegram schreiben können. Dafür braucht dein Sprachassistent aber zuerst einen Telegram-Account: Schreibe dafür am besten einfach "@BotFather" auf Telegram an.\n'.format(system_name))
     time.sleep(1)
 
-print('Im letzten Schritt kannst du festlegen, welche der mitgelieferten optionalen Module dein Sprachassistent verwenden soll.\n'
+    default = config_data['telegram_key']
+    if default == '':
+        key = frage_erfordert_antwort('Bitte füge das Bot-Token ein, das du von @BotFather erhalten hast: ')
+    else:
+        key = frage_mit_default('Bitte füge das Bot-Token ein, das du von @BotFather erhalten hast [Standard ist "{}"]: '.format(default), default)
+    config_data['telegram_key'] = key
+    print('\n')
+else:
+    print('Okay, für {} wird keine Telegram-Unterstützung eingerichtet.\n'.format(system_name))
+time.sleep(1)
+
+print('\nIm letzten Schritt kannst du festlegen, welche der mitgelieferten optionalen Module dein Sprachassistent verwenden soll.\n'
       'Du kannst die verwendeten Module jederzeit im Ordner "server/modules(/continuous)" einsehen und bearbeiten, '
       'optionale Module, die du bei dieser Einrichtung noch nicht auswählst, finden sich im Ordner "server/resources/optional_modules".')
 text = input('[ENTER drücken zum fortfahren]')
