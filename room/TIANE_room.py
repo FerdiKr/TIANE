@@ -56,6 +56,7 @@ class Modules:
             except:
                 traceback.print_exc()
                 print('[WARNING] Modul {} ist fehlerhaft und wurde übersprungen!'.format(name))
+                continue
             else:
                 if continuous == True:
                     print('[INFO] Fortlaufendes Modul {} geladen'.format(name))
@@ -72,8 +73,9 @@ class Modules:
         return modules
 
 
-    def query_threaded(self, user, name, text, direct=False): # direct: Es handelt sich um einen direkten Sprachaufruf des Moduls. Etwas unintuitiv, da ich manchmal auch
-                                                              # von einem Direktaufruf spreche, wenn das Modul "gezielt", also direkt, über start_module aufgerufen wird...
+    def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None): # direct: Es handelt sich um einen direkten Sprachaufruf des Moduls. Etwas unintuitiv, da ich manchmal auch
+                                                                                           # von einem Direktaufruf spreche, wenn das Modul "gezielt", also direkt, über start_module aufgerufen wird...
+                                                                                           # origin_room ist hauptsächlich dafür da, dass es "Telegram" sein kann, damit Module wissen, wie sie zu antworten haben
         if text == None:
             text = random.randint(0,1000000000)
             analysis = {}
@@ -88,20 +90,35 @@ class Modules:
             # Modul wurde per start_module aufgerufen
             for module in self.modules:
                 if module.__name__ == name:
-                    Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user)
+                    Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                     mt = Thread(target=self.run_threaded_module, args=(text,module,))
                     mt.daemon = True
                     mt.start()
                     if direct:
                         Tiane.Serverconnection.send_buffer({'TIANE_context':[{'user':user, 'module':module.__name__, 'room':Tiane.room_name}]})
                     return True
-            print('[ERROR] Das Modul {} konnte nicht gestartet werden!'.format(name))
+            print('[ERROR] Das Modul {} konnte nicht gefunden werden!'.format(name))
         elif not text == None:
             # Ganz normal die Module abklingeln
+            # Bei Telegram-Aufrufen zuerst die entsprechenden telegram_isValids abklappern:
+            if origin_room == 'Telegram':
+                for module in self.common_modules:
+                    try:
+                        if module.telegram_isValid(data):
+                            Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
+                            mt = Thread(target=self.run_threaded_module, args=(text,module,))
+                            mt.daemon = True
+                            mt.start()
+                            if direct:
+                                Tiane.add_to_context(user, module.__name__, Tiane.server_name, origin_room)
+                            return True
+                    except:
+                        continue
+            # Ansonsten halt ohne spezielle Telegram-Features
             for module in self.modules:
                 try:
                     if module.isValid(text):
-                        Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user)
+                        Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                         mt = Thread(target=self.run_threaded_module, args=(text,module,))
                         mt.daemon = True
                         mt.start()
@@ -318,7 +335,7 @@ class TIANE:
                         query_requests.append(request)
             # Aufträge bearbeiten
             for request in query_requests:
-                response = self.Modules.query_threaded(request['user'], request['name'], request['text'], direct=request['direct'])
+                response = self.Modules.query_threaded(request['user'], request['name'], request['text'], direct=request['direct'], origin_room=request['origin_room'], data=request['data'])
                 self.Serverconnection.send({'TIANE_room_confirms_query_modules_{}'.format(request['original_command']):response})
                 query_requests.remove(request)
 
@@ -351,15 +368,15 @@ class TIANE:
 
             time.sleep(0.03)
 
-    def request_say(self, original_command, text, raum, user):
-        self.Serverconnection.send_buffer({'TIANE_server_say':[{'original_command':original_command,'text':text,'room':raum,'user':user}]})
+    def request_say(self, original_command, text, raum, user, output):
+        self.Serverconnection.send_buffer({'TIANE_server_say':[{'original_command':original_command,'text':text,'room':raum,'user':user,'output':output}]})
         while not self.Serverconnection.readanddelete('TIANE_server_confirms_say_{}'.format(original_command)) == True:
             if not self.Serverconnection.connected:
                 raise ConnectionAbortedError
             time.sleep(0.03)
 
-    def request_listen(self, original_command, user):
-        self.Serverconnection.send_buffer({'TIANE_server_listen':[{'original_command':original_command,'user':user}]})
+    def request_listen(self, original_command, user, telegram=False):
+        self.Serverconnection.send_buffer({'TIANE_server_listen':[{'original_command':original_command,'user':user,'telegram':telegram}]})
         while True:
             response = self.Serverconnection.readanddelete('TIANE_server_confirms_listen_{}'.format(original_command))
             if response is not None:
@@ -441,10 +458,14 @@ class Modulewrapper:
     # halten müssen, z.B. welcher Nutzer das Modul aufgerufen hat. Diese Informationen
     # ergänzt diese Klasse und schleift ansonsten einfach alle von Modulen aus aufrufbaren
     # Funktionen an die Hauptinstanz von Tiane durch.
-    def __init__(self, text, analysis, user):
+    def __init__(self, text, analysis, user, origin_room, data):
         self.text = text # original_command
         self.analysis = analysis
         self.user = user
+        self.room = origin_room # !!!
+
+        self.telegram_data = data
+        self.telegram_call = True if data is not None else False
 
         self.core = Tiane
         self.Analyzer = Tiane.Analyzer
@@ -460,18 +481,30 @@ class Modulewrapper:
         self.system_name = Tiane.system_name
         self.path = Tiane.path
 
-    def say(self, text, room=None, user=None):
+    def say(self, text, room=None, user=None, output='auto'):
         if user == None or user == 'Unknown':
             user = self.user
         if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
             room = self.room_name
-        Tiane.request_say(self.text, text, room, user)
+        if output == 'auto':
+            output = 'telegram' if self.room == 'Telegram' else 'speech'
+        Tiane.request_say(self.text, text, room, user, output)
 
-    def listen(self, user=None):
+    def listen(self, user=None, input='auto'):
         if user == None or user == 'Unknown':
             user = self.user
-        text = Tiane.request_listen(self.text, user)
+        if input == 'telegram' or (input == 'auto' and self.room == 'Telegram'):
+            response = Tiane.request_listen(self.text, user, telegram=True)
+            text = response['text']
+        else:
+            text = Tiane.request_listen(self.text, user)
         return text
+
+    def telegram_listen(self, user=None):
+        if user == None or user == 'Unknown':
+            user = self.user
+        response = Tiane.request_listen(self.text, user, telegram=True)
+        return response
 
     def end_Conversation(self):
         Tiane.request_end_Conversation(self.text)
