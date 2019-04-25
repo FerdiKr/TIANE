@@ -9,6 +9,7 @@
         "day": 0
       },
       "role": "USER",
-      "uid": 0
+      "uid": 0,
+      "telegram_id": 0
   }
 }
