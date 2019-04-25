@@ -111,10 +111,10 @@ class Modules:
             text = random.randint(0,1000000000)
             analysis = {}
         else:
-            print(text)
+            print('\n--{}-- ({}): {}'.format(user.upper(), origin_room, text))
             try:
                 analysis = Tiane.Analyzer.analyze(str(text))
-                print(analysis)
+                print('Analyse: ' + str(analysis))
             except:
                 traceback.print_exc()
                 print('[ERROR] Satzanalyse fehlgeschlagen!\n')
