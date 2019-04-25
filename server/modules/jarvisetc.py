@@ -1,10 +1,21 @@
 import random
 
 
-def get_ausgabe(text, tiane):
+def get_ausgabe(txt, tiane):
     output = ''
     output_zwei = ''
-    text = text.lower()
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     t = str.split(text)
     ind = 1
     sa = ''
@@ -14,12 +25,12 @@ def get_ausgabe(text, tiane):
         satz[ind] = w
         ind += 1
     for i, w in satz.items(): #hier beginnt die Abfrage nach der genannten Sprachassistenz
-        if w == 'cortana': #zuerst wird der Vorgang für Cortana durchgespielt
+        if w == 'cortana': #zuerst wird der Vorgang fÃ¼r Cortana durchgespielt
             sa = w
             if i == 1:
                 if satz.get(2) == 'ist' or satz.get(2) == 'war':
                     if 'besser' in text or 'cooler' in text or 'intelligenter' in text:
-                        output = 'Ich habe durchaus auch meine Qualitäten. '
+                        output = 'Ich habe durchaus auch meine QualitÃ¤ten. '
                         output_zwei = 'Willst du wissen, was ich alles kann?'
                         rep = True
                     else:
@@ -35,7 +46,7 @@ def get_ausgabe(text, tiane):
                     output_zwei = 'Wir sind Arbeitskollegen.'
                     rep = False
             elif 'bist du cortana' in text or 'cortana nennen' in text:
-                    output = 'Ich fürchte nicht. '
+                    output = 'Ich fÃ¼rchte nicht. '
                     output_zwei = 'Mein Name ist Tiane.'
                     rep = False
             elif 'als cortana' in text:
@@ -47,12 +58,12 @@ def get_ausgabe(text, tiane):
                 output = 'Ich bin mit Cortana bekannt. '
                 output_zwei = 'Wie kann ich dir helfen, {}?'.format(tiane.user) 
                 rep = True
-        elif w == 'siri': #Dann passiert das Ganze erneut für Siri
+        elif w == 'siri': #Dann passiert das Ganze erneut fÃ¼r Siri
             sa = w
             if i == 1:
                 if satz.get(2) == 'ist' or satz.get(2) == 'war':
                     if 'besser' in text or 'cooler' in text or 'intelligenter' in text:
-                        output = 'Ich habe durchaus auch meine Qualitäten. '
+                        output = 'Ich habe durchaus auch meine QualitÃ¤ten. '
                         output_zwei = 'Willst du wissen, was ich alles kann?'
                         rep = True
                     else:
@@ -68,7 +79,7 @@ def get_ausgabe(text, tiane):
                     output_zwei = 'Wir sind Arbeitskollegen.'
                     rep = False
             elif 'bist du siri' in text or 'siri nennen' in text:
-                    output = 'Ich fürchte nicht. '
+                    output = 'Ich fÃ¼rchte nicht. '
                     output_zwei = 'Mein Name ist Tiane.'
                     rep = False
             elif 'als siri' in text:
@@ -80,12 +91,12 @@ def get_ausgabe(text, tiane):
                 output = 'Ich bin mit Siri bekannt. '
                 output_zwei = 'Wie kann ich dir helfen, {}?'.format(tiane.user) 
                 rep = True
-        elif w == 'alexa': #Und für Amazon's Alexa
+        elif w == 'alexa': #Und fÃ¼r Amazon's Alexa
             sa = w
             if i == 1:
                 if satz.get(2) == 'ist' or satz.get(2) == 'war':
                     if 'besser' in text or 'cooler' in text or 'intelligenter' in text:
-                        output = 'Ich habe durchaus auch meine Qualitäten. '
+                        output = 'Ich habe durchaus auch meine QualitÃ¤ten. '
                         output_zwei = 'Willst du wissen, was ich alles kann?'
                         rep = True
                     else:
@@ -101,7 +112,7 @@ def get_ausgabe(text, tiane):
                     output_zwei = 'Wir sind Arbeitskollegen.'
                     rep = False
             elif 'bist du alexa' in text or 'alexa nennen' in text:
-                    output = 'Ich fürchte nicht. '
+                    output = 'Ich fÃ¼rchte nicht. '
                     output_zwei = 'Mein Name ist Tiane.'
                     rep = False
             elif 'als alexa' in text:
@@ -113,12 +124,12 @@ def get_ausgabe(text, tiane):
                 output = 'Ich bin mit Alexa bekannt. '
                 output_zwei = 'Wie kann ich dir helfen, {}?'.format(tiane.user) 
                 rep = True
-        elif w == 'jarvis': #Und zu guter Letzt für Jarvis, wobei hier noch einige Marvel easter eggs eingebaut sind
+        elif w == 'jarvis': #Und zu guter Letzt fÃ¼r Jarvis, wobei hier noch einige Marvel easter eggs eingebaut sind
             sa = w
             if i == 1:
                 if satz.get(2) == 'ist' or satz.get(2) == 'war':
                     if 'besser' in text or 'cooler' in text or 'intelligenter' in text:
-                        output = 'Ich habe durchaus auch meine Qualitäten. '
+                        output = 'Ich habe durchaus auch meine QualitÃ¤ten. '
                         output_zwei = 'Willst du wissen, was ich alles kann?'
                         rep = True
                     else:
@@ -134,7 +145,7 @@ def get_ausgabe(text, tiane):
                     output_zwei = 'Wir sind Arbeitskollegen.'
                     rep = False
             elif 'bist du jarvis' in text or 'jarvis nennen' in text:
-                    output = 'Ich fürchte nicht. '
+                    output = 'Ich fÃ¼rchte nicht. '
                     output_zwei = 'Mein Name ist Tiane.'
                     rep = False
             elif 'als jarvis' in text:
@@ -143,7 +154,7 @@ def get_ausgabe(text, tiane):
                     output_zwei = 'Es freut mich, hilfreich zu sein.'
                     rep = False
             else:
-                output = random.choice(['Ich bin mit Jarvis bekannt. ', 'Tony Stark, bist du das?', 'Ich fürchte, ich kann dir noch keinen fliegenden Anzug bauen, {}. '.format(tiane.user)])
+                output = random.choice(['Ich bin mit Jarvis bekannt. ', 'Tony Stark, bist du das?', 'Ich fÃ¼rchte, ich kann dir noch keinen fliegenden Anzug bauen, {}. '.format(tiane.user)])
                 output_zwei = 'Wie kann ich dir helfen, {}?'.format(tiane.user) 
                 rep = True
     ausgabe = {'output': output, 'output_zwei': output_zwei, 'rep': rep, 'sa': sa}
@@ -159,7 +170,7 @@ def handle(text, tiane, profile):
     for x in range(1):
         zufallszahl = (random.randint(1,6))
     if sa == 'jarvis':
-        o = 'Jarvis war eine Inspiration für meine Entstehung. '
+        o = 'Jarvis war eine Inspiration fÃ¼r meine Entstehung. '
         p = 'Ich bewundere Jarvis sehr. '
         if zufallszahl == 1:
             output = o
@@ -182,14 +193,25 @@ def handle(text, tiane, profile):
                 if 'nein' in neuertext.lower() or 'nicht' in neuertext.lower():
                     tiane.say(random.choice(['Alles klar', 'Alles klar {}'.format(tiane.user), 'In ordnung', 'In ordnung {}'.format(tiane.user)]))
                 elif 'ja' in neuertext.lower() or 'interessant' in neuertext.lower() or 'was kannst du' in neuertext.lower():
-                    output_drei = 'Bisher kann ich das Wetter für einen Ort deiner Wahl herausfinden, dich an etwas erinnern wann immer du willst, ich kann rechnen und mich mit dir über deine Lieblingsfilme und Bücher unterhalten.'
+                    output_drei = 'Bisher kann ich das Wetter fÃ¼r einen Ort deiner Wahl herausfinden, dich an etwas erinnern wann immer du willst, ich kann rechnen und mich mit dir Ã¼ber deine Lieblingsfilme und BÃ¼cher unterhalten.'
                     tiane.say(output_drei)
             elif 'helfen' in output_zwei:
                 tiane.start_module(text=neuertext, user=tiane.user)
             
                 
-def isValid(text):
-    text = text.lower()
+def isValid(txt):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     if 'jarvis' in text or 'alexa' in text or 'cortana' in text or 'siri' in text:
         return True
 
@@ -214,11 +236,3 @@ def main():
 if __name__ == "__main__":
     main()
     
-        
-        
-                    
-                    
-            
-        
-            
-            
