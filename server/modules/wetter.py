@@ -5,7 +5,6 @@ import ast
 import re
 
 
-
 def get_weather(place):
     place = place.lower()
     w = ''
@@ -61,14 +60,14 @@ def get_temperature(pl):
 def handle(text, tiane, profile):
     o = tiane.analysis['town']
     if o == 'None':
-        tiane.say('Für welchen Ort möchtest du das Wetter erfahren?')
+        tiane.say('FÃ¼r welchen Ort mÃ¶chtest du das Wetter erfahren?')
         antwort = tiane.listen()
         if antwort == 'TIMEOUT_OR_INVALID':
             tiane.say('Ich konnte den Ort leider nicht verstehen')
         else:
             antwort = antwort.lower()
             if len(antwort.split()) == 1:
-                o = antwort
+                o = antwort 
             elif 'hier' in antwort or 'zu hause' in antwort:
                 o = 'weitersburg'
             else:
@@ -77,10 +76,10 @@ def handle(text, tiane, profile):
                 mind = 0
                 falsches_in = 0
                 i = str.split(antwort)
-                ind = 1
+                ind = 1 
                 for w in i:
-                    satz[ind] = w
-                    ind += 1
+                    satz[ind] = w 
+                    ind += 1 
                 for iindex, word in satz.items():
                     if word in sonst:
                         mind = mind + iindex
@@ -89,52 +88,59 @@ def handle(text, tiane, profile):
                         falsches_in = falsches_in + iindex
                 if falsches_in >= 1:
                     del satz[falsches_in]
-                for iindex, word in satz.items(): #findet Wort 'in''s key
+                for iindex, word in satz.items(): #findet Wort 'in''s key 
                     if word == 'in':
                         in_index = iindex
                         myind = in_index + 1
                         o = satz.get(myind)
-                    elif word == 'für':
-                        für_index = iindex
-                        myind = für_index + 1
+                    elif word == 'fÃ¼r':
+                        fÃ¼r_index = iindex
+                        myind = fÃ¼r_index + 1
                         o = satz.get(myind)
     else:
         o = o
-    if o != 'None':
-        ort = o.lower()
-        web = 'http://api.openweathermap.org/data/2.5/weather?q=' + ort + '&appid=bd4d17c6eedcff6efc70b9cefda99082'
-        request = Request(web)
-        try:
-            response = urlopen(request)
-        except:
-            tiane.say('Ich konnte das Wetter für den Ort {} leider nicht aufrufen.'.format(o))
-            return
-        html = response.read()
-        html = str(html)
-        ohneb = html[2:len(html)-1]
-        dictionary = ast.literal_eval(ohneb)
-
-        line = dictionary.get("weather")
-        des = line[0].get("description")
-        line2 = dictionary.get("main")
-        des2 = line2.get("temp")
-        weatherdescription = get_weather(des)
-        temperature = get_temperature(int(des2))
-        if temperature[1] == '.':
-            temperature = temperature[0]
-        if weatherdescription == 'bedeckt' or weatherdescription == 'teils wolkig' or weatherdescription == 'wolkig' or weatherdescription == 'klar' or weatherdescription == 'regnerisch' or weatherdescription == 'neblig' or weatherdescription == 'einen Waldbrand geben' or weatherdescription == 'stürmisch':
-            wetter = 'Es ist ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
-        else:
-            wetter = 'Es gibt ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
-        tiane.say(wetter)
-
-        response.close()
-
+    ort = o.lower()
+    web = 'http://api.openweathermap.org/data/2.5/weather?q=' + ort + '&appid=bd4d17c6eedcff6efc70b9cefda99082'
+    request = Request(web)
+    try:
+        response = urlopen(request)
+    except:
+        tiane.say('Ich konnte das Wetter fÃ¼r den Ort {} leider nicht aufrufen.'.format(o))
+        return
+    html = response.read()
+    html = str(html)
+    ohneb = html[2:len(html)-1]
+    dictionary = ast.literal_eval(ohneb)
+    
+    line = dictionary.get("weather")
+    des = line[0].get("description")
+    line2 = dictionary.get("main")
+    des2 = line2.get("temp")
+    weatherdescription = get_weather(des)
+    temperature = get_temperature(int(des2))
+    if temperature[1] == '.':
+        temperature = temperature[0]
+    if weatherdescription == 'bedeckt' or weatherdescription == 'teils wolkig' or weatherdescription == 'wolkig' or weatherdescription == 'klar' or weatherdescription == 'regnerisch' or weatherdescription == 'neblig' or weatherdescription == 'einen Waldbrand geben' or weatherdescription == 'stÃ¼rmisch':
+        wetter = 'Es ist ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
     else:
-        tiane.say('Ich konnte den Ort leider nicht verstehen')
+        wetter = 'Es gibt ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
+    tiane.say(wetter)
 
-def isValid(text):
-    text = text.lower()
+    response.close()
+
+def isValid(txt):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     if 'ist ' in text or 'haben ' in text:
         if 'wetter' in text or 'temperatur' in text or ' warm' in text or ' kalt' in text:
             return True
@@ -155,7 +161,6 @@ def main():
     profile = {}
     tiane = Tiane()
     handle('Wie ist das Wetter', tiane, profile)
-
-
+      
 if __name__ == "__main__":
     main()
