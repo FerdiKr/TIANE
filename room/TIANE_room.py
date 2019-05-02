@@ -500,6 +500,17 @@ class Modulewrapper:
             text = Tiane.request_listen(self.text, user)
         return text
 
+    def asynchronous_say(self, text, room=None, user=None, output='auto'):
+        if user == None or user == 'Unknown':
+            user = self.user
+        if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
+            room = self.room
+        if output == 'auto':
+            output = 'telegram' if self.room == 'Telegram' else 'speech'
+        st = Thread(target=Tiane.request_say, args=(self.text, text, room, user, output))
+        st.daemon = True
+        st.start()
+
     def telegram_listen(self, user=None):
         if user == None or user == 'Unknown':
             user = self.user
