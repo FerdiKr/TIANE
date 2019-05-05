@@ -34,9 +34,9 @@ def get_item(txt, tiane):
                             mind += 1
                         else:
                             break
-    elif 'fÃ¼g' in eingabe and 'zu' in eingabe:
+    elif 'füg' in eingabe and 'zu' in eingabe:
         for iindex, word in satz.items():
-            if word == 'fÃ¼g' or word == 'fÃ¼ge':
+            if word == 'füg' or word == 'füge':
                 start = iindex
                 for iindex, word in satz.items():
                     if iindex == start + mind:
@@ -129,7 +129,7 @@ def handle(txt, tiane, profile):
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
     if 'gemeinsame' in text and 'liste' in text:
-        if 'setze' in text and 'auf die' in text or 'fÃ¼ge' in text and 'zu' in text:
+        if 'setze' in text and 'auf die' in text or 'füg' in text and 'zu' in text:
             item = get_item(text, tiane)
             if text != '_UNDO_':
                 ausgabe = ''
@@ -138,7 +138,7 @@ def handle(txt, tiane, profile):
                     tiane.local_storage['liste'].append(item)
                 else:
                     tiane.local_storage['liste'] = item
-                ausgabe = random.choice(['In Ordnung, ich habe ' + str(item) + 'zur gemeinsamen Liste hinzugefÃ¼gt.', 'Alles klar, ich habe ' + str(item) + 'auf die gemeinsame Liste gesetzt.', 'Alles klar, {}, ich habe '.format(tiane.user) + str(item) + 'zur gemeinsamen Liste hinzugefÃ¼gt.', 'In Ordnung, {}, ich habe '.format(tiane.user) + str(item) + 'auf die gemeinsame Liste gesetzt.']) #
+                ausgabe = random.choice(['In Ordnung, ich habe ' + str(item) + 'zur gemeinsamen Liste hinzugefügt.', 'Alles klar, ich habe ' + str(item) + 'auf die gemeinsame Liste gesetzt.', 'Alles klar, {}, ich habe '.format(tiane.user) + str(item) + 'zur gemeinsamen Liste hinzugefügt.', 'In Ordnung, {}, ich habe '.format(tiane.user) + str(item) + 'auf die gemeinsame Liste gesetzt.']) #
                 tiane.say(ausgabe)
         elif 'steht' in text and 'auf' in text or 'was sagt die' in text or 'gibt' in text and 'auf' in text:
             aussage = get_aussage_gemeinsam(text, tiane)
@@ -146,9 +146,9 @@ def handle(txt, tiane, profile):
                 ausgabe = 'Auf der geimeinsamen Liste steht ' + aussage + ', {}.'.format(tiane.user)
             else:
                 ausgabe = random.choice(['Aktuell steht nichts auf der gemeinsamen Liste.', 'Aktuell steht nichts auf der gemeinsamen Liste, {}.'.format(tiane.user), 'Gerade steht nichts auf der gemeinsamen Liste.', 'Gerade steht nichts auf der gemeinsamen Liste, {}.'.format(tiane.user)])
-            tiane.say(ausgabe) #so weit, so gut
+            tiane.say(ausgabe) 
     else:
-        if 'setze' in text and 'auf die' in text or 'fÃ¼ge' in text and 'zu' in text:
+        if 'setze' in text and 'auf die' in text or 'füge' in text and 'zu' in text:
             item = get_item(text, tiane)
             if text != '_UNDO_':
                 ausgabe = ''
@@ -159,14 +159,14 @@ def handle(txt, tiane, profile):
                     nutzerdictionary['liste'].append(item)
                 else:
                     nutzerdictionary['liste'] = item
-                ausgabe = random.choice(['In Ordnung, ich habe ' + str(item) + 'zur Liste hinzugefÃ¼gt.', 'Alles klar, ich habe ' + str(item) + 'auf die Liste gesetzt.', 'Alles klar, {}, ich habe '.format(tiane.user) + str(item) + 'zur Liste hinzugefÃ¼gt.', 'In Ordnung, {}, ich habe '.format(tiane.user) + str(item) + 'auf die Liste gesetzt.']) #
+                ausgabe = random.choice(['In Ordnung, ich habe ' + str(item) + 'zur Liste hinzugefügt.', 'Alles klar, ich habe ' + str(item) + 'auf die Liste gesetzt.', 'Alles klar, {}, ich habe '.format(tiane.user) + str(item) + 'zur Liste hinzugefügt.', 'In Ordnung, {}, ich habe '.format(tiane.user) + str(item) + 'auf die Liste gesetzt.']) 
                 tiane.say(ausgabe)
         elif 'steht' in text and 'auf' in text or 'was sagt die' in text or 'gibt' in text and 'auf' in text:
             aussage = get_aussage(text, tiane)
             if aussage != '':
-                ausgabe = 'Auf der Liste steht fÃ¼r dich ' + aussage + ', {}.'.format(tiane.user)
+                ausgabe = 'Auf der Liste steht für dich ' + aussage + ', {}.'.format(tiane.user)
             else:
-                ausgabe = random.choice(['FÃ¼r dich steht aktuell nichts auf der Liste.', 'FÃ¼r dich steht aktuell nichts auf der Liste, {}.'.format(tiane.user), 'FÃ¼r dich steht gerade nichts auf der Liste.', 'FÃ¼r dich steht gerade nichts auf der Liste, {}.'.format(tiane.user)])
+                ausgabe = random.choice(['Für dich steht aktuell nichts auf der Liste.', 'Für dich steht aktuell nichts auf der Liste, {}.'.format(tiane.user), 'Für dich steht gerade nichts auf der Liste.', 'Für dich steht gerade nichts auf der Liste, {}.'.format(tiane.user)])
             tiane.say(ausgabe)
 
 
@@ -184,7 +184,7 @@ def isValid(txt):
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
     if 'liste' in text:
-        if 'setze' in text and 'auf die' in text or 'fÃ¼ge' in text and 'zu' in text:
+        if 'setze' in text and 'auf die' in text or 'füge' in text and 'zu' in text:
             return True
         elif 'steht' in text and 'auf' in text or 'was sagt die' in text or 'gibt' in text and 'auf' in text:
             return True
@@ -194,7 +194,7 @@ def isValid(txt):
 
 class Tiane:
     def __init__(self):
-        self.local_storage = {'liste': ['Mehl', 'Butter', 'Cornflakes', 'Ã„pfel kaufen'], 'users':{'Ferdi': {'name': 'Ferdi', 'liste': ['gefrorene himbeeren', 'chips und cola', 'Schokolade', 'Nudeln']},
+        self.local_storage = {'liste': ['Mehl', 'Butter', 'Cornflakes', 'Äpfel kaufen'], 'users':{'Ferdi': {'name': 'Ferdi', 'liste': ['gefrorene himbeeren', 'chips und cola', 'Schokolade', 'Nudeln']},
                                                                                                   'Klara': {'name': 'Klara', 'liste': ['zur oma gehen', 'Kuchen backen']}}}
         self.user = 'Ferdi'
         self.analysis = {'room': 'None', 'time': {'month': '09', 'hour': '05', 'year': '2018', 'minute': '00', 'day': '19'}, 'town': 'None'}
