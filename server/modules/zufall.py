@@ -16,7 +16,7 @@ def output(txt, tiane):
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
     t = str.split(text)
-    if 'wirf die mÃ¼nze' in text or 'was sagt die mÃ¼nze' in text or 'frag die mÃ¼nze' in text:
+    if 'wirf die münze' in text or 'was sagt die münze' in text or 'frag die münze' in text:
         q = random.randint(1,2)
         if q == 1:
             output = 'kopf'
@@ -28,7 +28,7 @@ def output(txt, tiane):
             output = 'kopf'
         else:
             output = 'zahl'
-    elif 'wÃ¼rfel' in text or 'alea iacta est' in text:
+    elif 'würfel' in text or 'alea iacta est' in text:
         q = random.randint(1,6)
         if q == 1:
             output = 'eins'
@@ -39,7 +39,7 @@ def output(txt, tiane):
         elif q == 4:
             output = 'vier'
         elif q == 5:
-            output = 'fÃ¼nf'
+            output = 'fünf'
         else:
             output = 'sechs'
     return output
@@ -61,7 +61,7 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    if 'mÃ¼nze' in text or 'kopf' in text or 'zahl' in text or 'wÃ¼rfel' in text:
+    if 'münze' in text or 'kopf' in text or 'zahl' in text or 'würfel' in text:
         return True
 
 class Tiane:
@@ -79,7 +79,7 @@ class Tiane:
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Tiane wirf die mÃ¼nze', tiane, profile)
+    handle('Tiane wirf die münze', tiane, profile)
 
 if __name__ == '__main__':
     main()
