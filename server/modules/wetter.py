@@ -35,7 +35,7 @@ def get_weather(place):
     elif 'smoke' in place:
         w = w + 'Waldbrand'
     elif 'storm' or 'stormy' in place:
-        w = w + 'stuermisch'
+        w = w + 'stürmisch'
     elif 'thunderstorm' in place:
         w = w + 'Gewitter'
     elif 'snow' or 'snowy' or 'snowfall' in place:
@@ -60,7 +60,7 @@ def get_temperature(pl):
 def handle(text, tiane, profile):
     o = tiane.analysis['town']
     if o == 'None':
-        tiane.say('FÃ¼r welchen Ort mÃ¶chtest du das Wetter erfahren?')
+        tiane.say('Für welchen Ort möchtest du das Wetter erfahren?')
         antwort = tiane.listen()
         if antwort == 'TIMEOUT_OR_INVALID':
             tiane.say('Ich konnte den Ort leider nicht verstehen')
@@ -93,7 +93,7 @@ def handle(text, tiane, profile):
                         in_index = iindex
                         myind = in_index + 1
                         o = satz.get(myind)
-                    elif word == 'fÃ¼r':
+                    elif word == 'für':
                         fÃ¼r_index = iindex
                         myind = fÃ¼r_index + 1
                         o = satz.get(myind)
@@ -105,7 +105,7 @@ def handle(text, tiane, profile):
     try:
         response = urlopen(request)
     except:
-        tiane.say('Ich konnte das Wetter fÃ¼r den Ort {} leider nicht aufrufen.'.format(o))
+        tiane.say('Ich konnte das Wetter für den Ort {} leider nicht aufrufen.'.format(o))
         return
     html = response.read()
     html = str(html)
@@ -120,7 +120,7 @@ def handle(text, tiane, profile):
     temperature = get_temperature(int(des2))
     if temperature[1] == '.':
         temperature = temperature[0]
-    if weatherdescription == 'bedeckt' or weatherdescription == 'teils wolkig' or weatherdescription == 'wolkig' or weatherdescription == 'klar' or weatherdescription == 'regnerisch' or weatherdescription == 'neblig' or weatherdescription == 'einen Waldbrand geben' or weatherdescription == 'stÃ¼rmisch':
+    if weatherdescription == 'bedeckt' or weatherdescription == 'teils wolkig' or weatherdescription == 'wolkig' or weatherdescription == 'klar' or weatherdescription == 'regnerisch' or weatherdescription == 'neblig' or weatherdescription == 'einen Waldbrand geben' or weatherdescription == 'stürmisch':
         wetter = 'Es ist ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
     else:
         wetter = 'Es gibt ' + weatherdescription + ' bei ' + temperature + ' Grad Celsius.'
