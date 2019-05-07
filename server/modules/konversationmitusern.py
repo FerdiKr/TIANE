@@ -81,7 +81,7 @@ def get_aufruf(text, tiane):
     inhalt = inhalt.replace('er', 'du')
     inhalt = inhalt.replace('sie', 'du')
     nutzer = i_und_n[1]
-    aufruf = nutzer + ', ' + tiane.user + ' mÃ¶chte dir sagen, dass ' + inhalt
+    aufruf = nutzer + ', ' + tiane.user + ' möchte dir sagen, dass ' + inhalt
     x = aufruf[-1:]
     if x == ' ':
         aufruf = aufruf[:-1]
@@ -117,8 +117,8 @@ def handle(text, tiane, profile):
             usersdictionary = tiane.local_storage.get('users')
             user = usersdictionary.get(tiane.user)
             raum = user.get('room')
-            if raum == 'KÃ¼che':
-                zweite_antwort = random.choice([tiane.user + ' ist gerade in der KÃ¼che', tiane.user + ' ist momentan in der KÃ¼che'])
+            if raum == 'Küche':
+                zweite_antwort = random.choice([tiane.user + ' ist gerade in der Küche', tiane.user + ' ist momentan in der Küche'])
             else:
                 zweite_antwort = random.choice([tiane.user + ' ist gerade im ' + raum, tiane.user + ' ist momentan im ' + raum])
             tiane.say(zweite_antwort, user = nutzer)
@@ -150,7 +150,7 @@ class Tiane:
                                                   'room': 'Wohnzimmer'},
                                         'Klara': {'name': 'Klara',
                                                   'uid': 2,
-                                                  'room': 'KÃ¼che'}
+                                                  'room': 'Küche'}
                                         }
                               }
         self.user = 'Klara'
@@ -166,9 +166,8 @@ class Tiane:
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Sag Ferdi Bescheid dass er zu mir in die KÃ¼che kommen soll', tiane, profile)
+    handle('Sag Ferdi Bescheid dass er zu mir in die Küche kommen soll', tiane, profile)
     
     
 if __name__ == "__main__":
     main()
-
