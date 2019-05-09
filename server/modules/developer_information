@@ -10,7 +10,7 @@ def get_answer(text, tiane):
             reply = 'Ich wurde von Ferdinand und Klara Krämer ' + v + '. Du kannst Team Krämer unter der folgenden email Adresse erreichen. jufo Punkt kraemer at gmail Punkt com.'
     elif 'kontaktieren' in text or 'erreichen' in text or 'email' in text or 'e mail' in text:
         if 'team ' in text or 'schöpfer' in text or 'programmierer' in text or 'entwickler' in text:
-            reply = 'Du kannst Team Krämer unter der folgenden email Adresse erreichen. jufo Punkt kraemer at gmail Punkt com.'
+            reply = 'Du kannst Team Krämer unter der folgenden email Adresse erreichen. jufo Punkt team kraemer at gmail Punkt com.'
     return reply
 
 def handle(text, tiane, profile):
