@@ -519,6 +519,8 @@ class TIANE:
         return self.route_query_modules(user, name=name, text=text, room=room)
 
     def route_say(self, original_command, text, raum, user, output):
+        # Danke, Leon :)
+        text = self.speechVariation(text)
         if 'telegram' in output.lower():
             if self.telegram is not None:
                 # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, an wen der Text gesendet werden soll. Einfach beenden.
@@ -647,6 +649,27 @@ class TIANE:
                         return response
         else:
             return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room)
+
+    def speechVariation(self, input):
+        """
+        This function is the counterpiece to the batchGen-function. It compiles the same
+        sentence-format as given there but it only picks one random variant and directly
+        pushes it into tiane. It returns the generated sentence.
+        """
+        if not isinstance(input, str):
+            parse = random.choice(input)
+        else:
+            parse = input
+        while "[" in parse and "]" in parse:
+            t_a = time.time()
+            sp0 = parse.split("[",1)
+            front = sp0[0]
+            sp1 = sp0[1].split("]",1)
+            middle = sp1[0].split("|",1)
+            end = sp1[1]
+            t_b = time.time()
+            parse = front + random.choice(middle) + end
+        return parse
 
     def add_to_context(self, user, module, room, origin_room):
         # Wir speichern einfach mal so auf Verdacht auf ganz verschiedene Arten Nutzer, Raum und Modul der Anfrage ab...
@@ -884,7 +907,7 @@ class Room_Dock:
             if not self.server_guessed_user == '':
                 self.Clientconnection.send({'TIANE_user_server_guess':self.server_guessed_user})
                 self.server_guessed_user = ''
-                
+
             # SEND_UPDATE_INFORMATION
             self.send_update_information()
 
