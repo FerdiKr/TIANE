@@ -94,8 +94,8 @@ def handle(text, tiane, profile):
                         myind = in_index + 1
                         o = satz.get(myind)
                     elif word == 'für':
-                        fÃ¼r_index = iindex
-                        myind = fÃ¼r_index + 1
+                        für_index = iindex
+                        myind = für_index + 1
                         o = satz.get(myind)
     else:
         o = o
