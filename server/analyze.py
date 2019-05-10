@@ -364,7 +364,10 @@ class Sentence_Analyzer:
         now = datetime.datetime.now()
         satz = self.get_text(text)
         minute = '01'
-        if ' in ' in text and ' minuten ' in text:
+        zeit = 0
+        if 'in einer minute' in text:
+            minute = '01'
+        elif ' in ' in text and ' minuten' in text:
             for i, w in satz.items():
                 if w == 'minuten':
                     m_ind = i
@@ -373,6 +376,9 @@ class Sentence_Analyzer:
                             zeit = int(satz.get(m_ind - 1))
                     except TypeError:
                         minute = '00'
+        else:
+            hour = 0
+            minute = '00'
         if minute != '00':
             m = now.minute
             add = m + zeit
@@ -1141,9 +1147,13 @@ class Sentence_Analyzer:
         if mi == 'None':
             minute = self.get_minute_rel(text)
             hour = minute.get('hour')
-            stunde = now.hour
-            h = stunde + hour
             mi = minute.get('minute')
+            if int(mi) != 0:
+                stunde = now.hour
+                h = stunde + hour
+            else:
+                mi = 'None'
+                h = 'None'
         dic = {}
         dic['town'] = t
         dic['room'] = r
@@ -1158,7 +1168,7 @@ class Sentence_Analyzer:
 
 def main():
     Analyzer = Sentence_Analyzer(room_list=['Küche', 'Wohnzimmer', 'Bad'])
-    eingabe = 'Erinner mich, in 58 Minuten daran dass die Präsentation zu Ende ist!' 
+    eingabe = 'Erinner mich in 55 Minuten' 
     print (Analyzer.analyze(eingabe))
 
 if __name__ == '__main__':
