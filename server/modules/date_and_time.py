@@ -74,6 +74,8 @@ def handle(txt, tiane, profile):
         tiane.say(get_time(text))
     if 'welchen tag haben wir' in text or 'welcher tag ist es' in text or 'welcher wochentag ist es' in text or 'welchen wochentag haben wir' in text or 'welches datum haben wir' in text or 'welches datum ist es' in text or 'den wievielten haben wir heute' in text or 'der wievielte ist es' in text:
         tiane.say(get_day(text))
+    if 'hallo' in text:
+        tiane.say('Hallo, {}!'.format(tiane.user))
     if uhrzeit >= 19 and uhrzeit <= 23:
         if 'guten morgen' in text:
             tiane.say('Bist du etwa gerade erst aufgewacht?')
@@ -151,10 +153,7 @@ def handle(txt, tiane, profile):
                 tiane.say('Du solltest wirklich ins Bett gehen! 23 Stunden ohne Schlaf sind nicht gut für deinen Körper!')
             
 
-                              
-
-                
-            
+                                                          
         
 
 def isValid(txt):
@@ -170,7 +169,7 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    if 'guten abend' in text or 'guten morgen' in text or 'gute nacht' in text or 'welches datum' in text or 'wie spät' in text or 'wie viel uhr' in text or 'wochentag' in text or 'welcher tag' in text or 'welchen tag' in text:
+    if 'guten abend' in text or 'hallo' in text or 'guten morgen' in text or 'gute nacht' in text or 'welches datum' in text or 'wie spät' in text or 'wie viel uhr' in text or 'wochentag' in text or 'welcher tag' in text or 'welchen tag' in text:
         return True
 
 class Tiane:
@@ -192,4 +191,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
