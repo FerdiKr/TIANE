@@ -264,11 +264,7 @@ class TIANE:
             new_say_requests = self.Serverconnection.readanddelete('TIANE_room_say')
             if new_say_requests is not None:
                 for request in new_say_requests:
-                    for existing_request in say_requests:
-                        if request['original_command'] == existing_request['original_command']:
-                            break
-                    else:
-                        say_requests.append(request)
+                    say_requests.append(request)
             # Zu cancelnde Aufträge bearbeiten
             cancel_requests = self.Serverconnection.readanddelete('TIANE_room_cancel_say')
             if cancel_requests is not None:
@@ -278,7 +274,6 @@ class TIANE:
                             say_requests.remove(say_request)
                             self.Serverconnection.send({'TIANE_room_confirms_cancel_say_{}'.format(request):True})
                             cancel_requests.remove(request)
-                            break
                     else:
                         self.Serverconnection.send({'TIANE_room_confirms_cancel_say_{}'.format(request):False})
                         cancel_requests.remove(request)
@@ -289,7 +284,6 @@ class TIANE:
                     self.say(request['original_command'],request['text'],request['room'],request['user'])
                     self.Serverconnection.send({'TIANE_room_confirms_say_{}'.format(request['original_command']):True})
                     say_requests.remove(request)
-                    break
 
             # LISTEN
             # Neue Aufträre einholen
