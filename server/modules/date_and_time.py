@@ -6,9 +6,9 @@ import random
 def get_time(i):
     now = datetime.datetime.now()
     stunde = now.hour
-    nÃ¤chste_stunde = now.hour + 1
-    if nÃ¤chste_stunde == 24:
-        nÃ¤chste_stunde = 0
+    nächste_stunde = now.hour + 1
+    if nächste_stunde == 24:
+        nächste_stunde = 0
     minute = now.minute
     if minute == 0:
         ausgabe = 'Es ist ' + stunde + ' Uhr.'
@@ -23,17 +23,17 @@ def get_time(i):
     elif minute == 25:
         ausgabe = 'Es ist fünf vor halb ' + stunde + '.'
     elif minute == 30:
-        ausgabe = 'Es ist halb ' + nÃ¤chste_stunde + '.'
+        ausgabe = 'Es ist halb ' + nächste_stunde + '.'
     elif minute == 35:
-        ausgabe = 'Es ist fünf nach halb ' + nÃ¤chste_stunde + '.'
+        ausgabe = 'Es ist fünf nach halb ' + nächste_stunde + '.'
     elif minute == 40:
-        ausgabe = 'Es ist zwanzig vor ' + nÃ¤chste_stunde + '.'
+        ausgabe = 'Es ist zwanzig vor ' + nächste_stunde + '.'
     elif minute == 45:
-        ausgabe = 'Es ist viertel vor ' + nÃ¤chste_stunde + '.'
+        ausgabe = 'Es ist viertel vor ' + nächste_stunde + '.'
     elif minute == 50:
-        ausgabe = 'Es ist zehn vor ' + nÃ¤chste_stunde + '.'
+        ausgabe = 'Es ist zehn vor ' + nächste_stunde + '.'
     elif minute == 55:
-        ausgabe = 'Es ist fünf vor ' + nÃ¤chste_stunde + '.'
+        ausgabe = 'Es ist fünf vor ' + nächste_stunde + '.'
     else:
         ausgabe = 'Es ist ' + str(stunde) + ' Uhr ' + str(minute) + '.'
     return ausgabe
