@@ -36,6 +36,7 @@ def run(tiane, profile):
         user = room.room_guessed_user
         if not user == '':
             profile['TIANE_voice_recognized_users'][room.name] = user
+            room.room_guessed_user = ''
 
     for room, users in profile['TIANE_cam_recognized_users'].items():
         # Wenn die Gesichtserkennung einen Nutzer zweimal in einem Raum verortet, ist es wahrscheinlich,
