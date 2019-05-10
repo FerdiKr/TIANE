@@ -14,6 +14,7 @@ def get_answer(text, tiane):
     return reply
 
 def handle(text, tiane, profile):
+    text = text.lower()
     reply = get_answer(text, tiane)
     tiane.say(reply)
 
