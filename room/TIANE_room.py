@@ -465,7 +465,7 @@ class Modulewrapper:
         self.Analyzer = Tiane.Analyzer
         self.serverconnection = Tiane.Serverconnection
         self.audio_Input = Tiane.Audio_Input
-        self.audio_Output = Tiane.Audio_Input
+        self.audio_Output = Tiane.Audio_Output
         self.room_name = Tiane.room_name
         self.room_list = Tiane.room_list
         self.users = Tiane.users
@@ -538,7 +538,7 @@ class Modulewrapper_continuous:
         self.Analyzer = Tiane.Analyzer
         self.serverconnection = Tiane.Serverconnection
         self.audio_Input = Tiane.Audio_Input
-        self.audio_Output = Tiane.Audio_Input
+        self.audio_Output = Tiane.Audio_Output
         self.room_name = Tiane.room_name
         self.room_list = Tiane.room_list
         self.users = Tiane.users
@@ -575,6 +575,7 @@ class Conversation:
         # auf eine Conversation warten lässt...
         while not self.query(original_command) == True:
             time.sleep(2)
+        Tiane.Audio_Input.detector.stopped = True
         self.active = True
         self.original_command = original_command
         self.user = user
@@ -593,6 +594,7 @@ class Conversation:
             self.active = False
             self.user = ''
             self.original_command = ''
+            Tiane.Audio_Input.detector.stopped = False
 
 
 #################################################-MAIN-#################################################

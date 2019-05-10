@@ -217,7 +217,7 @@ class Audio_Output:
     def say(self, text):
         # Gibt den gegebenen Text an die Text-to-Speech-Funktion weiter und wartet,
         # bis die Durchsage beendet ist.
-        self.audioinput.detector.stopped = True # Kleiner Hack: Diese supercoole Zeile sorgt dafür, dass die Hotworderkennung nicht mithört xD
+        #self.audioinput.detector.stopped = True # Kleiner Hack: Diese supercoole Zeile sorgt dafür, dass die Hotworderkennung nicht mithört xD
         if text == '' or text == None:
             text = 'Das sollte nicht passieren. Eines meiner internen Module antwortet nicht mehr.'
         format, buffer = self.tts.say(str(text))
@@ -226,7 +226,7 @@ class Audio_Output:
         time.sleep(0.1)
         while not self.notification_audio_buffer == []:
             time.sleep(0.1)
-        self.audioinput.detector.stopped = False
+        #self.audioinput.detector.stopped = False
 
     def play(self, data):
         # Spielt gegebene wave-Audio-Stream-Daten ab
