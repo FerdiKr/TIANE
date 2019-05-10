@@ -33,8 +33,8 @@ def run(tiane, profile):
     for room in tiane.rooms.copy().values():
         # Erst mal holen wir die relevanten Informationen ein, nämlich ob ein Raum ein Sprachkommando empfangen hat...
         # Dem entnehmen wir dann, was der Raum schätzt, welcher Nutzer das war.
-        user = room.Clientconnection.readanddelete('TIANE_user_voice_recognized')
-        if user is not None:
+        user = room.room_guessed_user
+        if not user == '':
             profile['TIANE_voice_recognized_users'][room.name] = user
 
     for room, users in profile['TIANE_cam_recognized_users'].items():
@@ -94,9 +94,9 @@ def run(tiane, profile):
     	# welcher Nutzer es denn nach unserer Einschätzung "wirklich" war, damit der Raum fortfahren kann.
         if not profile['rooms'][room]['users'] == []:
             if user in profile['rooms'][room]['users'] and not user == 'Unknown':
-                tiane.rooms.copy()[room].Clientconnection.send({'TIANE_user_server_guess':user})
+                tiane.rooms[room].server_guessed_user = user
             else:
-                tiane.rooms.copy()[room].Clientconnection.send({'TIANE_user_server_guess':profile['rooms'][room]['users'][-1]})
+                tiane.rooms[room].server_guessed_user = profile['rooms'][room]['users'][-1]
         else:
-            tiane.rooms.copy()[room].Clientconnection.send({'TIANE_user_server_guess':'Unknown'})
+            tiane.rooms[room].server_guessed_user = 'Unknown'
         del profile['TIANE_voice_recognized_users'][room]
