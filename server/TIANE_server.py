@@ -353,6 +353,8 @@ class Modulewrapper:
         self.path = Tiane.path
 
     def say(self, text, room=None, user=None, output='auto'):
+        if text == '' or not type(text) == type('test'):
+            return
         if user == None or user == 'Unknown':
             user = self.user
         if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
@@ -372,6 +374,8 @@ class Modulewrapper:
         return text
 
     def asynchronous_say(self, text, room=None, user=None, output='auto'):
+        if text == '' or not type(text) == type('test'):
+            return
         if user == None or user == 'Unknown':
             user = self.user
         if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
@@ -726,6 +730,9 @@ class Room_Dock:
 
         self.users = []
 
+        self.room_guessed_user = ''
+        self.server_guessed_user = ''
+
         self.distribute_dict = {} # Cache für send_update_information
 
         rt = Thread(target=self.start_connection)
@@ -870,6 +877,14 @@ class Room_Dock:
                 for request in add_context_requests:
                     Tiane.add_to_context(request['user'], request['module'], request['room'], self.name)
 
+            # VOICE_RECOGNITION
+            voice_recognition_request = self.Clientconnection.readanddelete('TIANE_user_voice_recognized')
+            if voice_recognition_request is not None:
+                self.room_guessed_user = voice_recognition_request
+            if not self.server_guessed_user == '':
+                self.Clientconnection.send({'TIANE_user_server_guess':self.server_guessed_user})
+                self.server_guessed_user = ''
+                
             # SEND_UPDATE_INFORMATION
             self.send_update_information()
 
