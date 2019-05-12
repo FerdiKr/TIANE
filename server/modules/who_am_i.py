@@ -19,5 +19,5 @@ def isValid(text):
     text = text.lower()
     if 'wer' in text and 'bin' in text and 'ich' in text:
         return True
-    else:
-        return False
+    if 'wie' in text and 'heiße' in text and 'ich' in text:
+        return True

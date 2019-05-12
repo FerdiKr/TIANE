@@ -4,13 +4,21 @@ import random
 
 def get_answer(text, tiane):
     reply = ''
-    if 'wer' in text or 'von wem' in text:
+    if 'github' in text or 'quellcode' in text or 'repository' in text:
+        reply = 'Mein GitHub-Repository findest du unter https://github.com/FerdiKr/TIANE. Meine Entwickler freuen sich über Beiträge!'
+    elif 'wer' in text or 'von wem' in text:
         if 'programmiert' in text or 'erschaffen' in text or 'entwickelt' in text:
             v = random.choice(['entwickelt', 'programmiert', 'erschaffen'])
-            reply = 'Ich wurde von Ferdinand und Klara Krämer ' + v + '. Du kannst Team Krämer unter der folgenden email Adresse erreichen. jufo Punkt team kraemer ät g mail Punkt com.'
+            if tiane.telegram_call:
+                reply = 'Ich wurde von Ferdinand und Klara Krämer ' + v + '. Du kannst Team Krämer unter der folgenden email Adresse erreichen: jufo.teamkraemer@gmail.com.'
+            else:
+                reply = 'Ich wurde von Ferdinand und Klara Krämer ' + v + '. Du kannst Team Krämer unter der folgenden email Adresse erreichen. jufo Punkt team kraemer ät g mail Punkt com.'
     elif 'kontaktieren' in text or 'erreichen' in text or 'email' in text or 'e mail' in text:
         if 'team ' in text or 'schöpfer' in text or 'programmierer' in text or 'entwickler' in text:
-            reply = 'Du kannst Team Krämer unter der folgenden email Adresse erreichen. jufo Punkt team kraemer ät g mail Punkt com.'
+            if tiane.telegram_call:
+                reply = 'Du kannst Team Krämer unter der folgenden email Adresse erreichen: jufo.teamkraemer@gmail.com.'
+            else:
+                reply = 'Du kannst Team Krämer unter der folgenden email Adresse erreichen. jufo Punkt team kraemer ät g mail Punkt com.'
     return reply
 
 def handle(text, tiane, profile):
@@ -21,8 +29,10 @@ def handle(text, tiane, profile):
 def isValid(text):
     text = text.lower()
     if 'wer' in text or 'von wem' in text:
-        if 'programmiert' in text or 'erschaffen' in text or 'entwickelt' in text:
+        if 'programmiert' in text or 'erschaffen' in text or 'entwickelt' in text or 'erstellt' in text:
             return True
-    elif 'kontaktieren' in text or 'erreichen' in text or 'email' in text or 'e mail' in text:
+    if 'kontaktieren' in text or 'erreichen' in text or 'email' in text or 'e mail' in text:
         if 'team ' in text or 'schöpfer' in text or 'programmierer' in text or 'entwickler' in text:
             return True
+    if 'github' in text or 'quellcode' in text or 'repository' in text:
+        return True

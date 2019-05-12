@@ -52,7 +52,9 @@ def check_iter(iter):
 def handle(text, tiane, profile):
     tiane.asynchronous_say('Okay, ich erstelle eine Kopie meiner temporären Daten.')
     backup_json = {}
-    backup_json = check(profile)
+    backup_json['Local_storage'] = check(profile)
+    backup_json['Log_raw'] = check(tiane.core.Log.log)
+
     with open(tiane.path + '/TIANE_LOG.json','w') as json_file:
         json.dump(backup_json, json_file, indent=4, ensure_ascii=False)
     tiane.say('Die Daten wurden gespeichert.')
