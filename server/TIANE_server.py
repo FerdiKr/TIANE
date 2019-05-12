@@ -24,25 +24,25 @@ class Modules:
 
     def load_modules(self):
         self.modules_defined_vocabulary = []
-        print('----- COMMON_MODULES -----')
+        Log.write('', '----- COMMON_MODULES -----', show=True)
         self.common_modules = self.get_modules('modules')
         if self.common_modules == []:
-            print('[INFO] -- (Keine vorhanden)')
-        print('------ CONTINUOUS')
+            Log.write('INFO', '-- (Keine vorhanden)', show=True)
+        Log.write('', '------ CONTINUOUS', show=True)
         self.common_continuous_modules = self.get_modules('modules/continuous',continuous=True)
         if self.common_continuous_modules == []:
-            print('[INFO] -- (Keine vorhanden)')
+            Log.write('INFO', '-- (Keine vorhanden)', show=True)
 
-        print('------ USER_MODULES ------')
+        Log.write('', '------ USER_MODULES ------', show=True)
         self.no_user_modules = True
         self.user_modules = self.get_user_modules()
         if self.no_user_modules == True:
-            print('[INFO] -- (Keine vorhanden)')
-        print('------ CONTINUOUS')
+            Log.write('INFO', '-- (Keine vorhanden)', show=True)
+        Log.write('', '------ CONTINUOUS', show=True)
         self.no_user_continuous_modules = True
         self.user_continuous_modules = self.get_user_modules(continuous=True)
         if self.no_user_continuous_modules == True:
-            print('[INFO] -- (Keine vorhanden)')
+            Log.write('INFO', '-- (Keine vorhanden)', show=True)
         Local_storage['TIANE_Modules_defined_Vocabulary'] = self.modules_defined_vocabulary
 
     def get_modules(self, directory, continuous=False):
@@ -55,14 +55,14 @@ class Modules:
                 mod = loader.load_module(name)
             except:
                 traceback.print_exc()
-                print('[WARNING] Modul {} ist fehlerhaft und wurde übersprungen!'.format(name))
+                Log.write('WARNING', 'Modul {} ist fehlerhaft und wurde übersprungen!'.format(name), show=True)
                 continue
             else:
                 if continuous == True:
-                    print('[INFO] Fortlaufendes Modul {} geladen'.format(name))
+                    Log.write('INFO', 'Fortlaufendes Modul {} geladen'.format(name), show=True)
                     modules.append(mod)
                 else:
-                    print('[INFO] Modul {} geladen'.format(name))
+                    Log.write('INFO', 'Modul {} geladen'.format(name), show=True)
                     modules.append(mod)
                 words = mod.WORDS if hasattr(mod, 'WORDS') else []
                 for word in words:
@@ -86,15 +86,15 @@ class Modules:
                     mod = loader.load_module(name)
                 except:
                     traceback.print_exc()
-                    print('[WARNING] Modul {} (Nutzer: {}) ist fehlerhaft und wurde übersprungen!'.format(name, username))
+                    Log.write('WARNING', 'Modul {} (Nutzer: {}) ist fehlerhaft und wurde übersprungen!'.format(name, username), show=True)
                     continue
                 else:
                     if continuous == True:
-                        print('[INFO] Fortlaufendes Modul {} (Nutzer: {}) geladen'.format(name, username))
+                        Log.write('INFO', 'Fortlaufendes Modul {} (Nutzer: {}) geladen'.format(name, username), show=True)
                         modules.append(mod)
                         self.no_user_continuous_modules = False
                     else:
-                        print('[INFO] Modul {} (Nutzer: {}) geladen'.format(name, username))
+                        Log.write('INFO', 'Modul {} (Nutzer: {}) geladen'.format(name, username), show=True)
                         modules.append(mod)
                         self.no_user_modules = False
                     words = mod.WORDS if hasattr(mod, 'WORDS') else []
@@ -111,28 +111,31 @@ class Modules:
             text = random.randint(0,1000000000)
             analysis = {}
         else:
-            print('\n--{}-- ({}): {}'.format(user.upper(), origin_room, text))
+            Log.write('ACTION', '--{}-- ({}): {}'.format(user.upper(), origin_room, text), conv_id=str(text), show=True)
             try:
                 analysis = Tiane.Analyzer.analyze(str(text))
-                print('Analyse: ' + str(analysis))
+                Log.write('ACTION', 'Analyse: ' + str(analysis), conv_id=str(text), show=True)
             except:
                 traceback.print_exc()
-                print('[ERROR] Satzanalyse fehlgeschlagen!\n')
+                Log.write('ERROR', 'Satzanalyse fehlgeschlagen!', conv_id=str(text), show=True)
                 analysis = {}
 
         if name is not None:
             # Modul wurde direkt aufgerufen
             for module in self.common_modules:
                 if module.__name__ == name:
+                    Log.write('ACTION', '--Modul {} direkt aufgerufen (Parameter: {})--'.format(name, text), conv_id=str(text), show=True)
                     Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                     mt = Thread(target=self.run_threaded_module, args=(text,module,))
                     mt.daemon = True
                     mt.start()
                     if direct:
                         Tiane.add_to_context(user, module.__name__, Tiane.server_name, origin_room)
+
                     return True
             for module in self.user_modules[user]:
                 if module.__name__ == name:
+                    Log.write('ACTION', '--Modul {} (Nutzer: {}) direkt aufgerufen (Parameter: {})--'.format(name, user, text), conv_id=str(text), show=True)
                     Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                     mt = Thread(target=self.run_threaded_module, args=(text,module,))
                     mt.daemon = True
@@ -147,6 +150,7 @@ class Modules:
             for module in self.common_modules:
                 try:
                     if module.telegram_isValid(data):
+                        Log.write('ACTION', '--Modul {} via telegram_isValid gestartet--'.format(module.__name__), conv_id=str(text), show=True)
                         Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                         mt = Thread(target=self.run_threaded_module, args=(text,module,))
                         mt.daemon = True
@@ -160,6 +164,7 @@ class Modules:
         for module in self.common_modules:
             try:
                 if module.isValid(text):
+                    Log.write('ACTION', '--Modul {} gestartet--'.format(module.__name__), conv_id=str(text), show=True)
                     Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                     mt = Thread(target=self.run_threaded_module, args=(text,module,))
                     mt.daemon = True
@@ -169,7 +174,7 @@ class Modules:
                     return True
             except:
                 traceback.print_exc()
-                print('[ERROR] Modul {} konnte nicht abgefragt werden!'.format(module.__name__))
+                Log.write('ERROR', 'Modul {} konnte nicht abgefragt werden!'.format(module.__name__), conv_id=str(text), show=True)
 
         if user is not None and user in Userlist:
             # ... Und wenn wir nen Nutzer haben, können wir auch noch in seinen Modulen suchen
@@ -179,6 +184,7 @@ class Modules:
                     for module in self.user_modules[user]:
                         try:
                             if module.telegram_isValid(data):
+                                Log.write('ACTION', '--Modul {} (Nutzer: {}) via telegram_isValid gestartet--'.format(module.__name__, user), conv_id=str(text), show=True)
                                 Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                                 mt = Thread(target=self.run_threaded_module, args=(text,module,))
                                 mt.daemon = True
@@ -191,6 +197,7 @@ class Modules:
                 for module in self.user_modules[user]:
                     try:
                         if module.isValid(text):
+                            Log.write('ACTION', '--Modul {} (Nutzer: {}) gestartet--'.format(module.__name__, user), conv_id=str(text), show=True)
                             Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                             mt = Thread(target=self.run_threaded_module, args=(text,module,))
                             mt.daemon = True
@@ -200,7 +207,7 @@ class Modules:
                             return True
                     except:
                         traceback.print_exc()
-                        print('[ERROR] Modul {} (Nutzer: {}) konnte nicht abgefragt werden!'.format(module.__name__, user))
+                        Log.write('ERROR', 'Modul {} (Nutzer: {}) konnte nicht abgefragt werden!'.format(module.__name__, user), conv_id=str(text), show=True)
 
         # Hier ist die Lösung, die dafür sorgt, dass die Anfrage ggf. an einen bestimmten
         # Raum weitergeleitet wird... Das macht Sinn: So bleiben Direktaufrufe
@@ -215,18 +222,20 @@ class Modules:
     def run_threaded_module(self, text, module):
         try:
             module.handle(text, Tiane.active_modules[str(text)], Tiane.local_storage)
+            Log.write('ACTION', '--Modul {} beendet--'.format(module.__name__), conv_id=str(text), show=True)
         except:
             traceback.print_exc()
-            print('[ERROR] Runtime-Error in Modul {}. Das Modul wurde beendet.\n'.format(module.__name__))
+            Log.write('ERROR', 'Runtime-Error in Modul {}. Das Modul wurde beendet.\n'.format(module.__name__), show=True)
             Tiane.active_modules[str(text)].say('Entschuldige, es gab ein Problem mit dem Modul {}.'.format(module.__name__))
         finally:
+
             del Tiane.active_modules[str(text)]
             Tiane.end_Conversation(text)
             return
 
     def start_continuous(self):
         # Startet den Thread, in dem die continuous_modules ausgeführt werden (siehe unten).
-        print('---- STARTE MODULE... ----')
+        Log.write('', '---- STARTE MODULE... ----', show=True)
         self.continuous_threads_running = 0
         Local_storage['module_counter'] = {}
         no_modules = True
@@ -245,7 +254,7 @@ class Modules:
                 uct.start()
                 self.continuous_threads_running += 1
         if no_modules == True:
-            print('[INFO] -- (Keine vorhanden)')
+            Log.write('INFO', '-- (Keine vorhanden)', show=True)
         return
 
     def run_continuous(self,modules,user):
@@ -263,10 +272,10 @@ class Modules:
             Tiane.continuous_modules[user][module.__name__] = self.Modulewrapper_continuous(intervalltime,user)
             try:
                 module.start(Tiane.continuous_modules[user][module.__name__], Tiane.local_storage)
-                print('[INFO] Modul {} (Nutzer: {}) gestartet'.format(module.__name__, user))
+                Log.write('INFO', 'Modul {} (Nutzer: {}) gestartet'.format(module.__name__, user), show=True)
             except:
                 #traceback.print_exc()
-                pass
+                continue
         Local_storage['module_counter'][user] = 0
         while True:
             for module in modules:
@@ -279,7 +288,7 @@ class Modules:
                         Tiane.continuous_modules[user][module.__name__].counter += 1
                     except:
                         traceback.print_exc()
-                        print('[ERROR] Runtime-Error in Continuous-Module {} (Nutzer "{}"). Das Modul wird nicht mehr ausgeführt.\n'.format(module.__name__, user))
+                        Log.write('ERROR', 'Runtime-Error in Continuous-Module {} (Nutzer "{}"). Das Modul wird nicht mehr ausgeführt.\n'.format(module.__name__, user), show=True)
                         del Tiane.continuous_modules[user][module.__name__]
                         modules.remove(module)
             if self.continuous_stopped:
@@ -293,7 +302,7 @@ class Modules:
         # Stoppt den Thread, in dem die continuous_modules ausgeführt werden, am Ende des Durchlaufs.
         # Gibt den Modulen aber danach noch eine Gelegenheit, aufzuräumen...
         if self.continuous_threads_running > 0:
-            print('------ Module werden beendet...')
+            Log.write('', '------ Module werden beendet...', show=True)
             self.continuous_stopped = True
             # Warten, bis alle Threads zurückgekehrt sind
             while self.continuous_threads_running > 0:
@@ -304,22 +313,22 @@ class Modules:
             for module in self.common_continuous_modules:
                 try:
                     module.stop(Tiane.continuous_modules['common'][module.__name__], Tiane.local_storage)
-                    print('[INFO] Modul {} (Nutzer: {}) beendet'.format(module.__name__, 'common'))
+                    Log.write('INFO', 'Modul {} (Nutzer: {}) beendet'.format(module.__name__, 'common'), show=True)
                     no_stopped_modules = False
                 except:
-                    pass
+                    continue
             for user, modules in self.user_continuous_modules.items():
                 for module in modules:
                     try:
                         module.stop(Tiane.continuous_modules[user][module.__name__], Tiane.local_storage)
-                        print('[INFO] Modul {} (Nutzer: {}) beendet'.format(module.__name__, user))
+                        Log.write('INFO', 'Modul {} (Nutzer: {}) beendet'.format(module.__name__, user), show=True)
                         no_stopped_modules = False
                     except:
-                        pass
+                        continue
             # aufräumen
             Tiane.continuous_modules = {}
             if no_stopped_modules == True:
-                print('[INFO] -- (Keine zu beenden)')
+                Log.write('INFO', '-- (Keine zu beenden)', show=True)
         return
 
 
@@ -446,6 +455,7 @@ class Modulewrapper_continuous:
 class TIANE:
     def __init__(self):
         self.Modules = Modules
+        self.Log = Log
         self.Analyzer = Analyzer
         self.telegram = None
 
@@ -484,19 +494,23 @@ class TIANE:
                             user = ''
                         if user == '':
                             # Gibt's auch nicht? Pech gehabt!
-                            print('[WARNING] Telegram-Nutzer-ID {} kann nicht auf {} zugreifen. \n'
-                                  'Unregistrierte Nutzer müssen einen Telegram-Benutzernamen eingerichtet haben!'.format(msg['from']['id'], self.system_name))
+                            Log.write('WARNING', 'Telegram-Nutzer-ID {} kann nicht auf {} zugreifen. \n'
+                                      'Unregistrierte Nutzer müssen einen Telegram-Benutzernamen eingerichtet haben!'.format(msg['from']['id'], self.system_name),
+                                      conv_id=msg['text'], show=True)
+                            self.telegram.say('Entschuldige bitte, ich kann leider nicht mit dir reden, weil du keinen Telegram-Benutzernamen eingerichtet hast.', msg['from']['id'], msg['text'])
                             self.telegram.messages.remove(msg)
                             continue
                         else:
                             self.local_storage['TIANE_telegram_name_to_id_table'][user] = msg['from']['id']
+                            self.local_storage['TIANE_telegram_id_to_name_table'][msg['from']['id']] = user
                     else:
                         # Wenn kein Zugriff erlaubt ist, legen wir die Nachricht trotzdem auf die Halde, vielleicht hat irgendein Modul Verwendung dafür...
                         self.local_storage['rejected_telegram_messages'].append(msg)
                         try:
-                            print('[WARNING] Nachricht von unbekanntem Telegram-Nutzer {} ({}). Zugriff verweigert.'.format(msg['from']['username'], msg['from']['id']))
+                            Log.write('WARNING', 'Nachricht von unbekanntem Telegram-Nutzer {} ({}). Zugriff verweigert.'.format(msg['from']['username'], msg['from']['id']), conv_id=msg['text'], show=True)
                         except KeyError:
-                            print('[WARNING] Nachricht von unbekanntem Telegram-Nutzer ({}). Zugriff verweigert.'.format(msg['from']['id']))
+                            Log.write('WARNING', 'Nachricht von unbekanntem Telegram-Nutzer ({}). Zugriff verweigert.'.format(msg['from']['id']), conv_id=msg['text'], show=True)
+                        self.telegram.say('Entschuldigung, aber ich darf leider zur Zeit nicht mit Fremden reden. Hat Papa gesagt :(', msg['from']['id'], msg['text'])
                         self.telegram.messages.remove(msg)
                         continue
 
@@ -511,7 +525,7 @@ class TIANE:
                 else:
                     response = self.route_query_modules(user, text=msg['text'], direct=True, origin_room='Telegram', data=msg)
                 if response == False:
-                    self.telegram.say('Das habe ich leider nicht verstanden.', self.local_storage['TIANE_telegram_name_to_id_table'][user])
+                    self.telegram.say('Das habe ich leider nicht verstanden.', self.local_storage['TIANE_telegram_name_to_id_table'][user], msg['text'])
                 self.telegram.messages.remove(msg)
             time.sleep(0.5)
 
@@ -519,26 +533,25 @@ class TIANE:
         return self.route_query_modules(user, name=name, text=text, room=room)
 
     def route_say(self, original_command, text, raum, user, output):
-        # Danke, Leon :)
-        text = self.speechVariation(text)
-        if 'telegram' in output.lower():
+        text = self.speechVariation(text) # Danke, Leon :)
+        if 'telegram' in output.lower() or user not in self.userlist:
             if self.telegram is not None:
                 # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, an wen der Text gesendet werden soll. Einfach beenden.
                 if user == None or user == 'Unknown':
-                    print('[WARNING] Der Text "{}" konnte nicht gesendet werden, da kein Nutzer als Ziel angegeben wurde'.format(text))
+                    Log.write('WARNING', 'Der Text "{}" konnte nicht gesendet werden, da kein Nutzer als Ziel angegeben wurde'.format(text), conv_id=original_command, show=True)
                     return
                 try:
-                    self.telegram.say(text, self.local_storage['TIANE_telegram_name_to_id_table'][user], output=output)
+                    self.telegram.say(text, self.local_storage['TIANE_telegram_name_to_id_table'][user], original_command, output=output)
                 except KeyError:
-                    print('[WARNING] Der Text "{}" konnte nicht gesendet werden, da für den Nutzer "{}" keine Telegram-ID angegeben wurde'.format(text, user))
+                    Log.write('WARNING', 'Der Text "{}" konnte nicht gesendet werden, da für den Nutzer "{}" keine Telegram-ID angegeben wurde'.format(text, user), conv_id=original_command, show=True)
                 return
             else:
-                print('[ERROR] Der Text "{}" sollte via Telegram gesendet werden, obwohl Telegram nicht eingerichtet ist!'.format(text))
+                Log.write('ERROR', 'Der Text "{}" sollte via Telegram gesendet werden, obwohl Telegram nicht eingerichtet ist!'.format(text), conv_id=original_command, show=True)
                 return
         if raum == None:
             # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wo der Text gesagt werden soll. Einfach beenden.
             if user == None or user == 'Unknown':
-                print('[WARNING] Der Text "{}" konnte nicht gesagt werden, weil weder ein Raum noch ein Nutzer als Ziel angegeben wurden'.format(text))
+                Log.write('WARNING', 'Der Text "{}" konnte nicht gesagt werden, weil weder ein Raum noch ein Nutzer als Ziel angegeben wurden'.format(text), conv_id=original_command, show=True)
                 return
             # Der Text soll zu einem bestimmten user gesagt werden
             current_waiting_room = ('',None)
@@ -582,12 +595,12 @@ class TIANE:
     def route_listen(self, original_command, user, telegram=False):
         # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wem TIANE zuhören soll. Einfach beenden.
         if user == None or user == 'Unknown':
-            print('[WARNING] Für einen Aufruf von tiane.listen() konnte kein user als Ziel ermittelt werden.')
+            Log.write('WARNING', 'Für einen Aufruf von tiane.listen() konnte kein user als Ziel ermittelt werden.', conv_id=original_command, show=True)
             return 'TIMEOUT_OR_INVALID'
         # Tiane soll einem bestimmten user zuhören
         current_waiting_room = ('',None)
         if self.telegram is not None:
-            if telegram:
+            if telegram == True or user not in self.userlist:
                 # Dem Telegram-Thread Bescheid sagen, dass man auf eine Antwort wartet,
                 # aber erst, wenn kein anderer mehr wartet
                 while True:
@@ -603,6 +616,7 @@ class TIANE:
                 response = self.telegram_queue_output.pop(user, None)
                 if response is not None:
                     self.telegram_queued_users.remove(user)
+                    Log.write('ACTION', '--{}-- (Telegram): {}'.format(user.upper(), response['text']), conv_id=original_command, show=True)
                     return response
             else:
                 for name, room in self.rooms.items():
@@ -700,7 +714,7 @@ class TIANE:
                     target_room = self.Analyzer.analyze(text)['room']
                 except:
                     traceback.print_exc()
-                    print['[ERROR] Satzanalyse fehlgeschlagen!']
+                    Log.write('ERROR', 'Satzanalyse fehlgeschlagen!', conv_id=text, show=True)
                     target_room = 'None'
                 if not target_room == 'None':
                     new_room = None
@@ -735,13 +749,60 @@ class TIANE:
                     if new_room is not None and new_name is not None:
                         return new_room, new_name
                 else:
-                    print('[ERROR] [Einfach dem Ferdi schicken, der weiß (ungefähr), wo das Problem ist]')
-                    print('Tipp: Es hat was damit zu tun, dass add_to_context eben nur "ZIEMLICH SICHER" einen origin_room erhält...')
+                    Log.write('ERROR', '[Einfach dem Ferdi schicken, der weiß (ungefähr), wo das Problem ist]\n'
+                                       'Tipp: Es hat was damit zu tun, dass add_to_context eben nur "ZIEMLICH SICHER" einen origin_room erhält...',
+                                       conv_id=text, show=True)
         return room, name
 
     def end_Conversation(self,original_command):
         for room in self.rooms.values():
             room.request_end_Conversation(original_command)
+
+class Logging:
+    def __init__(self):
+        self.log = []
+
+    def write(self, typ, content, info=None, conv_id=None, show=False):
+        if info is not None:
+            logentry = info
+        else:
+            logentry = {}
+        logentry['time'] = time.strftime('%y_%m_%d %H:%M:%S', time.localtime(time.time()))
+        logentry['type'] = typ
+        logentry['content'] = content
+        logentry['show'] = show
+        logentry['conv_id'] = conv_id
+        try:
+            last_logentry = self.log[-1]
+        except IndexError:
+            last_logentry = logentry
+        self.log.append(logentry)
+        if show:
+            print(self.format(logentry, last_logentry))
+
+    def format(self, logentry, last_logentry):
+        if logentry['type'] == 'ERROR' or logentry['type'] == 'WARNING' or logentry['type'] == 'DEBUG' or logentry['type'] == 'INFO':
+            spaces = ''
+            if last_logentry['type'] == 'ACTION':
+                spaces = '\n\n'
+                if last_logentry['conv_id'] == logentry['conv_id']:
+                    spaces = ''
+            textline = spaces + '[{}] '.format(logentry['type']) + logentry['content']
+
+        elif logentry['type'] == 'ACTION':
+            spaces = ''
+            if not last_logentry['type'] == 'ACTION':
+                spaces = '\n\n'
+            else:
+                if not last_logentry['conv_id'] == logentry['conv_id']: # conversation_id wird am Anfang original_command sein, aber in weiser Voraussicht hab ich das schon mal umbenannt...
+                    spaces = '\n'
+                if last_logentry['conv_id'] == 'HW_DETECTED':
+                    spaces = ''
+            textline = spaces + logentry['content']
+
+        else:
+            textline = logentry['content']
+        return textline
 
 
 class Room_Dock:
@@ -906,7 +967,14 @@ class Room_Dock:
                 self.room_guessed_user = voice_recognition_request
             if not self.server_guessed_user == '':
                 self.Clientconnection.send({'TIANE_user_server_guess':self.server_guessed_user})
+                Log.write('ACTION', '--listening to {} (room: {})--'.format(self.server_guessed_user, self.name), conv_id='HW_DETECTED', show=True)
                 self.server_guessed_user = ''
+
+            # LOGGING
+            new_logging_requests = self.Clientconnection.readanddelete('TIANE_LOG')
+            if new_logging_requests is not None:
+                for request in new_logging_requests:
+                    Log.write(request['type'], request['content'], info=request['info'], conv_id=request['conv_id'], show=request['show'])
 
             # SEND_UPDATE_INFORMATION
             self.send_update_information()
@@ -924,7 +992,7 @@ class Room_Dock:
         information_dict = {}
         for key in Tiane.local_storage['keys_to_distribute']:
             if not key in Tiane.local_storage.keys():
-                print('[WARNING] Der Schlüssel {} ist in local_storage nicht vorhanden und kann daher nicht an die Räume verteilt werden!'.format(key))
+                Log.write('WARNING', 'Der Schlüssel {} ist in local_storage nicht vorhanden und kann daher nicht an die Räume verteilt werden!'.format(key), show=True)
                 Tiane.local_storage['keys_to_distribute'].remove(key)
                 continue
             if key in self.distribute_dict.keys():
@@ -969,7 +1037,7 @@ class Room_Dock:
 
         # ...und Informationen an den Raum senden.
         self.send_update_information()
-        print('[INFO] Verbindung mit Raum {} hergestellt'.format(self.name))
+        Log.write('INFO', 'Verbindung mit Raum {} hergestellt'.format(self.name), show=True)
 
         # Alles geklärt, jetzt zur eigentlichen Aufgabe dieser Klasse...
         self.handle_online_requests()
@@ -983,8 +1051,8 @@ class Room_Dock:
                 if user['room'] == self.name:
                     del user['room']
             except KeyError:
-                pass
-        print('[WARNING] Verbindung mit Raum {} unterbrochen'.format(self.name))
+                continue
+        Log.write('WARNING', 'Verbindung mit Raum {} unterbrochen'.format(self.name), show=True)
 
 
 class Network_Device:
@@ -1025,7 +1093,7 @@ class Network_Device:
                         del Devices_connecting[self.addr]
                         self.type = device_type
                         self.name = device_name
-                        print('[INFO] Verbindung mit Gerät {} ({}) hergestellt'.format(self.name, self.type))
+                        Log.write('INFO', 'Verbindung mit Gerät {} ({}) hergestellt'.format(self.name, self.type), show=True)
                         break
             time.sleep(0.03)
 
@@ -1033,7 +1101,7 @@ class Network_Device:
         while True:
             if self.Clientconnection.connected == False:
                 del Other_devices[self.name]
-                print('[WARNING] Verbindung mit Gerät {} ({}) unterbrochen'.format(self.name, self.type))
+                Log.write('INFO', 'Verbindung mit Gerät {} ({}) unterbrochen'.format(self.name, self.type))
                 break
             time.sleep(0.5)
 
@@ -1041,6 +1109,7 @@ class Network_Device:
 
 
 #################################################-MAIN-#################################################
+Log = Logging()
 
 # aus TIANE_config.json laden
 with open('TIANE_config.json', 'r') as config_file:
@@ -1090,12 +1159,13 @@ time.sleep(2)
 
 # ggf. das Telegram-Interface starten:
 if config_data['telegram']:
-    print('\n[INFO] Starte Telegram...\n')
+    Log.write('', '', show=True)
+    Log.write('INFO', 'Starte Telegram...', show=True)
     if config_data['telegram_key'] == '':
-        print('[ERROR] Kein Telegram-Bot-Token angegeben!')
+        Log.write('ERROR', 'Kein Telegram-Bot-Token angegeben!', show=True)
     else:
         from resources.telegram import TelegramInterface
-        Tiane.telegram = TelegramInterface(config_data['telegram_key'])
+        Tiane.telegram = TelegramInterface(config_data['telegram_key'], Tiane)
         Tiane.telegram.start()
         tgt = Thread(target=Tiane.telegram_thread)
         tgt.daemon = True
@@ -1103,15 +1173,19 @@ if config_data['telegram']:
         # Alle Nutzer, für die Telegram eingerichtet ist, unter ihren IDs speichern, und umgekehrt
         telegram_id_table = {}
         telegram_name_to_id_table = {}
+        telegram_id_to_name_table = {}
         for name, user in Local_storage['users'].items():
             try:
                 if not user['telegram_id'] == 0:
                     telegram_id_table[user['telegram_id']] = name
                     telegram_name_to_id_table[name] = user['telegram_id']
+                    telegram_id_to_name_table[user['telegram_id']] = name
             except KeyError:
-                pass
+                continue
         Local_storage['TIANE_telegram_allowed_id_table'] = telegram_id_table
         Local_storage['TIANE_telegram_name_to_id_table'] = telegram_name_to_id_table
+        Local_storage['TIANE_telegram_id_to_name_table'] = telegram_id_to_name_table
+    Log.write('', '', show=True)
 
 
 Tiane.Modules.start_continuous()
@@ -1127,10 +1201,11 @@ while True:
         sock.close()
         port += 1
         continue
+Log.write('DEBUG', 'Server Port: {}'.format(port), show=False)
 
 sock.listen(True)
 time.sleep(1.5)
-print('--------- FERTIG ---------\n\n')
+Log.write('', '--------- FERTIG ---------\n\n', show=True)
 
 # "Hauptschleife"
 while True:
@@ -1138,20 +1213,20 @@ while True:
     try:
         conn, addr = sock.accept()
     except KeyboardInterrupt:
-        print('\n')
+        Log.write('', '\n', show=True)
         break
     # Ein entsprechendes Geräte-Objekt erstellen und ihm die Verbindung überlassen
     Devices_connecting[addr] = Network_Device(conn, addr)
 
 sock.close()
 Modules.stop_continuous()
-print('------ Räume werden beendet...')
+Log.write('', '------ Räume werden beendet...', show=True)
 if Rooms == {}:
-    print('[INFO] -- (Keine zu beenden)')
+    Log.write('INFO', '-- (Keine zu beenden)', show=True)
 for room in Rooms.values():
     room.Clientconnection.stop()
-    print('[INFO] Raum {} beendet'.format(room.name))
+    Log.write('INFO', 'Raum {} beendet'.format(room.name), show=True)
 
 for device in Other_devices.values():
     device.Clientconnection.stop()
-print('\n[{}] Auf wiedersehen!\n'.format(System_name.upper()))
+Log.write('', '\n[{}] Auf wiedersehen!\n'.format(System_name.upper()), show=True)
