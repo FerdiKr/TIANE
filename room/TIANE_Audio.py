@@ -100,10 +100,12 @@ class Audio_Input:
         # Hotword gesagt worden, nimmt so lange Ton auf, wie es Sprache feststellen kann, und ruft direkt
         # audioRecorderCallback mit dieser Tondatei auf, ich muss also hier nur warten und den fertig
         # übersetzten Text abholen :)
-        self.bling_callback()
+        '''self.detector.stopped = False
+        self.bling_callback()'''
         self.detector.activated = True
         while self.local_storage['TIANE_recognized_text'] == '':
             time.sleep(0.01)
+        self.detector.stopped = True
         text = self.local_storage['TIANE_recognized_text']
         self.local_storage['TIANE_recognized_text'] = ''
         print('\n- {}\n'.format(text))
