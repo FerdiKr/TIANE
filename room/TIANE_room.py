@@ -90,6 +90,7 @@ class Modules:
             # Modul wurde per start_module aufgerufen
             for module in self.modules:
                 if module.__name__ == name:
+                    self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) direkt aufgerufen (Parameter: {})--'.format(module.__name__, Tiane.room_name, text), 'info':None, 'conv_id':str(text), 'show':True}]})
                     Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                     mt = Thread(target=self.run_threaded_module, args=(text,module,))
                     mt.daemon = True
@@ -105,6 +106,7 @@ class Modules:
                 for module in self.common_modules:
                     try:
                         if module.telegram_isValid(data):
+                            self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) via telegram_isValid gestartet--'.format(module.__name__, Tiane.room_name), 'info':None, 'conv_id':str(text), 'show':True}]})
                             Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                             mt = Thread(target=self.run_threaded_module, args=(text,module,))
                             mt.daemon = True
@@ -118,6 +120,7 @@ class Modules:
             for module in self.modules:
                 try:
                     if module.isValid(text):
+                        self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) gestartet--'.format(module.__name__, Tiane.room_name), 'info':None, 'conv_id':str(text), 'show':True}]})
                         Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                         mt = Thread(target=self.run_threaded_module, args=(text,module,))
                         mt.daemon = True
@@ -206,7 +209,7 @@ class Modules:
                     print('[INFO] Modul {} beendet'.format(module.__name__))
                     no_stopped_modules = False
                 except:
-                    pass
+                    continue
             # aufräumen
             Tiane.continuous_modules = {}
             if no_stopped_modules == True:
@@ -438,11 +441,17 @@ class TIANE:
 
     def listen(self, original_command, user):
         self.Conversation.begin(original_command, user)
-        return self.Audio_Input.listen()
+        self.Audio_Input.detector.stopped = False
+        self.Audio_Input.bling_callback()
+        self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--listening to {} (room: {})--'.format(user,self.room_name), 'info':None, 'conv_id':original_command, 'show':True}]})
+        response = self.Audio_Input.listen()
+        self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--{}-- ({}): {}'.format(user.upper(),self.room_name,response), 'info':None, 'conv_id':original_command, 'show':True}]})
+        return response
 
     def say(self, original_command, text, room, user):
         self.Conversation.begin(original_command, user)
         print('\n--{}:-- {}'.format(self.system_name.upper(),text))
+        self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--{}--@{} ({}): {}'.format(self.system_name.upper(),user,self.room_name,text), 'info':None, 'conv_id':original_command, 'show':True}]})
         self.Audio_Output.say(text)
 
 class Modulewrapper:
