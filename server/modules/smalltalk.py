@@ -1,3 +1,5 @@
+import datetime
+
 def isValid(text):
     text = text.lower()
     if 'wie' in text and 'heißt' in text and 'du' in text:
