@@ -368,6 +368,11 @@ class Modulewrapper:
             user = self.user
         if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
             room = self.room
+        try:
+            if self.local_storage['users'][user]['room'] == 'Telegram' and not 'telegram' in output.lower():
+                output = 'telegram'
+        except KeyError:
+            pass
         if output == 'auto':
             output = 'telegram' if self.room == 'Telegram' else 'speech'
         Tiane.route_say(self.text, text, room, user, output)
@@ -389,6 +394,11 @@ class Modulewrapper:
             user = self.user
         if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
             room = self.room
+        try:
+            if self.local_storage['users'][user]['room'] == 'Telegram' and not 'telegram' in output.lower():
+                output = 'telegram'
+        except KeyError:
+            pass
         if output == 'auto':
             output = 'telegram' if self.room == 'Telegram' else 'speech'
         st = Thread(target=Tiane.route_say, args=(self.text, text, room, user, output))
@@ -502,7 +512,7 @@ class TIANE:
                             continue
                         else:
                             self.local_storage['TIANE_telegram_name_to_id_table'][user] = msg['from']['id']
-                            self.local_storage['TIANE_telegram_id_to_name_table'][msg['from']['id']] = user
+                            self.local_storage['TIANE_telegram_id_to_name_table'][int(msg['from']['id'])] = user
                     else:
                         # Wenn kein Zugriff erlaubt ist, legen wir die Nachricht trotzdem auf die Halde, vielleicht hat irgendein Modul Verwendung dafür...
                         self.local_storage['rejected_telegram_messages'].append(msg)
@@ -515,6 +525,9 @@ class TIANE:
                         continue
 
                 response = True
+                # Wir erledigen hier noch einen Job, der eigentlich in assign_users gehören würde, hier aber einfacher einzubauen ist:
+                # Wer etwas per Telegram sendet, ist im Raum "Telegram" ;)
+                self.local_storage['users'][user]['room'] = 'Telegram'
                 # Nachricht ist definitiv eine (ggf. eingeschobene) "neue Anfrage" ("Hey TIANE,...")
                 if msg['text'].lower().startswith(self.local_storage['activation_phrase'].lower()):
                     response = self.route_query_modules(user, text=msg['text'], direct=True, origin_room='Telegram', data=msg)
@@ -662,7 +675,7 @@ class TIANE:
                         else:'''
                         return response
         else:
-            return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room)
+            return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room, data=data)
 
     def speechVariation(self, input):
         """
@@ -1179,7 +1192,7 @@ if config_data['telegram']:
                 if not user['telegram_id'] == 0:
                     telegram_id_table[user['telegram_id']] = name
                     telegram_name_to_id_table[name] = user['telegram_id']
-                    telegram_id_to_name_table[user['telegram_id']] = name
+                    telegram_id_to_name_table[int(user['telegram_id'])] = name
             except KeyError:
                 continue
         Local_storage['TIANE_telegram_allowed_id_table'] = telegram_id_table
