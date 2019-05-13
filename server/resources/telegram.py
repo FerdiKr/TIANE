@@ -18,8 +18,9 @@ import os
 
 
 class TelegramInterface:
-    def __init__(self, token):
+    def __init__(self, token, tiane):
         self.token = token
+        self.tiane = tiane # Ne Verbindung zur Hauptklasse schadet nie ;)
 
         self.stt = Speech_to_Text([])
         self.tts = Text_to_Speech(19000, 'de-DE')
@@ -29,10 +30,15 @@ class TelegramInterface:
 
         self.messages = []
 
-    def say(self, text, uid, output='telegram'):
+    def say(self, text, uid, conv_id, output='telegram'):
+        try:
+            user = self.tiane.local_storage['TIANE_telegram_id_to_name_table'][uid]
+        except:
+            user = uid
+        self.tiane.Log.write('ACTION', '--{}--@{} (Telegram): {}'.format(self.tiane.system_name.upper(), user, text), conv_id=conv_id, show=True)
         # Kann sehr einfach eine Nachricht senden...
         if not ('speech' in output.lower() or 'voice' in output.lower()):
-            self.bot.sendMessage(uid, text, parse_mode='markdown')
+            self.bot.sendMessage(uid, text, parse_mode='HTML')
         else:
             # ...oder sogar in eine Sprachnachricht umwandeln!
             _, voice_filename = mkstemp(prefix='voice-', suffix='.wav')
