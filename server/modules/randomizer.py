@@ -16,13 +16,7 @@ def output(txt, tiane):
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
     t = str.split(text)
-    if 'wirf die münze' in text or 'was sagt die münze' in text or 'frag die münze' in text:
-        q = random.randint(1,2)
-        if q == 1:
-            output = 'kopf'
-        else:
-            output = 'zahl'
-    elif 'kopf oder zahl' in text:
+    if 'münze' in text:
         q = random.randint(1,2)
         if q == 1:
             output = 'kopf'
@@ -79,7 +73,7 @@ class Tiane:
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Tiane wirf die münze', tiane, profile)
+    handle('Tiane wirf einen würfel', tiane, profile)
 
 if __name__ == '__main__':
     main()
