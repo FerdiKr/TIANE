@@ -5,7 +5,7 @@ def handle(text, tiane, profile):
         if not tiane.user == 'Unknown':
             responses = ['Wenn mich nicht alles täuscht bist du {}',
                          'Ich glaube du bist {}',
-                         'Weißt du etwa nicht mer wer du bist, {}?',
+                         'Weißt du etwa nicht mehr wer du bist, {}?',
                          'Soweit ich das sehen kann bist du {}']
             response = random.choice(responses)
             tiane.say(response.format(tiane.user))
