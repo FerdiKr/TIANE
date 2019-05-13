@@ -44,8 +44,13 @@ def get_item(txt, tiane):
                             item = item + word + ' '
                             mind += 1
                         else:
-                            i = str.split(item)
-                            i = i[0:len(i)-1]
+                            h = str.split(item)
+                            i = h[0:len(h)-1]
+                            j = h[len(h)-1:]
+                            if j == 'gemeinsamen':
+                                i = i[0:len(h)-2]
+                            else:
+                                i = i
                             item = ''
                             for x in i:
                                 item = item + str(x) + ' '
@@ -154,11 +159,12 @@ def handle(txt, tiane, profile):
                 ausgabe = ''
                 liste = {}
                 nutzer = tiane.user
-                nutzerdictionary = tiane.local_storage.get(nutzer)
-                if 'liste' in nutzerdictionary.keys():
-                    nutzerdictionary['liste'].append(item)
+                nutzerdictionary = tiane.local_storage.get('users')
+                nd = nutzerdictionary.get(nutzer)
+                if 'liste' in nd.keys():
+                    nd['liste'].append(item)
                 else:
-                    nutzerdictionary['liste'] = item
+                    nd['liste'] = item
                 ausgabe = random.choice(['In Ordnung, ich habe ' + str(item) + 'zur Liste hinzugefügt.', 'Alles klar, ich habe ' + str(item) + 'auf die Liste gesetzt.', 'Alles klar, {}, ich habe '.format(tiane.user) + str(item) + 'zur Liste hinzugefügt.', 'In Ordnung, {}, ich habe '.format(tiane.user) + str(item) + 'auf die Liste gesetzt.']) 
                 tiane.say(ausgabe)
         elif 'steht' in text and 'auf' in text or 'was sagt die' in text or 'gibt' in text and 'auf' in text:
@@ -208,6 +214,6 @@ class Tiane:
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Was steht auf der Einkaufsliste', tiane, profile)
+    handle('Füge Putzen zur Liste hinzu', tiane, profile)
 if __name__ == '__main__':
     main()
