@@ -72,17 +72,19 @@ def handle(txt, tiane, profile):
     uhrzeit = now.hour
     if 'wie viel uhr ist es' in text or 'wie spät ist es' in text:
         tiane.say(get_time(text))
-    if 'welchen tag haben wir' in text or 'welcher tag ist es' in text or 'welcher wochentag ist es' in text or 'welchen wochentag haben wir' in text or 'welches datum haben wir' in text or 'welches datum ist es' in text or 'den wievielten haben wir heute' in text or 'der wievielte ist es' in text:
+    elif 'welchen tag haben wir' in text or 'welcher tag ist es' in text or 'welcher wochentag ist es' in text or 'welchen wochentag haben wir' in text or 'welches datum haben wir' in text or 'welches datum ist es' in text or 'den wievielten haben wir heute' in text or 'der wievielte ist es' in text:
         tiane.say(get_day(text))
-    if 'hallo' in text:
+    elif 'hallo' in text:
         tiane.say('Hallo, {}!'.format(tiane.user))
-    if uhrzeit >= 19 and uhrzeit <= 23:
+    elif uhrzeit >= 19 and uhrzeit <= 23:
         if 'guten morgen' in text:
             tiane.say('Bist du etwa gerade erst aufgewacht?')
             antwort_eins = tiane.listen()
             antwort_eins = antwort_eins.lower()
-            if 'ja' in antwort_eins or 'ich war müde' in antwort_eins or 'ich war halt müde' in antwort_eins or 'jetzt bin ich ja wach' in antwort_eins or 'jetzt bin ich jedenfalls wach' in antwort_eins:
-                tiane.say('Du solltest wirklich nachts schlafen, sonst bringst du noch deinen Schlafrhytmus durcheinander')
+            if 'ja' in antwort_eins or 'warum nicht' in text or 'ich war müde' in antwort_eins or 'ich war halt müde' in antwort_eins or 'jetzt bin ich ja wach' in antwort_eins or 'jetzt bin ich jedenfalls wach' in antwort_eins:
+                tiane.say('Du solltest wirklich nachts schlafen, sonst bringst du noch deinen Schlafrhytmus durcheinander!')
+            else:
+                tiane.say('In Ordnung.')
         elif 'guten abend' in text:
             tiane.say('Guten Abend, {}. Hast du heute noch was vor?'.format(tiane.user))
             antwort_eins = tiane.listen()
@@ -93,6 +95,8 @@ def handle(txt, tiane, profile):
                 tiane.say('Dann genieße den freien Abend!')
             else:
                 tiane.say('Das klingt toll! Ich wünsche dir viel Spaß dabei!')
+        elif 'guten tag' in text:
+            tiane.say('Guten Tag, {}'.format(tiane.user))
         elif 'gute nacht' in text:
             tiane.say('Soll ich dich morgen wecken?')
             antwort_eins = tiane.listen()
@@ -105,12 +109,16 @@ def handle(txt, tiane, profile):
                     tiane.start_module(text=antwort_zwei)
                 elif 'nein' in antwort_zwei or 'nicht' in antwort_zwei:
                     tiane.say('In Ordnung. Schlaf gut, {}'.format(tiane.user))
+                else:
+                    tiane.say('Ich konnte dich leider nicht verstehen. Du bist wohl schon zu müde.')
             elif 'ja' in antwort_eins or 'weck mich' in antwort_eins or 'wecke mich' in antwort_eins or 'ich möchte um' in antwort_eins or 'ich will um' in antwort_eins or 'bitte um' in antwort_eins:
                 tiane.start_module(text=antwort_eins)
             elif 'nein' in antwort_eins or 'nicht' in antwort_eins:
                 tiane.say('In Ordnung. Schlaf gut, {}'.format(tiane.user))
-    if uhrzeit >= 5 and uhrzeit <= 9:
-        if 'guten morgen' in text:
+            else:
+                tiane.say('Ich konnte dich leider nicht verstehen. Du bist wohl schon zu müde.')
+    elif uhrzeit >= 5 and uhrzeit <= 10:
+        if 'guten morgen' in text or 'guten tag' in text:
             tiane.say('Guten Morgen, {}. Hast du gut geschlafen?'.format(tiane.user))
             antwort_eins = tiane.listen()
             antwort_eins = antwort_eins.lower()
@@ -119,18 +127,20 @@ def handle(txt, tiane, profile):
                 antwort_zwei = tiane.listen()
                 antwort_zwei = antwort_zwei.lower()
                 tiane.start_module(text=antwort_zwei)
-            elif 'TIMEOUT_OR_INVALID' in antwort_eins:
-                tiane.say('Ich hoffe, du bist nicht allzu müde.')
             elif 'wie viel uhr ist es' in antwort_zwei or 'wie spät ist es' in antwort_zwei:
                 tiane.say(get_time(antwort_eins))
+            else:
+                tiane.say('Ich hoffe, du bist nicht allzu müde.')
         elif 'guten abend' in text or 'gute nacht' in text:
             tiane.say('Hast du etwa noch nicht geschlafen?')
             antwort_eins = tiane.listen()
             antwort_eins = antwort_eins.lower()
             if 'nein' in antwort_eins or 'ich hatte besseres zu tun' in antwort_eins or 'ich bin nicht dazu gekommen' in antwort_eins or 'ich bin noch nicht dazu gekommen' in antwort_eins or 'ich bin zu beschäftigt' in antwort_eins or 'schlaf ist für die schwachen' in antwort_eins:
                 tiane.say('Du solltest wirklich ins Bett gehen! 23 Stunden ohne Schlaf sind nicht gut für deinen Körper!')
-    elif uhrzeit >= 2 and uhrzeit <= 4:
-        if 'guten morgen' in text:
+            else:
+                tiane.say('Ich konnte dich leider nicht verstehen. Du bist wohl noch zu müde.')
+    elif uhrzeit >= 0 and uhrzeit <= 4:
+        if 'guten morgen' in text or 'guten tag' in text:
             tiane.say('Schlaf ruhig weiter, es ist noch mitten in der Nacht!')
             antwort_eins = tiane.listen()
             antwort_eins = antwort_eins.lower()
@@ -139,22 +149,59 @@ def handle(txt, tiane, profile):
                 tiane.say('Alles klar! Wie wäre es mit Kaffee oder Tee?')
                 antwort_zwei = tiane.listen()
                 antwort_zwei = antwort_zwei.lower()
-                if 'ja' in antwort_zwei or 'gerne' in antwort_zwei or 'wäre jetzt gut' in antwort_zwei:
-                    tiane.say('Das ist gut, er wird dich aufwecken.')
+                if 'ja' in antwort_zwei or 'gerne' in antwort_zwei or 'wäre jetzt gut' in antwort_zwei or 'warum nicht' in antwort_zwei:
+                    tiane.say('Wenn endlich mal jemand ein Kaffeemaschienen Modul programmieren würde, würde ich dir jetzt sehr gerne Kaffee kochen.') #Das ist gut, er wird dich aufwecken.
                 elif 'nein' in antwort_zwei or 'nicht' in antwort_zwei:
                     tiane.say('In Ordnung')
                 else:
-                    tiane.say('Ich konnte dich leider nicht verstehen. Bist du doch noch zu müde?')
-        elif 'gute nacht' in text or 'guten abend' in text:
+                    tiane.say('Ich konnte dich leider nicht verstehen. Du bist wohl schon zu müde.')
+        elif 'gute nacht' in text:
             tiane.say('Hast du etwa noch nicht geschlafen?')
             antwort_eins = tiane.listen()
             antwort_eins = antwort_eins.lower()
             if 'nein' in antwort_eins or 'ich hatte besseres zu tun' in antwort_eins or 'ich bin nicht dazu gekommen' in antwort_eins or 'ich bin noch nicht dazu gekommen' in antwort_eins or 'ich bin zu beschÃ¤ftigt' in antwort_eins or 'schlaf ist fÃ¼r die schwachen' in antwort_eins:
                 tiane.say('Du solltest wirklich ins Bett gehen! 23 Stunden ohne Schlaf sind nicht gut für deinen Körper!')
-            
+            else:
+                tiane.say('Ich konnte dich leider nicht verstehen. Du bist wohl schon zu müde.')
+        elif 'guten abend' in text:
+            tiane.say('Ob es noch Abend ist, liegt wohl im Blickwinkel des Betrachters. In Amerika ist es jetzt in der Tat Abend.')
+    elif uhrzeit >= 14 and uhrzeit <= 18:
+        if 'guten morgen' in text or 'guten tag' in text:
+            tiane.say('Guten Tag, {}'.format(tiane.user))
+        elif 'gute nacht' in text:
+            tiane.say('Willst du etwa schon schlafen gehen, {}?'.format(tiane.user))
+            antwort_zwei = tiane.listen()
+            a_z = antwort_zwei.lower()
+            if 'ja' in a_z or 'warum nicht' in a_z or 'klar' in a_z:
+                tiane.say('Dann schlaf gut, aber vergiss nicht, auch wieder aufzuwachen!')
+            elif 'nein' in a_z or 'noch nicht' in a_z or 'natürlich nicht' in a_z:
+                tiane.say('Alles klar, dann wünsche ich dir noch einen schönen Abend!')
+            else:
+                tiane.say('Ich konnte dich leider nicht verstehen. Du bist wohl doch schon zu müde.')
+        elif 'guten abend' in text:
+            tiane.say('Ob es schon Abend ist, liegt wohl im Blickwinkel des Betrachters. Ich würde sagen, es ist gerade eher Nachmittag.')
+    elif uhrzeit >= 11 and uhrzeit <= 13:
+        if 'guten morgen' in text or 'guten tag' in text:
+            tiane.say('Guten Tag, {}'.format(tiane.user))
+        elif 'gute nacht' in text:
+            tiane.say('Willst du etwa schon schlafen gehen, {}?'.format(tiane.user))
+            antwort_zwei = tiane.listen()
+            a_z = antwort_zwei.lower()
+            if 'ja' in a_z or 'warum nicht' in a_z or 'klar' in a_z:
+                tiane.say('Du solltest wirklich nachts schlafen, sonst bringst du noch deinen Schlafrhytmus durcheinander!')
+            elif 'nein' in a_z or 'noch nicht' in a_z or 'natürlich nicht' in a_z:
+                tiane.say('Alles klar, dann wünsche ich dir noch einen schönen Tag!')
+            else:
+                tiane.say('Ich konnte dich leider nicht verstehen, {}.'.format(tiane.user))
+        elif 'guten abend' in text:
+            tiane.say('Ob es schon Abend ist, liegt wohl im Blickwinkel des Betrachters. In Asien ist es jetzt in der Tat Abend.')
+    else:
+        tiane.say('Guten Tag, {}'.format(tiane.user))
 
-                                                          
-        
+
+
+
+
 
 def isValid(txt):
     tt = txt.replace('.', (''))
@@ -169,7 +216,7 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    if 'guten abend' in text or 'hallo' in text or 'guten morgen' in text or 'gute nacht' in text or 'welches datum' in text or 'wie spät' in text or 'wie viel uhr' in text or 'wochentag' in text or 'welcher tag' in text or 'welchen tag' in text:
+    if 'guten abend' in text or 'hallo' in text or 'guten morgen' in text or 'gute nacht' in text or 'welches datum' in text or 'wie spät' in text or 'wie viel uhr' in text or 'wochentag' in text or 'welcher tag' in text or 'welchen tag' in text or 'guten tag' in text:
         return True
 
 class Tiane:
@@ -187,7 +234,7 @@ class Tiane:
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Welcher Tag ist es heute', tiane, profile)
+    handle('Guten Morgen', tiane, profile)
 
 if __name__ == '__main__':
     main()
