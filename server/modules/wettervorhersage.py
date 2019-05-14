@@ -77,7 +77,7 @@ def zeitabfrage(dic):
             monat = '0' + monat
     stunde = time.get('hour')
     if stunde == 'None':
-         stunde = str(now.hour + 3)
+         stunde = '13'
     minute = time.get('minute')
     if minute == 'None':
          minute = str(now.minute)
