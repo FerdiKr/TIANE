@@ -25,13 +25,17 @@ def get_inhalt(txt, tiane):
         satz[ind] = w
         ind += 1
     for index, word in satz.items():
-        if word.lower() == 'sag' or word.lower() == 'sage': 
+        if word.lower() == 'sag' or word.lower() == 'sage':
             sag_ind = index
             break
-    if sag_ind != 500: 
+    if sag_ind != 500:
         nutzer = satz.get(sag_ind + 1)
         vorhandene_nutzer = tiane.local_storage.get('users')
-        if nutzer in vorhandene_nutzer.keys():
+        vn = ''
+        for nr in vorhandene_nutzer.keys():
+            vn = vn + nr
+        vn = vn.lower()
+        if nutzer in vn:
             nutzer = nutzer
             start_index = sag_ind + 2
         else:
@@ -68,7 +72,14 @@ def get_inhalt(txt, tiane):
                 except ValueError:
                     inhalt = inhalt
                     break
-    i_und_n = [inhalt, nutzer]
+    n = nutzer
+    if n == '':
+        i_und_n = [inhalt, 'fehler']
+    else:
+        f_l = n[0]
+        first_letter = f_l.capitalize()
+        nutzer = first_letter + nutzer[1:]
+        i_und_n = [inhalt, nutzer]
     return i_und_n
 
 def get_aufruf(text, tiane):
@@ -97,33 +108,41 @@ def get_antwort(text, tiane):
     i_und_n = get_inhalt(text, tiane)
     nutzer = i_und_n[1]
     inhalt = i_und_n[0]
-    inhalt = inhalt.replace(' mir', ' dir')
-    inhalt = inhalt.replace(' mich', ' dich')
-    inhalt = inhalt.replace(' ich', ' mich')
-    antwort = 'Alles klar, ich sage ' + nutzer + ', dass ' + inhalt
+    if nutzer == 'fehler':
+        antwort = 'Ich konnte leider keinen entsprechenden Nutzer finden.'
+    else:
+        inhalt = inhalt.replace(' mir', (' dir'))
+        inhalt = inhalt.replace(' mich', (' dich'))
+        inhalt = inhalt.replace(' ich', (' mich'))
+        inhalt = inhalt.replace(' dir', (' mir'))
+        inhalt = inhalt.replace(' dich', ( 'mich'))
+        antwort = 'Alles klar, ich sage ' + nutzer + ', dass ' + inhalt
     return antwort
 
 
 def handle(text, tiane, profile):
     aufruf = get_aufruf(text, tiane)
     antwort = get_antwort(text, tiane)
-    i_und_n = get_inhalt(text, tiane)
-    nutzer = i_und_n[1]
-    tiane.say(aufruf, user = nutzer)
-    tiane.say(antwort, user = tiane.user)
-    neuertext = tiane.listen(user = nutzer)
-    if neuertext != 'TIMEOUT_OR_INVALID':
-        if 'wo ist ' in neuertext.lower() and tiane.user in neuertext:
-            usersdictionary = tiane.local_storage.get('users')
-            user = usersdictionary.get(tiane.user)
-            raum = user.get('room')
-            if raum == 'Küche':
-                zweite_antwort = random.choice([tiane.user + ' ist gerade in der Küche', tiane.user + ' ist momentan in der Küche'])
-            else:
-                zweite_antwort = random.choice([tiane.user + ' ist gerade im ' + raum, tiane.user + ' ist momentan im ' + raum])
-            tiane.say(zweite_antwort, user = nutzer)
-            
-                    
+    if antwort == 'Ich konnte leider keinen entsprechenden Nutzer finden.':
+        tiane.say(antwort, user = tiane.user)
+    else:
+        i_und_n = get_inhalt(text, tiane)
+        nutzer = i_und_n[1]
+        tiane.say(antwort, user = tiane.user)
+        tiane.say(aufruf, user = nutzer)
+        neuertext = tiane.listen(user = nutzer)
+        if neuertext != 'TIMEOUT_OR_INVALID':
+            if 'wo ist ' in neuertext.lower() and tiane.user in neuertext:
+                usersdictionary = tiane.local_storage.get('users')
+                user = usersdictionary.get(tiane.user)
+                raum = user.get('room')
+                if raum == 'Küche':
+                    zweite_antwort = random.choice([tiane.user + ' ist gerade in der Küche', tiane.user + ' ist momentan in der Küche'])
+                else:
+                    zweite_antwort = random.choice([tiane.user + ' ist gerade im ' + raum, tiane.user + ' ist momentan im ' + raum])
+                tiane.say(zweite_antwort, user = nutzer)
+
+
 
 def isValid(txt):
     tt = txt.replace('.', (''))
@@ -150,7 +169,9 @@ class Tiane:
                                                   'room': 'Wohnzimmer'},
                                         'Klara': {'name': 'Klara',
                                                   'uid': 2,
-                                                  'room': 'Küche'}
+                                                  'room': 'Küche'},
+                                        'Leonie': {'name': 'Leonie',
+                                                   'uid': 3}
                                         }
                               }
         self.user = 'Klara'
@@ -161,13 +182,13 @@ class Tiane:
     def listen(self):
         neuertext = input()
         return neuertext
-        
+
 
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Sag Ferdi Bescheid dass er zu mir in die Küche kommen soll', tiane, profile)
-    
-    
+    handle('Sag Leonie, dass sie dir jetzt schreiben kann!', tiane, profile)
+
+
 if __name__ == "__main__":
     main()
