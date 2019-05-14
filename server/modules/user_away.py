@@ -23,7 +23,14 @@ def handle(text, tiane, profile):
         if user in raum.users:
             raum.users.remove(user)
     # ...Und den Raum aus dem User!
-    profile['users'][user]['room'] = ''
+    try:
+        if not profile['users'][user]['telegram_id'] == 0:
+            profile['users'][user]['room'] = 'Telegram'
+        else:
+            profile['users'][user]['room'] = ''
+    except:
+        pass
+
 
 def isValid(text):
     text = text.lower()
