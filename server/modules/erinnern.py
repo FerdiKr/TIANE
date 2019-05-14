@@ -288,7 +288,6 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    print(tt)
     if 'erinner' in text or 'erinnere' in text:
         return True
     else:
