@@ -1,27 +1,66 @@
 import math
 
-def multiplikation(d):
+PRIORITY = 5
+
+def multiplikation(d, t):
     eins = d.get('eins')
     zwei = d.get('zwei')
     result = eins * zwei
     return result
 
-def division(d):
+def division(d, t):
     eins = d.get('eins')
     zwei = d.get('zwei')
     if zwei == 0:
         result = 'Möchtest du ein Wurmloch kreieren? Etwas durch null zu teilen beschwört Dämonen!'
     else:
-        result = eins / zwei ###runden?
+        result = eins / zwei
     return result
 
-def addition(d):
+def potenzierung(d, t):
     eins = d.get('eins')
     zwei = d.get('zwei')
-    result = eins + zwei
+    if zwei == 0:
+        result = 1
+    elif zwei == 1:
+        result = eins
+    else:
+        result = eins ** zwei
     return result
 
-def subtraktion(d):
+def addition(d, t):
+    eins = d.get('eins')
+    zwei = d.get('zwei')
+    f = False
+    if '*' in t:
+        text = t.lower()
+        satz = {}
+        ind = 1
+        i = str.split(text)
+        for w in i:
+            satz[ind] = w
+            ind += 1
+        for i, w in satz.items():
+            if w == '*':
+                try:
+                    e = int(satz.get(i-1))
+                    z = int(satz.get(i+1))
+                    ergebnis = e * z
+                    f = True
+                    g = True
+                except ValueError or TypeError:
+                    g = False
+                    break
+    if f == False:
+        result = eins + zwei
+    else:
+        if g == True:
+            result = ergebnis + eins
+        else:
+            result = ''
+    return result
+
+def subtraktion(d, t):
     eins = d.get('eins')
     zwei = d.get('zwei')
     result = eins - zwei
@@ -34,69 +73,126 @@ def rechnen(text, tiane):
     satz = {}
     ind = 1
     i = str.split(text)
+    rechenzeichen = ''
     for w in i:
         satz[ind] = w
         ind += 1
     for ix, wd in satz.items():
-        try:
-            if int(wd) >= 0 or int(wd) <= 0:
-                eins = int(wd)
-                eix = ix
-                e = True
+        if wd == '*':
+            try:
+                eins = int(satz.get(ix-1))
+                zwei = int(satz.get(ix+1))
+                rechenzeichen = 'mal'
+            except ValueError or TypeError:
                 break
-        except ValueError or TypeError:
-            e = False
-    if e == True:
-        rechenzeichen = satz.get(eix + 1)
-        if rechenzeichen == 'geteilt':
+    for ix, wd in satz.items():
+        if wd == '+':
             try:
-                if int(satz.get(eix + 3)) >= 0 or int(satz.get(eix + 3)) <= 0: ################################################################## wie Type und Value verschachteln?
-                    zwei = int(satz.get(eix + 3)) 
-            except TypeError:
+                eins = int(satz.get(ix-1))
+                zwei = int(satz.get(ix+1))
+                rechenzeichen = 'plus'
+            except ValueError or TypeError:
+                break
+    for ix, wd in satz.items():
+        if wd == '-':
+            try:
+                eins = int(satz.get(ix-1))
+                zwei = int(satz.get(ix+1))
+                rechenzeichen = 'minus'
+            except ValueError or TypeError:
+                break
+    for ix, wd in satz.items():
+        if wd == '/':
+            try:
+                eins = int(satz.get(ix-1))
+                zwei = int(satz.get(ix+1))
+                rechenzeichen = 'geteilt'
+            except ValueError or TypeError:
+                break
+    for ix, wd in satz.items():
+        if wd == 'hoch' or wd == '**':
+            try:
+                eins = int(satz.get(ix-1))
+                zwei = int(satz.get(ix+1))
+                rechenzeichen = 'hoch'
+            except ValueError or TypeError:
+                break
+    if rechenzeichen != '':
+        for ix, wd in satz.items():
+            try:
+                if int(wd) >= 0 or int(wd) <= 0:
+                    eins = int(wd)
+                    eix = ix
+                    e = True
+                    break
+            except ValueError or TypeError:
+                e = False
+        if e == True:
+            rechenzeichen = satz.get(eix + 1)
+            if rechenzeichen == 'geteilt':
                 try:
-                    if int(satz.get(eix + 3)) >= 0 or int(satz.get(eix + 3)) <= 0:
+                    if int(satz.get(eix + 3)) >= 0 or int(satz.get(eix + 3)) <= 0: ################################################################## wie Type und Value verschachteln?
                         zwei = int(satz.get(eix + 3))
-                except ValueError:
-                    ergebnis = 'Ich kann das Ergebnis leider nicht berechnen'
-        else:
-            try:
-                if int(satz.get(eix + 2)) >= 0 or int(satz.get(eix + 2)) <= 0: 
-                    zwei = int(satz.get(eix + 2))
-            except TypeError:
+                except TypeError:
+                    try:
+                        if int(satz.get(eix + 3)) >= 0 or int(satz.get(eix + 3)) <= 0:
+                            zwei = int(satz.get(eix + 3))
+                    except ValueError:
+                        ergebnis = 'Ich kann das Ergebnis leider nicht berechnen'
+            else:
                 try:
                     if int(satz.get(eix + 2)) >= 0 or int(satz.get(eix + 2)) <= 0:
                         zwei = int(satz.get(eix + 2))
-                except ValueError:
-                    ergebnis = 'Ich kann das Ergebnis leider nicht berechnen'
+                except TypeError:
+                    try:
+                        if int(satz.get(eix + 2)) >= 0 or int(satz.get(eix + 2)) <= 0:
+                            zwei = int(satz.get(eix + 2))
+                    except ValueError:
+                        ergebnis = 'Ich kann das Ergebnis leider nicht berechnen'
         dic = {'eins': eins, 'zwei': zwei}
         #if text.lower().startswith('und'):
             #print('asked for: (same), parameter(s): {};{}, operator: {}'.format(eins,zwei,rechenzeichen))
         #else:
             #print('asked for: result, parameter(s): {};{}, operator: {}'.format(eins,zwei,rechenzeichen))
         #print('\n\ncalculating response...')
-        if rechenzeichen == 'mal' or rechenzeichen == 'x':
-            ergebnis = multiplikation(dic)
+        if rechenzeichen == 'mal' or rechenzeichen == 'x' or rechenzeichen == '*':
+            ergebnis = multiplikation(dic, text)
         elif rechenzeichen == 'geteilt' or rechenzeichen == 'durch' or rechenzeichen == '/':
-            ergebnis = division(dic)
+            ergebnis = division(dic, text)
         elif rechenzeichen == 'plus' or rechenzeichen == 'und' or rechenzeichen == '+':
-            ergebnis = addition(dic)
+            ergebnis = addition(dic, text)
         elif rechenzeichen == 'minus' or rechenzeichen == '-':
-            ergebnis = subtraktion(dic)
+            ergebnis = subtraktion(dic, text)
+        elif rechenzeichen == 'hoch':
+            ergebnis = potenzierung(dic, text)
         else:
             ergebnis = ergebnis
     return ergebnis
 
-def handle(text, tiane, profile):
+def handle(txt, tiane, profile):
+    tt = txt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     ergebnis = rechnen(text, tiane)
     e = str(ergebnis)
     e = e[:5]
     e = e.replace('.', (' Komma '))
-    ausgabe = 'Die Lösung ist ' + e + '.'
+    if e != ' ' and e != '':
+        ausgabe = 'Die Lösung ist ' + e + '.'
+    else:
+        ausgabe = 'Das kann ich leider nicht berechnen.'
     tiane.say(ausgabe)
 
 def isValid(text):
     text = text.lower()
-    if 'wie viel ist' in text or 'wie viel ergibt' in text or 'was ergibt' in text or 'was macht' in text or 'was ist' in text:
+    if 'wie viel ist' in text or 'wie viel ergibt' in text or 'was ergibt' in text or 'was macht' in text or 'was ist' in text or '+' in text or '*' in text or '- ' in text or '/' in text:
         return True
 
 class Tiane:
@@ -114,7 +210,7 @@ class Tiane:
 def main():
     profile = {}
     tiane = Tiane()
-    handle('Tiane wie viel ist 14 geteilt durch 5', tiane, profile)
+    handle('2 hoch 10', tiane, profile)
 
 if __name__ == '__main__':
     main()
