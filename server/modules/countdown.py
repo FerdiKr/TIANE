@@ -40,25 +40,37 @@ def get_date(text, tiane):
             monat = str(now.month + 1)
         else:
             monat = str(now.month)
-
-    if jetzt_jahr == jahr and jetzt_monat == monat and jetzt_tag == tag:
-        tagesdifferenz == 'heute'
-    else:
-        d0 = date(int(jetzt_jahr), int(jetzt_monat), int(jetzt_tag))
-        d1 = date(int(jahr), int(monat), int(tag))
-        delta = d1 - d0
-        delta = str(delta)
-        elemente = str.split(delta)
-        tagesanzahl = elemente[0]
-        tagesanzahl = int(tagesanzahl)
-        if tagesanzahl < 0:
-            tagesdifferenz = ''
-        elif tagesanzahl == 0:
-            tagesdifferenz = 'heute'
-        elif tagesanzahl == 1:
-            tagesdifferenz = 'morgen'
+    monate = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'}
+    monat = int(monat)
+    month_in_format = str(monate.get(monat))
+    xs = ''
+    xs = xs + str(tag) + ' '
+    xs = xs + month_in_format + ' '
+    xs = xs + str(jahr)
+    ts = datetime.datetime.now()
+    heute = ts.strftime('%d %b %Y')
+    diff =  datetime.datetime.strptime(xs, '%d %b %Y') - datetime.datetime.strptime(heute, '%d %b %Y')
+    daynr = diff.days
+    tagesdifferenz = 'in ' + str(daynr) + ' Tagen'
+    if tagesdifferenz == '':
+        if jetzt_jahr == jahr and jetzt_monat == monat and jetzt_tag == tag:
+            tagesdifferenz == 'heute'
         else:
-            tagesdifferenz = 'in ' + str(tagesanzahl) + ' Tagen'
+            d0 = date(int(jetzt_jahr), int(jetzt_monat), int(jetzt_tag))
+            d1 = date(int(jahr), int(monat), int(tag))
+            delta = d1 - d0
+            delta = str(delta)
+            elemente = str.split(delta)
+            tagesanzahl = elemente[0]
+            tagesanzahl = int(tagesanzahl)
+            if tagesanzahl < 0:
+                tagesdifferenz = ''
+            elif tagesanzahl == 0:
+                tagesdifferenz = 'heute'
+            elif tagesanzahl == 1:
+                tagesdifferenz = 'morgen'
+            else:
+                tagesdifferenz = 'in ' + str(tagesanzahl) + ' Tagen'
     return tagesdifferenz
 
 
@@ -158,4 +170,3 @@ def main():
     handle('Vor wie vielen Tagen war Ferdis Geburtstag', tiane, profile)
 if __name__ == '__main__':
     main()
-
