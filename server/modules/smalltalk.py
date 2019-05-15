@@ -28,6 +28,10 @@ def isValid(text):
     if 'sag ' in text and 'was' in text or 'sage ' in text and 'was' in text:
         if 'nettes' in text or 'liebes' in text or 'freundliches' in text:
             return True
+    if 'hast' in text and 'recht' in text:
+        return True
+    if 'sicher' in text and ('chat' in text or 'kanal' in text or 'verbindung' in text):
+        return True
 
 def handle(text, tiane, profile):
     text = text.lower()
@@ -66,3 +70,7 @@ def handle(text, tiane, profile):
     elif 'sag ' in text and 'was' in text or 'sage ' in text and 'was' in text:
         if 'nettes' in text or 'liebes' in text or 'freundliches' in text:
             tiane.say(random.choice(['Ich freue mich, dass du mit mir sprichst, {}'.format(tiane.user), 'Ich freue mich, dass du dich mit mir unterhältst!', 'Ich spreche sehr gerne mit dir! Du bist ein toller Mensch.', 'Ich unterhalte mich sehr gerne mit dir, {}. Du bist ein toller Mensch!'.format(tiane.user), 'Das fällt mir leicht, du bist wirklich sehr nett zu mir.', 'Hast du denn sonst niemanden, der nett zu dir ist?', 'Wenn du dich schlecht fühlst, denk einfach daran, dass du ein besserer Mensch bist als Künstliche Intelligenzen es jemals sein werden!', 'Du bist ein super Gesprächspartner, {}'.format(tiane.user)]))
+    elif 'hast' in text and 'recht' in text:
+        tiane.say('Ich weiß.')
+    elif 'sicher' in text and ('chat' in text or 'kanal' in text or 'verbindung' in text):
+        tiane.say('Meine internen Verbindungen sind sicher verschlüsselt, bei Telegram weiß ich das nicht so genau. Aber generell, bevor du mir irgendwelche Geheimnisse anvertraust: Denk daran, dass der Besitzer des Computers, auf dem ich laufe, immer alles sieht...')
