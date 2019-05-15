@@ -71,8 +71,9 @@ def handle(text, tiane, profile):
 
 def isValid(text):
     text = text.lower()
-    if "weisst du" in text and ("über" in text or (("was" in text or "wer" in text) and ("ist" in text or "sind" in text or "war" in text or "waren" in text))):
-        return True
+    if "weisst du" in text or "weißt du" in text:
+        if ("über" in text or (("was" in text or "wer" in text) and ("ist" in text or "sind" in text or "war" in text or "waren" in text))):
+            return True
     elif "was ist" in text or "wer ist" in text or "wer war" in text or "wer waren" in text:
         return True
     elif "was versteh" in text or "definier" in text:
