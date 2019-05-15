@@ -106,7 +106,7 @@ def rechnen(text, tiane):
             try:
                 eins = int(satz.get(ix-1))
                 zwei = int(satz.get(ix+1))
-                rechenzeichen = 'geteilt'
+                rechenzeichen = '/'
             except ValueError or TypeError:
                 break
     for ix, wd in satz.items():
@@ -117,7 +117,7 @@ def rechnen(text, tiane):
                 rechenzeichen = 'hoch'
             except ValueError or TypeError:
                 break
-    if rechenzeichen != '':
+    if rechenzeichen != 'Baum':
         for ix, wd in satz.items():
             try:
                 if int(wd) >= 0 or int(wd) <= 0:
@@ -128,7 +128,8 @@ def rechnen(text, tiane):
             except ValueError or TypeError:
                 e = False
         if e == True:
-            rechenzeichen = satz.get(eix + 1)
+            if rechenzeichen == '':
+                rechenzeichen = satz.get(eix + 1)
             if rechenzeichen == 'geteilt':
                 try:
                     if int(satz.get(eix + 3)) >= 0 or int(satz.get(eix + 3)) <= 0: ################################################################## wie Type und Value verschachteln?
@@ -172,7 +173,6 @@ def rechnen(text, tiane):
 def handle(txt, tiane, profile):
     tt = txt.replace('?', (''))
     tt = tt.replace('!', (''))
-    tt = tt.replace(',', (''))
     tt = tt.replace('"', (''))
     tt = tt.replace('(', (''))
     tt = tt.replace(')', (''))
@@ -180,19 +180,33 @@ def handle(txt, tiane, profile):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    ergebnis = rechnen(text, tiane)
-    e = str(ergebnis)
-    e = e[:5]
-    e = e.replace('.', (' Komma '))
-    if e != ' ' and e != '':
-        ausgabe = 'Die Lösung ist ' + e + '.'
+    try:
+        easy_e = int(text)
+    except ValueError:
+        easy_e = 'x'
+    if str(easy_e) != 'x':
+        tiane.say('Die Lösung ist ' + str(easy_e) + '.')
     else:
-        ausgabe = 'Das kann ich leider nicht berechnen.'
-    tiane.say(ausgabe)
+        ergebnis = rechnen(text, tiane)
+        e = str(ergebnis)
+        if '.' in e:
+            e = e[:6] ##imperfect for high numbers with .!
+            e = e.replace('.', (' Komma '))
+        if e != ' ' and e != '':
+            if e == 'Möchtest du ein Wurmloch kreieren? Etwas durch null zu teilen beschwört Dämonen!':
+                tiane.say(e)
+            else:
+                tiane.say('Die Lösung ist ' + e + '.')
+        else:
+            tiane.say('Das kann ich leider nicht berechnen.')
+
 
 def isValid(text):
     text = text.lower()
-    if 'wie viel ist' in text or 'wie viel ergibt' in text or 'was ergibt' in text or 'was macht' in text or 'was ist' in text or '+' in text or '*' in text or '- ' in text or '/' in text:
+    if 'wie viel ist' in text or 'wie viel ergibt' in text or 'was ergibt' in text or 'was macht' in text or 'was ist' in text:
+        if '+' in text or '*' in text or '- ' in text or '/' in text or 'mal' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
+            return True
+    if '+' in text or '*' in text or '- ' in text or '/' in text or 'mal' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
         return True
 
 class Tiane:
@@ -210,7 +224,7 @@ class Tiane:
 def main():
     profile = {}
     tiane = Tiane()
-    handle('2 hoch 10', tiane, profile)
+    handle('0 / 0', tiane, profile)
 
 if __name__ == '__main__':
     main()
