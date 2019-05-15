@@ -1,8 +1,6 @@
 import datetime
 import random
 
-
-
 def get_time(i):
     now = datetime.datetime.now()
     stunde = now.hour
@@ -10,6 +8,8 @@ def get_time(i):
     if nächste_stunde == 24:
         nächste_stunde = 0
     minute = now.minute
+    stunde = str(stunde)
+    minute = str(minute)
     if minute == 0:
         ausgabe = 'Es ist ' + stunde + ' Uhr.'
     elif minute == 5:
@@ -35,7 +35,7 @@ def get_time(i):
     elif minute == 55:
         ausgabe = 'Es ist fünf vor ' + nächste_stunde + '.'
     else:
-        ausgabe = 'Es ist ' + str(stunde) + ' Uhr ' + str(minute) + '.'
+        ausgabe = 'Es ist ' + stunde + ' Uhr ' + minute + '.'
     return ausgabe
 
 def get_day(i):
@@ -51,7 +51,6 @@ def get_day(i):
                 29: 'neunundzwanzigste', 30: 'dreißigste', 31: 'einunddreißigste', 32: 'zweiunddreißigste'}
     ausgabe = 'Heute ist ' + tage.get(wochentag) + ' der ' + nummern.get(now.day) + ' ' + nummern.get(now.month) + '.'
     return ausgabe
-
 
 
 def handle(txt, tiane, profile):
@@ -70,9 +69,9 @@ def handle(txt, tiane, profile):
     now = datetime.datetime.now()
     wochentag = datetime.datetime.today().weekday()
     uhrzeit = now.hour
-    if 'wie viel uhr ist es' in text or 'wie spät ist es' in text:
+    if 'uhr' in text or 'spät' in text or 'uhrzeit' in text:
         tiane.say(get_time(text))
-    elif 'welchen tag haben wir' in text or 'welcher tag ist es' in text or 'welcher wochentag ist es' in text or 'welchen wochentag haben wir' in text or 'welches datum haben wir' in text or 'welches datum ist es' in text or 'den wievielten haben wir heute' in text or 'der wievielte ist es' in text:
+    elif 'tag' in text or 'wochentag' in text or 'datum' in text or 'den wievielten haben wir heute' in text or 'der wievielte ist es' in text:
         tiane.say(get_day(text))
     elif 'hallo' in text:
         tiane.say('Hallo, {}!'.format(tiane.user))
@@ -201,8 +200,6 @@ def handle(txt, tiane, profile):
 
 
 
-
-
 def isValid(txt):
     tt = txt.replace('.', (''))
     tt = tt.replace('?', (''))
@@ -216,7 +213,7 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    if 'guten abend' in text or 'hallo' in text or 'guten morgen' in text or 'gute nacht' in text or 'welches datum' in text or 'wie spät' in text or 'wie viel uhr' in text or 'wochentag' in text or 'welcher tag' in text or 'welchen tag' in text or 'guten tag' in text:
+    if 'guten abend' in text or 'hallo' in text or 'uhrzeit' in text or 'guten morgen' in text or 'gute nacht' in text or 'welches datum' in text or 'wie spät' in text or 'wie viel uhr' in text or 'wochentag' in text or 'welcher tag' in text or 'welchen tag' in text or 'guten tag' in text:
         return True
 
 class Tiane:
