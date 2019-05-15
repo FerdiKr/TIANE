@@ -22,12 +22,16 @@
             "system_name",
             "activation_phrase",
             "home_location",
-            "TIANE_Modules_defined_Vocabulary"
+            "TIANE_Modules_defined_Vocabulary",
+            "TIANE_telegram_allowed_id_table",
+            "TIANE_telegram_name_to_id_table",
+            "TIANE_telegram_id_to_name_table"
         ],
         "rooms": {},
         "TIANE_Modules_defined_Vocabulary": [],
         "TIANE_telegram_allowed_id_table": {},
         "TIANE_telegram_name_to_id_table": {},
+        "TIANE_telegram_id_to_name_table": {},
         "rejected_telegram_messages": [],
         "home_location": ""
     }
