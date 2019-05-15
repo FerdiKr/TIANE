@@ -37,7 +37,7 @@ def output(txt, tiane):
         else:
             output = 'sechs'
     elif (('zufall' in text or 'zufällig' in text) and 'zahl' in text):
-        output = random.randint(0,100)
+        output = str(random.randint(0,100))
     return output
 
 def handle(text, tiane, profile):
