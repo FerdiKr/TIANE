@@ -489,8 +489,17 @@ class Modulewrapper:
             user = self.user
         if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
             room = self.room_name
+        try:
+            if self.local_storage['users'][user]['room'] == 'Telegram' and not 'telegram' in output.lower():
+                output = 'telegram'
+        except KeyError:
+            pass
         if output == 'auto':
             output = 'telegram' if self.room == 'Telegram' else 'speech'
+        # Noch ne Variante: Der Nutzer ist nur über Telegram bekannt...
+        if user not in self.userlist and user in self.local_storage['TIANE_telegram_name_to_id_table'].keys():
+            if not 'telegram' in output.lower():
+                output = 'telegram'
         Tiane.request_say(self.text, text, room, user, output)
 
     def listen(self, user=None, input='auto'):
@@ -508,8 +517,17 @@ class Modulewrapper:
             user = self.user
         if user == None or user == 'Unknown': # Immer noch? Kann durchaus sein...
             room = self.room
+        try:
+            if self.local_storage['users'][user]['room'] == 'Telegram' and not 'telegram' in output.lower():
+                output = 'telegram'
+        except KeyError:
+            pass
         if output == 'auto':
             output = 'telegram' if self.room == 'Telegram' else 'speech'
+        # Noch ne Variante: Der Nutzer ist nur über Telegram bekannt...
+        if user not in self.userlist and user in self.local_storage['TIANE_telegram_name_to_id_table'].keys():
+            if not 'telegram' in output.lower():
+                output = 'telegram'
         st = Thread(target=Tiane.request_say, args=(self.text, text, room, user, output))
         st.daemon = True
         st.start()
