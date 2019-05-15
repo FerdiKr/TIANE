@@ -78,7 +78,7 @@ def rechnen(text, tiane):
         satz[ind] = w
         ind += 1
     for ix, wd in satz.items():
-        if wd == '*':
+        if wd == '*' or wd == 'x':
             try:
                 eins = int(satz.get(ix-1))
                 zwei = int(satz.get(ix+1))
@@ -204,9 +204,9 @@ def handle(txt, tiane, profile):
 def isValid(text):
     text = text.lower()
     if 'wie viel ist' in text or 'wie viel ergibt' in text or 'was ergibt' in text or 'was macht' in text or 'was ist' in text:
-        if '+' in text or '*' in text or '- ' in text or '/' in text or 'mal' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
+        if '+' in text or '*' in text or ' x ' in text or '- ' in text or '/' in text or 'mal' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
             return True
-    if '+' in text or '*' in text or '- ' in text or '/' in text or 'mal' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
+    if '+' in text or '*' in text or ' x ' in text or '- ' in text or '/' in text or 'mal' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
         return True
 
 class Tiane:
