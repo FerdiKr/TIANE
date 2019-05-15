@@ -385,7 +385,7 @@ class Sentence_Analyzer:
                                         uhr_index = um_iindex + 1
                                         uhr = satz.get(uhr_index)
                                         lang = len(uhr)
-                                        if lang >= 2:
+                                        if lang >= 3:
                                             mi = uhr[lang - 2]
                                             nute = uhr[lang - 1]
                                             minute = mi + nute
@@ -1234,7 +1234,7 @@ class Sentence_Analyzer:
 
 def main():
     Analyzer = Sentence_Analyzer(room_list=['Küche', 'Wohnzimmer', 'Bad'])
-    eingabe = 'In wie vielen Tagen ist der 1. Juli?' 
+    eingabe = 'Wecke mich um 17 Uhr.' 
     print (Analyzer.analyze(eingabe))
 
 if __name__ == '__main__':
