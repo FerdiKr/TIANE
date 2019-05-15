@@ -818,6 +818,8 @@ class Logging:
             spaces = ''
             if not last_logentry['type'] == 'ACTION':
                 spaces = '\n\n'
+                if last_logentry['conv_id'] == logentry['conv_id']:
+                    spaces = ''
             else:
                 if not last_logentry['conv_id'] == logentry['conv_id']: # conversation_id wird am Anfang original_command sein, aber in weiser Voraussicht hab ich das schon mal umbenannt...
                     spaces = '\n'
