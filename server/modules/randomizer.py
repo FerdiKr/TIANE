@@ -16,7 +16,7 @@ def output(txt, tiane):
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
     t = str.split(text)
-    if 'münze' in text:
+    if 'münze' in text or ('kopf' in text and 'oder' in text and 'zahl' in text):
         q = random.randint(1,2)
         if q == 1:
             output = 'kopf'
@@ -36,6 +36,8 @@ def output(txt, tiane):
             output = 'fünf'
         else:
             output = 'sechs'
+    elif (('zufall' in text or 'zufällig' in text) and 'zahl' in text):
+        output = random.randint(0,100)
     return output
 
 def handle(text, tiane, profile):
@@ -55,7 +57,7 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    if 'münze' in text or 'kopf' in text or 'zahl' in text or 'würfel' in text:
+    if 'münze' in text or ('kopf' in text and 'oder' in text and 'zahl' in text) or 'würfel' in text or (('zufall' in text or 'zufällig' in text) and 'zahl' in text):
         return True
 
 class Tiane:
