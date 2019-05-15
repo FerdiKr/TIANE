@@ -728,7 +728,7 @@ class TIANE:
         # Grundvoraussetzung, die gegeben sein muss: Das Modul muss per Sprachbefehl aufgerufen worden sein!
 
         if name == None and not text == None and direct == True and not (user == None or user == 'Unknwon'):
-            if text.lower().startswith('und '):
+            if text.lower().startswith('und ') or (text.lower().startswith('noch') and ('ein' in text.lower() or 'mal' in text.lower())):
                 # Es wird unterschieden zwischen drei Fällen:
                 # 1.: selber Nutzer, selbes Thema, ggf. anderer Raum (Wetter in ...; und in ...)
                 # 2.: selber Raum, selbes Thema, ggf. anderer Nutzer (Wer bin ich; und ich)
@@ -1207,6 +1207,7 @@ if config_data['telegram']:
                     telegram_id_table[user['telegram_id']] = name
                     telegram_name_to_id_table[name] = user['telegram_id']
                     telegram_id_to_name_table[int(user['telegram_id'])] = name
+                    Local_storage['users'][user['name']]['room'] = 'Telegram'
             except KeyError:
                 continue
         Local_storage['TIANE_telegram_allowed_id_table'] = telegram_id_table
