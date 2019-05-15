@@ -375,6 +375,10 @@ class Modulewrapper:
             pass
         if output == 'auto':
             output = 'telegram' if self.room == 'Telegram' else 'speech'
+        # Noch ne Variante: Der Nutzer ist nur über Telegram bekannt...
+        if user not in self.userlist and user in self.local_storage['TIANE_telegram_name_to_id_table'].keys():
+            if not 'telegram' in output.lower():
+                output = 'telegram'
         Tiane.route_say(self.text, text, room, user, output)
 
     def listen(self, user=None, input='auto'):
@@ -401,6 +405,10 @@ class Modulewrapper:
             pass
         if output == 'auto':
             output = 'telegram' if self.room == 'Telegram' else 'speech'
+        # Noch ne Variante: Der Nutzer ist nur über Telegram bekannt...
+        if user not in self.userlist and user in self.local_storage['TIANE_telegram_name_to_id_table'].keys():
+            if not 'telegram' in output.lower():
+                output = 'telegram'
         st = Thread(target=Tiane.route_say, args=(self.text, text, room, user, output))
         st.daemon = True
         st.start()
@@ -550,7 +558,8 @@ class TIANE:
 
     def route_say(self, original_command, text, raum, user, output):
         text = self.speechVariation(text) # Danke, Leon :)
-        if 'telegram' in output.lower() or user not in self.userlist:
+        Log.write('DEBUG', {'Action':'route_say()', 'conv_id':original_command, 'text':text, 'raum':raum, 'user':user, 'output':output}, conv_id=original_command, show=False)
+        if ('telegram' in output.lower()) or (user not in self.userlist and user is not None):
             if self.telegram is not None:
                 # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, an wen der Text gesendet werden soll. Einfach beenden.
                 if user == None or user == 'Unknown':
