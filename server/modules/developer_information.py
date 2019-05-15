@@ -7,7 +7,7 @@ def get_answer(text, tiane):
     if 'github' in text or 'quellcode' in text or 'repository' in text:
         reply = 'Mein GitHub-Repository findest du unter https://github.com/FerdiKr/TIANE. Meine Entwickler freuen sich über Beiträge!'
     elif 'wer' in text or 'von wem' in text:
-        if 'programmiert' in text or 'erschaffen' in text or 'entwickelt' in text:
+        if 'programmiert' in text or 'erschaffen' in text or 'entwickelt' in text or 'erstellt' in text:
             v = random.choice(['entwickelt', 'programmiert', 'erschaffen'])
             if tiane.telegram_call:
                 reply = 'Ich wurde von Ferdinand und Klara Krämer ' + v + '. Du kannst Team Krämer unter der folgenden email Adresse erreichen: jufo.teamkraemer@gmail.com.'
