@@ -51,7 +51,7 @@ def uhrzeit(dicanalyse):
     minute = time.get('minute')
     if minute == 'None':
          minute = '00'
-    zeit = jahr + '-' + monat + '-' + tag + ' ' + stunde + ':' + minute + ':' + '00.000000'
+    zeit = str(jahr) + '-' + str(monat) + '-' + str(tag) + ' ' + str(stunde) + ':' + str(minute) + ':' + '00.000000'
     return zeit
 
 
@@ -82,7 +82,7 @@ def get_text(tiane, txt):
         remembrall = remembrall.replace(' in ', (' '))
         s = str.split(remembrall)
         for t in s:
-            try:   
+            try:
                 if int(t) >= 0:
                     remembrall = remembrall.replace(t, (''))
             except ValueError:
@@ -93,7 +93,7 @@ def get_text(tiane, txt):
     i = str.split(remembrall)
     for w in i:
         satz[ind] = w
-        ind += 1              
+        ind += 1
     if ' am ' in satz.items():
         for index, word in satz.items():
             if word == 'am':
@@ -116,13 +116,13 @@ def get_text(tiane, txt):
                         except TypeError:
                             ausgabe = ausgabe
     elif ' daran das' in text:
-        for ind, w in satz.items():    
+        for ind, w in satz.items():
             if w == 'daran':
                 reminder = ''
                 n = 1
                 try:
                     try:
-                        while n < 30:                      
+                        while n < 30:
                             if satz.get(ind + n) != None:
                                 reminder = reminder + str(satz.get(ind + n)) + ' '
                                 n += 1
@@ -135,7 +135,7 @@ def get_text(tiane, txt):
                 except ValueError:
                     reminder = reminder
                     break
-                ausgabe = reminder                    
+                ausgabe = reminder
     else:
         for index, word in satz.items():
             if word == 'erinner' or word == 'erinnere':
@@ -237,7 +237,7 @@ def get_reply_time(tiane, dicanalyse):
     reply = zeit_der_erinnerung
     return reply
 
-   
+
 
 def handle(text, tiane, profile):
     if text != '_UNDO_':
@@ -273,7 +273,7 @@ def handle(text, tiane, profile):
                 else:
                     del liste[len(liste) - 3]
 
-    
+
 
 def isValid(txt):
     tt = txt.replace('.', (''))
@@ -288,11 +288,11 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
+    print(tt)
     if 'erinner' in text or 'erinnere' in text:
         return True
     else:
         return False
-
 
 
 class Tiane:
