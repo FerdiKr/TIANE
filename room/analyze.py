@@ -41,7 +41,7 @@ class Sentence_Analyzer:
         satz = self.get_text(x)
         town = 'None'
         in_index = 0
-        nope = 'der dem einem einer drei zwei vier fünf sechs sieben acht neun zehn Der Dem Einem Einer Drei Zwei Vier Fünf Sechs Sieben Acht Neun Zehn'
+        nope = 'der dem einem einer drei zwei vier fünf sechs sieben acht neun zehn Der Dem Einem Einer Drei Zwei Vier Fünf Sechs Sieben Acht Neun Zehn 1 2 3 4 5 6 7 8 9 10'
         two_words = 'los new old bad ober unter west ost nord süd south north east Los New Old Bad Ober Unter West Ost Nord Süd South North East'
         if 'in ' not in x:
             if 'zu hause' in x or 'hier' in x:
@@ -173,7 +173,66 @@ class Sentence_Analyzer:
                             month = 'None'
         return month
 
-
+    def get_month_by_name(self, txt):
+        tt = txt.replace('.', (''))
+        tt = tt.replace('?', (''))
+        tt = tt.replace('!', (''))
+        tt = tt.replace('.', (''))
+        tt = tt.replace(',', (''))
+        tt = tt.replace('"', (''))
+        tt = tt.replace('(', (''))
+        tt = tt.replace(')', (''))
+        tt = tt.replace('€', ('Euro'))
+        tt = tt.replace('%', ('Prozent'))
+        tt = tt.replace('$', ('Dollar'))
+        text = tt.lower()
+        month = 'None'
+        Monate = {'januar': '01', 'februar': '02', 'märz': '03', 'april': '04', 'mai': '05', 'juni': '06',
+                  'juli': '07', 'august': '08', 'september': '09', 'oktober': '10', 'november': '11', 'dezember': '12'}
+        s = str.split(text)
+        x = ''
+        for w in s:
+            if w in Monate.keys():
+                x = w
+                month = Monate.get(x)
+                break
+        day = 'None'
+        mind = 0
+        if month != 'None':
+            satz = {}
+            i = str.split(text)
+            ind = 1
+            for w in i:
+                satz[ind] = w
+                ind += 1
+            for iindex, word in satz.items():
+                if word == x:
+                    mind = iindex - 1
+            if mind >= 1:
+                try:
+                    day = satz.get(mind)
+                except ValueError:
+                    day = 'None'
+        if day != 'None':
+            tage = {1: 'ersten', 2: 'zweiten', 3: 'dritten', 4: 'vierten', 5: 'fünften',
+                    6: 'sechsten', 7: 'siebten', 8: 'achten', 9: 'neunten', 10: 'zehnten',
+                    11: 'elften', 12: 'zwölften', 13: 'dreizehnten', 14: 'vierzehnten', 15: 'fünfzehnten',
+                    16: 'sechzehnten', 17: 'siebzehnten', 18: 'achtzehnten', 19: 'neunzehnten', 20: 'zwanzigsten',
+                    21: 'einundzwanzigsten', 22: 'zweiundzwanzigsten', 23: 'dreiundzwanzigsten', 24: 'vierundzwanzigsten',
+                    25: 'fünfundzwanzigsten', 26: 'sechsundzwanzigsten', 27: 'siebenundzwanzigsten', 28: 'achtundzwanzigsten',
+                    29: 'neunundzwanzigsten', 30: 'dreißigsten', 31: 'einunddreißigsten', 32: 'zweiunddreißigsten'}
+            for i, w in tage.items():
+                if day == w:
+                    day = i
+                    break
+            day = int(day)
+            if day <= 9:
+                day = '0' + str(day)
+            else:
+                day = str(day)
+        m_and_d = [month, day]
+        return m_and_d
+                
 
     def get_day_abs(self, txt):
         tt = txt.replace('.', (''))
@@ -664,6 +723,8 @@ class Sentence_Analyzer:
             day = now.day + 2
         elif ' morgen' in text:
             day = now.day + 1
+        elif 'heute' in text:
+            day = now.day
         elif 'übernächstes wochenende' in text:
             w = 5 - wochentag
             day = now.day + w + 14
@@ -677,7 +738,7 @@ class Sentence_Analyzer:
             day = self.get_wochentag_rel(text)
         day = int(day)
         ub = int(day)
-        if day == now.day:
+        if day > 1234:
             day = 'None'
         elif day >= 29:
             if now.month == 2 and now.year % 4 != 0:
@@ -1130,15 +1191,20 @@ class Sentence_Analyzer:
         now = datetime.datetime.now()
         r = self.get_room(text) 
         t = self.get_town(text)
-        m = self.get_month_abs(text) 
+        m_a_d = self.get_month_by_name(text)
+        m = m_a_d[0]
         if m == 'None':
-            m = self.get_month_rel(text) 
+            m = self.get_month_abs(text) 
             if m == 'None':
-                m = self.getmonth_fromday(text) 
-        d = self.get_day_abs(text) 
+                m = self.get_month_rel(text) 
+                if m == 'None':
+                    m = self.getmonth_fromday(text)
+        d = m_a_d[1]
         if d == 'None':
-            day = self.get_day_rel(text)
-            d = day.get('Daily')     #incl. self.get_wochentag_rel(text)
+            d = self.get_day_abs(text) 
+            if d == 'None':
+                day = self.get_day_rel(text)
+                d = day.get('Daily')     #incl. self.get_wochentag_rel(text)
         y = self.get_year_abs(text) 
         if y == 'None':
             y = self.get_year_rel(text) 
@@ -1168,7 +1234,7 @@ class Sentence_Analyzer:
 
 def main():
     Analyzer = Sentence_Analyzer(room_list=['Küche', 'Wohnzimmer', 'Bad'])
-    eingabe = 'Erinner mich in 55 Minuten' 
+    eingabe = 'In wie vielen Tagen ist der 1. Juli?' 
     print (Analyzer.analyze(eingabe))
 
 if __name__ == '__main__':
