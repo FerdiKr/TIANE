@@ -329,9 +329,9 @@ class Sentence_Analyzer:
         hour = ''
         text = text.lower()
         satz = self.get_text(text)
-        if 'um ' not in text:
+        if 'um ' not in text and 'uhr ' not in text:
             hour = 'None'
-        else:
+        elif 'um ' in text:
             for ind, word in satz.items():
                 if word == 'um':
                     um_index = ind
@@ -355,6 +355,30 @@ class Sentence_Analyzer:
                                 hour = ho + ur
                         except ValueError:
                             hour = '0' + ho
+        elif 'uhr ' in text:
+            for ind, word in satz.items():
+                if word == 'uhr':
+                    uhr_index = ind
+                    hour_index = ind - 1
+                    minute_index = ind + 1
+                    hour = satz.get(hour_index)
+                    minute = satz.get(minute_index)
+                    if len(hour) <= 2 and len(minute) <= 2:
+                        try:
+                            if int(hour) <= 23 and int(hour) >= 0:
+                                hour = int(hour)
+                                break
+                        except ValueError:
+                            hour = default
+                        if hour >= 0 and hour <= 23:
+                            hour = str(hour)
+                            if len(hour) <= 1:
+                                hour = '0' + hour
+                    elif len(hour) <= 2:
+                        try:
+                            minute = int(hour)
+                        except ValueError:
+                            minute = 'None' ###################
         if hour != 'None' and hour != '12':
             if ' abend' in text or ' nachmittag' in text:
                 stunde = int(hour) + 12
@@ -365,9 +389,9 @@ class Sentence_Analyzer:
         minute = '00'
         text = text.lower()
         satz = self.get_text(text)
-        if 'um ' not in text:
+        if 'um ' not in text and 'uhr' not in text:
             minute = 'None'
-        else:
+        elif 'um ' in text:
             for ind, word in satz.items():
                 if word == 'um':
                     um_index = ind
@@ -396,6 +420,7 @@ class Sentence_Analyzer:
                             try:
                                 if int(mi) <= 59 and int(mi) >= 0:
                                     minute = mi
+                                    break
                             except ValueError:
                                 for ind, word in satz.items():
                                     if word == 'um':
@@ -408,7 +433,45 @@ class Sentence_Analyzer:
                                             nute = uhr[lang - 1]
                                             minute = mi + nute
                         except TypeError:
-                            minute = 0 
+                            minute = 0
+        elif 'uhr' in text:
+            f = False
+            for i, w in satz.items():
+                if w == 'uhr':
+                    uhr_index = i
+                    m_index = i + 1
+                    try:
+                        minu = satz.get(m_index)
+                        try:
+                            if int(minu) <= 59 and int(minu) >= 0:
+                                minute = minu
+                                break
+                        except TypeError:
+                            minute = 'None'
+                            break
+                    except TypeError:
+                        minu = 'None'
+                        satz1 = satz.remove(uhr_index)
+                        f = True
+                        break
+            if f == True:
+                for i, w in satz1.items():
+                    if w == 'uhr':
+                        uhr_index = i
+                        m_index = i + 1
+                        try:
+                            minu = satz.get(m_index)
+                            try:
+                                if int(minu) <= 59 and int(minu) >= 0:
+                                    minute = minu
+                                    break
+                            except TypeError:
+                                minute = 'None'
+                                break
+                        except TypeError:
+                            minute = 'None'
+                            break
+        if minute != 'None':
             if int(minute) <= 9:
                 minute = '0' + str(minute)
             else:
@@ -436,9 +499,9 @@ class Sentence_Analyzer:
                     except TypeError:
                         minute = '00'
         else:
-            hour = 0
-            minute = '00'
-        if minute != '00':
+            hour = 'None'
+            minute = 'None'
+        if minute != 'None':
             m = now.minute
             add = m + zeit
             if add >= 60:
@@ -454,7 +517,7 @@ class Sentence_Analyzer:
                     minute = '0' + str(minute)
                 else:
                     minute = str(minute)
-                hour = 0
+                hour = 'None'
         dictionary = {'minute': minute, 'hour': hour}
         return dictionary
             
@@ -1214,12 +1277,14 @@ class Sentence_Analyzer:
             minute = self.get_minute_rel(text)
             hour = minute.get('hour')
             mi = minute.get('minute')
-            if int(mi) != 0:
-                stunde = now.hour
-                h = stunde + hour
+            if mi != 'None':
+                if h == 'None':
+                    stunde = now.hour
+                    h = stunde + hour
             else:
-                mi = 'None'
-                h = 'None'
+                if h == 'None':
+                    mi = 'None'
+                    h = 'None'
         dic = {}
         dic['town'] = t
         dic['room'] = r
@@ -1234,7 +1299,7 @@ class Sentence_Analyzer:
 
 def main():
     Analyzer = Sentence_Analyzer(room_list=['Küche', 'Wohnzimmer', 'Bad'])
-    eingabe = 'Wecke mich um 17 Uhr.' 
+    eingabe = 'Stelle einen Wecker auf 14 Uhr 17!.' 
     print (Analyzer.analyze(eingabe))
 
 if __name__ == '__main__':
