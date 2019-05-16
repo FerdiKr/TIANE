@@ -1,6 +1,8 @@
 import datetime
 import random
 
+
+
 def get_time(i):
     now = datetime.datetime.now()
     stunde = now.hour
@@ -53,6 +55,7 @@ def get_day(i):
     return ausgabe
 
 
+
 def handle(txt, tiane, profile):
     tt = txt.replace('.', (''))
     tt = tt.replace('?', (''))
@@ -71,7 +74,7 @@ def handle(txt, tiane, profile):
     uhrzeit = now.hour
     if 'uhr' in text or 'spät' in text or 'uhrzeit' in text:
         tiane.say(get_time(text))
-    elif 'tag' in text or 'wochentag' in text or 'datum' in text or 'den wievielten haben wir heute' in text or 'der wievielte ist es' in text:
+    elif 'welchen tag' in text or 'welcher tag' in text or 'wochentag' in text or 'datum' in text or 'den wievielten haben wir heute' in text or 'der wievielte ist es' in text:
         tiane.say(get_day(text))
     elif 'hallo' in text:
         tiane.say('Hallo, {}!'.format(tiane.user))
@@ -196,6 +199,8 @@ def handle(txt, tiane, profile):
             tiane.say('Ob es schon Abend ist, liegt wohl im Blickwinkel des Betrachters. In Asien ist es jetzt in der Tat Abend.')
     else:
         tiane.say('Guten Tag, {}'.format(tiane.user))
+
+
 
 
 
