@@ -224,11 +224,11 @@ def run(tiane, profile):
                         h = bottom - top
                         coordinates_combined_bordered.append((x,y,w,h,name,proba))
                 else:
-                    x = 0
+                    add = 0
                     for frame in frames[:i]:
-                        x += frame.shape[1]
+                        add += frame.shape[1]
                     for top,right,bottom,left,name,proba in cams[i][2]:
-                        x = left + 300 + x
+                        x = left + 300 + add
                         y = top + 200
                         w = right - left
                         h = bottom - top
