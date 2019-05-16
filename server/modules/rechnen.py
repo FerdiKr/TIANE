@@ -1,6 +1,6 @@
 import math
 
-PRIORITY = 5
+PRIORITY = 2
 
 def multiplikation(d, t):
     eins = d.get('eins')
@@ -204,9 +204,9 @@ def handle(txt, tiane, profile):
 def isValid(text):
     text = text.lower()
     if 'wie viel ist' in text or 'wie viel ergibt' in text or 'was ergibt' in text or 'was macht' in text or 'was ist' in text:
-        if '+' in text or '*' in text or ' x ' in text or '- ' in text or '/' in text or 'mal' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
+        if '+' in text or '*' in text or ' x ' in text or '- ' in text or ' / ' in text or 'mal' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
             return True
-    if '+' in text or '*' in text or ' x ' in text or '- ' in text or '/' in text or 'mal' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
+    if '+' in text or '*' in text or ' x ' in text or '- ' in text or ' / ' in text or 'geteilt' in text or 'hoch' in text or 'minus' in text or 'plus' in text or 'durch' in text:
         return True
 
 class Tiane:
