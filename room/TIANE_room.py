@@ -90,7 +90,7 @@ class Modules:
             # Modul wurde per start_module aufgerufen
             for module in self.modules:
                 if module.__name__ == name:
-                    self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) direkt aufgerufen (Parameter: {})--'.format(module.__name__, Tiane.room_name, text), 'info':None, 'conv_id':str(text), 'show':True}]})
+                    Tiane.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) direkt aufgerufen (Parameter: {})--'.format(module.__name__, Tiane.room_name, text), 'info':None, 'conv_id':str(text), 'show':True}]})
                     Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                     mt = Thread(target=self.run_threaded_module, args=(text,module,))
                     mt.daemon = True
@@ -103,10 +103,10 @@ class Modules:
             # Ganz normal die Module abklingeln
             # Bei Telegram-Aufrufen zuerst die entsprechenden telegram_isValids abklappern:
             if origin_room == 'Telegram':
-                for module in self.common_modules:
+                for module in self.modules:
                     try:
                         if module.telegram_isValid(data):
-                            self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) via telegram_isValid gestartet--'.format(module.__name__, Tiane.room_name), 'info':None, 'conv_id':str(text), 'show':True}]})
+                            Tiane.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) via telegram_isValid gestartet--'.format(module.__name__, Tiane.room_name), 'info':None, 'conv_id':str(text), 'show':True}]})
                             Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                             mt = Thread(target=self.run_threaded_module, args=(text,module,))
                             mt.daemon = True
@@ -120,7 +120,7 @@ class Modules:
             for module in self.modules:
                 try:
                     if module.isValid(text):
-                        self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) gestartet--'.format(module.__name__, Tiane.room_name), 'info':None, 'conv_id':str(text), 'show':True}]})
+                        Tiane.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) gestartet--'.format(module.__name__, Tiane.room_name), 'info':None, 'conv_id':str(text), 'show':True}]})
                         Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                         mt = Thread(target=self.run_threaded_module, args=(text,module,))
                         mt.daemon = True
