@@ -89,8 +89,8 @@ def get_aufruf(text, tiane):
     inhalt = inhalt.replace(' mir', (' ' + tiane.user))
     inhalt = inhalt.replace(' mich', (' ' + tiane.user))
     inhalt = inhalt.replace(' ich', (' ' + tiane.user))
-    inhalt = inhalt.replace('er', 'du')
-    inhalt = inhalt.replace('sie', 'du')
+    inhalt = inhalt.replace(' er ', ' du ')
+    inhalt = inhalt.replace(' sie ', ' du ')
     nutzer = i_und_n[1]
     aufruf = nutzer + ', ' + tiane.user + ' möchte dir sagen, dass ' + inhalt
     x = aufruf[-1:]
@@ -130,7 +130,7 @@ def handle(text, tiane, profile):
         nutzer = i_und_n[1]
         tiane.say(antwort, user = tiane.user)
         tiane.say(aufruf, user = nutzer)
-        neuertext = tiane.listen(user = nutzer)
+        '''neuertext = tiane.listen(user = nutzer)
         if neuertext != 'TIMEOUT_OR_INVALID':
             if 'wo ist ' in neuertext.lower() and tiane.user in neuertext:
                 usersdictionary = tiane.local_storage.get('users')
@@ -140,7 +140,7 @@ def handle(text, tiane, profile):
                     zweite_antwort = random.choice([tiane.user + ' ist gerade in der Küche', tiane.user + ' ist momentan in der Küche'])
                 else:
                     zweite_antwort = random.choice([tiane.user + ' ist gerade im ' + raum, tiane.user + ' ist momentan im ' + raum])
-                tiane.say(zweite_antwort, user = nutzer)
+                tiane.say(zweite_antwort, user = nutzer)'''
 
 
 
