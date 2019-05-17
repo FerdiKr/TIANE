@@ -19,7 +19,7 @@ def get_date(text, tiane):
     monat = time.get('month')
     if monat == 'None':
         if int(tag) == 28:
-            if now.month == 2:
+            if now.month == 2:.get('users')
                 if int(jahr) / 4 == 0:
                     monat = '3'
                 else:
@@ -123,16 +123,52 @@ def get_past_date(text, tiane):
         differenz = 'vor ' + str(tagesanzahl) + ' Tagen'
     return differenz
 
+def get_birthday(txt, tiane):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
+    answer = ''
+    nutzer = local_storage['users'][tiane.user]
+    try:
+        geburtsdatum = nutzer['date_of_birth']
+        jahr = geburtsdatum['year']
+        monat = geburtsdatum['month']
+        tag = geburtsdatum['day']
+        tage = {1: 'ersten', 2: 'zweiten', 3: 'dritten', 4: 'vierten', 5: 'fünften',
+            6: 'sechsten', 7: 'siebten', 8: 'achten', 9: 'neunten', 10: 'zehnten',
+            11: 'elften', 12: 'zwölften', 13: 'dreizehnten', 14: 'vierzehnten', 15: 'fünfzehnten',
+            16: 'sechzehnten', 17: 'siebzehnten', 18: 'achtzehnten', 19: 'neunzehnten', 20: 'zwanzigsten',
+            21: 'einundzwanzigsten', 22: 'zweiundzwanzigsten', 23: 'dreiundzwanzigsten', 24: 'vierundzwanzigsten',
+            25: 'fünfundzwanzigsten', 26: 'sechsundzwanzigsten', 27: 'siebenundzwanzigsten', 28: 'achtundzwanzigsten',
+            29: 'neunundzwanzigsten', 30: 'dreißigsten', 31: 'einunddreißigsten', 32: 'zweiunddreißigsten'}
+            day = tage.get(tag)
+            month = tage.get(monat)
+            answer = 'Dein Geburtstag ist am ' + day + ' ' + month + ' ' + str(jahr)
+    except KeyError:
+        answer = 'Ich weiß leider nicht, wann dein Geburtstag ist.'
+    return answer
 
 
 def handle(text, tiane, profile):
     ausgabe = ''
-    datum = get_date(text, tiane)
-    if datum == '':
-        datum = get_past_date(text, tiane)
-        ausgabe = random.choice([datum + ' war das Ereignis.', 'Das Ereignis war ' + datum + '.'])
+    if 'geburtstag' in text:
+        ausgabe = get_birthday(text, tiane)
     else:
-        ausgabe = random.choice([datum + ' ist das Ereignis.', 'Das Ereignis ist ' + datum + '.'])
+        datum = get_date(text, tiane)
+        if datum == '':
+            datum = get_past_date(text, tiane)
+            ausgabe = random.choice([datum + ' war das Ereignis.', 'Das Ereignis war ' + datum + '.'])
+        else:
+            ausgabe = random.choice([datum + ' ist das Ereignis.', 'Das Ereignis ist ' + datum + '.'])
     tiane.say(ausgabe)
 
 def isValid(txt):
@@ -149,7 +185,7 @@ def isValid(txt):
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
     if 'wie' in text:
-        if 'lange' in text or 'tage' in text and 'viele' in text:
+        if 'lange' in text or 'tage' in text and 'viele' in text or 'wann ' in text and 'geburtstag' in text:
             return True
 
 class Tiane:
