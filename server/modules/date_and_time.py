@@ -129,8 +129,8 @@ def handle(txt, tiane, profile):
                 antwort_zwei = tiane.listen()
                 antwort_zwei = antwort_zwei.lower()
                 tiane.start_module(text=antwort_zwei)
-            elif 'wie viel uhr ist es' in antwort_zwei or 'wie spät ist es' in antwort_zwei:
-                tiane.say(get_time(antwort_eins))
+                if 'wie viel uhr ist es' in antwort_zwei or 'wie spät ist es' in antwort_zwei:
+                    tiane.say(get_time(antwort_eins))
             else:
                 tiane.say('Ich hoffe, du bist nicht allzu müde.')
         elif 'guten abend' in text or 'gute nacht' in text:
