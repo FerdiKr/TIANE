@@ -1280,11 +1280,12 @@ class Sentence_Analyzer:
             if mi != 'None':
                 if h == 'None':
                     stunde = now.hour
-                    h = int(stunde) + int(hour)
-                    if int(h) <= 9:
-                        h = '0' + str(h)
-                    else:
-                        h = str(h)
+                    if hour != 'None':
+                        h = int(stunde) + int(hour)
+                        if int(h) <= 9:
+                            h = '0' + str(h)
+                        else:
+                            h = str(h)
             else:
                 if h == 'None':
                     mi = 'None'
@@ -1303,7 +1304,7 @@ class Sentence_Analyzer:
 
 def main():
     Analyzer = Sentence_Analyzer(room_list=['Küche', 'Wohnzimmer', 'Bad'])
-    eingabe = 'Stelle einen Wecker auf 14 Uhr 17!.'
+    eingabe = 'Erinner mich in 2 Minuten an test'
     print (Analyzer.analyze(eingabe))
 
 if __name__ == '__main__':
