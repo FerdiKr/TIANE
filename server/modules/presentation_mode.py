@@ -4,8 +4,9 @@ def isValid(text):
         return True
 
 def handle(text, tiane, profile):
-    tiane.core.presentation_mode = not tiane.core.presentation_mode
     if tiane.core.presentation_mode:
-        tiane.say('Alles klar, der Präsentationsmodus ist gestartet.')
-    else:
+        tiane.core.presentation_mode = False
         tiane.say('In Ordnung, der Präsentationsmodus ist beendet.')
+    else:
+        tiane.core.presentation_mode = True
+        tiane.say('Alles klar, der Präsentationsmodus ist gestartet.')
