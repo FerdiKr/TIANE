@@ -87,7 +87,7 @@ def zeitabfrage(dic):
     if differenz.total_seconds() >= 40*10800:
         zeit = 'Ich kann leider nicht so weit in die Zukunft sehen.' #Möchtest du wissen, wie das Wetter in 5 Tagen wird?
     return zeit
-        
+
 
 
 def handle(text, tiane, profile):
@@ -110,10 +110,10 @@ def handle(text, tiane, profile):
                 mind = 0
                 falsches_in = 0
                 i = str.split(antwort)
-                ind = 1 
+                ind = 1
                 for w in i:
-                    satz[ind] = w 
-                    ind += 1 
+                    satz[ind] = w
+                    ind += 1
                 for iindex, word in satz.items():
                     if word in sonst:
                         mind = mind + iindex
@@ -122,7 +122,7 @@ def handle(text, tiane, profile):
                         falsches_in = falsches_in + iindex
                 if falsches_in >= 1:
                     del satz[falsches_in]
-                for iindex, word in satz.items(): #findet Wort 'in''s key 
+                for iindex, word in satz.items(): #findet Wort 'in''s key
                     if word == 'in':
                         in_index = iindex
                         myind = in_index + 1
@@ -151,10 +151,12 @@ def handle(text, tiane, profile):
         '''antwort = tiane.listen()
         antwort = antwort.lower()
         if 'ja' in antwort:'''
-      
+
     else:
         weatherdescription = ''
         liste_der_wetterbeschreibungen = wetterdictionary.get('list')
+        minimum = 0
+        maximum = 0
         for item in liste_der_wetterbeschreibungen:
             genannte_zeit = zeitabfrage(tiane.analysis)
             zeit_im_api = item.get("dt_txt") + '0000'
@@ -175,6 +177,8 @@ def handle(text, tiane, profile):
                 beschreibung = wetterdictionary.get("description")
                 weatherdescription = get_weather(beschreibung)
                 break
+        minimum = str(minimum)
+        maximum = str(maximum)
         if weatherdescription == 'bedeckt' or weatherdescription == 'teils wolkig' or weatherdescription == 'wolkig' or weatherdescription == 'klar' or weatherdescription == 'regnerisch' or weatherdescription == 'neblig' or weatherdescription == 'einen Waldbrand geben' or weatherdescription == 'stürmisch':
             if minimum != maximum:
                 wetter = 'Es wird ' + weatherdescription + ' bei ' + minimum + ' bis ' + maximum + ' Grad Celsius.'
@@ -222,7 +226,7 @@ def main():
     profile = {}
     tiane = Tiane()
     handle('Wie wird das Wetter', tiane, profile)
-    
-    
+
+
 if __name__ == "__main__":
     main()
