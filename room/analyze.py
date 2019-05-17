@@ -5,7 +5,7 @@ class Sentence_Analyzer:
         self.raumliste = room_list
 
 
-    def get_text(self, eingabe):  
+    def get_text(self, eingabe):
         sonst = 'der dem den einer'
         tt = eingabe.replace('.', (''))
         tt = tt.replace('?', (''))
@@ -37,7 +37,7 @@ class Sentence_Analyzer:
         return satz
 
 
-    def get_town(self, x): 
+    def get_town(self, x):
         satz = self.get_text(x)
         town = 'None'
         in_index = 0
@@ -60,8 +60,8 @@ class Sentence_Analyzer:
                             town = town + ' ' + second_word
                         except KeyError:
                             town = town
-                        
-                            
+
+
                     if town in nope:
                         town = 'None'
         if town != 'None':
@@ -76,7 +76,7 @@ class Sentence_Analyzer:
 
 
 
-    def get_room(self, text): 
+    def get_room(self, text):
         room = ''
         raum = str(self.raumliste)
         tt = text.replace('.', (''))
@@ -232,7 +232,7 @@ class Sentence_Analyzer:
                 day = str(day)
         m_and_d = [month, day]
         return m_and_d
-                
+
 
     def get_day_abs(self, txt):
         tt = txt.replace('.', (''))
@@ -264,7 +264,7 @@ class Sentence_Analyzer:
                     am_index = ind
                     day_index = ind + 1
                     if day_index in satz.keys():
-                        dayy = satz.get(day_index) 
+                        dayy = satz.get(day_index)
                         if dayy in tage.values():
                             for ind, w in tage.items():
                                 if w == dayy:
@@ -275,7 +275,7 @@ class Sentence_Analyzer:
                                         day = str(day)
                         else:
                             try:
-                                if int(dayy) >= 1: 
+                                if int(dayy) >= 1:
                                     tag = int(dayy)
                             except ValueError:
                                 tag = dayy[0:2]
@@ -296,7 +296,7 @@ class Sentence_Analyzer:
                                 day = str(tag)
         return day
 
-    def get_year_abs(self, text): 
+    def get_year_abs(self, text):
         text = text.lower()
         satz = self.get_text(text)
         year = 'None'
@@ -325,7 +325,7 @@ class Sentence_Analyzer:
                                 year = 'None'
         return year
 
-    def get_hour_abs(self, text): 
+    def get_hour_abs(self, text):
         hour = ''
         text = text.lower()
         satz = self.get_text(text)
@@ -414,7 +414,7 @@ class Sentence_Analyzer:
                                             nute = uhr[lang - 1]
                                             minute = mi + nute
                         except ValueError:
-                            minute = 0 
+                            minute = 0
                     else:
                         try:
                             try:
@@ -520,8 +520,8 @@ class Sentence_Analyzer:
                 hour = 'None'
         dictionary = {'minute': minute, 'hour': hour}
         return dictionary
-            
-            
+
+
 
 
     def get_year_rel(self, txt):
@@ -619,7 +619,7 @@ class Sentence_Analyzer:
         tt = tt.replace(')', (''))
         tt = tt.replace('€', ('Euro'))
         tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar')) 
+        tt = tt.replace('$', ('Dollar'))
         text = tt.lower()
         t = 0
         if 'übernächste woche' in text or 'übernächsten' in text:
@@ -780,8 +780,8 @@ class Sentence_Analyzer:
                             myind = t_ind - 1
                             day = satz.get(myind)
                     except KeyError:
-                        day = day           
-                            
+                        day = day
+
         elif 'übermorgen' in text:
             day = now.day + 2
         elif ' morgen' in text:
@@ -868,7 +868,7 @@ class Sentence_Analyzer:
                             v = u - 30
                             if v >= 32:
                                 w = v - 31
-                                if w >= 31: 
+                                if w >= 31:
                                     x = w - 30
                                     if x >= 32:
                                         y = x - 31
@@ -921,7 +921,7 @@ class Sentence_Analyzer:
                                 if w >= 32:
                                     x = w - 31
                                     if x >= 32:
-                                        y = x - 31 
+                                        y = x - 31
                                         if y >= 31:
                                             z = y - 30
                                             day = z
@@ -949,7 +949,7 @@ class Sentence_Analyzer:
                                 if w >= 32:
                                     x = w - 31
                                     if x >= 32:
-                                        y = x - 31 
+                                        y = x - 31
                                         if (now.year + 1) % 4 == 0 and y >= 30:
                                             z = y - 29
                                             day = z
@@ -976,7 +976,7 @@ class Sentence_Analyzer:
                         if u >= 32:
                             v = u - 31
                             if v >= 32:
-                                w = v - 31 
+                                w = v - 31
                                 if w >= 31:
                                     x = w - 30
                                     if x >= 32:
@@ -1004,7 +1004,7 @@ class Sentence_Analyzer:
                         if u >= 32:
                             v = u - 31
                             if v >= 32:
-                                w = v - 31 
+                                w = v - 31
                                 if (now.year + 1) % 4 == 0 and w >= 30:
                                     x = w - 29
                                     if x >= 32:
@@ -1063,7 +1063,7 @@ class Sentence_Analyzer:
                             day = u
                     else:
                         day = t
-            elif now.month == 12: 
+            elif now.month == 12:
                 if day >= 32:
                     t = day - 31
                     if t >= 32:
@@ -1109,8 +1109,8 @@ class Sentence_Analyzer:
                         else:
                             day = u
                     else:
-                        day = t       
-            else: 
+                        day = t
+            else:
                 if day >= 31:
                     t = day - 30
                     if t >= 32:
@@ -1216,7 +1216,7 @@ class Sentence_Analyzer:
                             v = u - 31
                             m = now.month + 3
                             if v >= 32:
-                                m = now.month + 4   
+                                m = now.month + 4
             elif now.month == 7 or now.month == 12:
                 if day >= 32:
                     t = day - 31
@@ -1229,13 +1229,13 @@ class Sentence_Analyzer:
                             m = now.month + 3
                             if v >= 32:
                                 m = now.month + 4
-            else: 
+            else:
                 if day >= 31:
                     m = now.month + 1
                     t = day - 30
                     if t >= 32:
                         m = now.month + 2
-                        
+
         month = m
         if month == now.month:
             month = 0
@@ -1252,25 +1252,25 @@ class Sentence_Analyzer:
 
     def analyze(self, text):
         now = datetime.datetime.now()
-        r = self.get_room(text) 
+        r = self.get_room(text)
         t = self.get_town(text)
         m_a_d = self.get_month_by_name(text)
         m = m_a_d[0]
         if m == 'None':
-            m = self.get_month_abs(text) 
+            m = self.get_month_abs(text)
             if m == 'None':
-                m = self.get_month_rel(text) 
+                m = self.get_month_rel(text)
                 if m == 'None':
                     m = self.getmonth_fromday(text)
         d = m_a_d[1]
         if d == 'None':
-            d = self.get_day_abs(text) 
+            d = self.get_day_abs(text)
             if d == 'None':
                 day = self.get_day_rel(text)
                 d = day.get('Daily')     #incl. self.get_wochentag_rel(text)
-        y = self.get_year_abs(text) 
+        y = self.get_year_abs(text)
         if y == 'None':
-            y = self.get_year_rel(text) 
+            y = self.get_year_rel(text)
         h = self.get_hour_abs(text)
         mi = self.get_minute_abs(text)
         if mi == 'None':
@@ -1280,7 +1280,11 @@ class Sentence_Analyzer:
             if mi != 'None':
                 if h == 'None':
                     stunde = now.hour
-                    h = stunde + hour
+                    h = int(stunde) + int(hour)
+                    if int(h) <= 9:
+                        h = '0' + str(h)
+                    else:
+                        h = str(h)
             else:
                 if h == 'None':
                     mi = 'None'
@@ -1299,7 +1303,7 @@ class Sentence_Analyzer:
 
 def main():
     Analyzer = Sentence_Analyzer(room_list=['Küche', 'Wohnzimmer', 'Bad'])
-    eingabe = 'Stelle einen Wecker auf 14 Uhr 17!.' 
+    eingabe = 'Stelle einen Wecker auf 14 Uhr 17!.'
     print (Analyzer.analyze(eingabe))
 
 if __name__ == '__main__':
