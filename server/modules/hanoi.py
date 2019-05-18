@@ -167,109 +167,28 @@ def movessequence_ui(n, k):
     #print(moves, len(moves))
     return moves
 
-def rechnen(text, tiane):
-    ergebnis = ''
-    e = False
+def movenumber(text):
     text = text.lower()
-    satz = {}
-    ind = 1
-    i = str.split(text)
-    rechenzeichen = ''
-    for w in i:
-        satz[ind] = w
-        ind += 1
-    for ix, wd in satz.items():
-        if wd == '*' or wd == 'x':
-            try:
-                eins = int(satz.get(ix-1))
-                zwei = int(satz.get(ix+1))
-                rechenzeichen = 'mal'
-            except ValueError or TypeError:
-                break
-    for ix, wd in satz.items():
-        if wd == '+':
-            try:
-                eins = int(satz.get(ix-1))
-                zwei = int(satz.get(ix+1))
-                rechenzeichen = 'plus'
-            except ValueError or TypeError:
-                break
-    for ix, wd in satz.items():
-        if wd == '-':
-            try:
-                eins = int(satz.get(ix-1))
-                zwei = int(satz.get(ix+1))
-                rechenzeichen = 'minus'
-            except ValueError or TypeError:
-                break
-    for ix, wd in satz.items():
-        if wd == '/':
-            try:
-                eins = int(satz.get(ix-1))
-                zwei = int(satz.get(ix+1))
-                rechenzeichen = '/'
-            except ValueError or TypeError:
-                break
-    for ix, wd in satz.items():
-        if wd == 'hoch' or wd == '**':
-            try:
-                eins = int(satz.get(ix-1))
-                zwei = int(satz.get(ix+1))
-                rechenzeichen = 'hoch'
-            except ValueError or TypeError:
-                break
-    if rechenzeichen != 'Baum':
-        for ix, wd in satz.items():
-            try:
-                if int(wd) >= 0 or int(wd) <= 0:
-                    eins = int(wd)
-                    eix = ix
-                    e = True
-                    break
-            except ValueError or TypeError:
-                e = False
-        if e == True:
-            if rechenzeichen == '':
-                rechenzeichen = satz.get(eix + 1)
-            if rechenzeichen == 'geteilt':
+    textlist = re.split("\s", text)
+    nosucces = False
+    for index, word in enumerate(textlist):
+        if index > 1:
+            if re.search(r"feld|felder|platz|plätze|stab|stäbe", word):
                 try:
-                    if int(satz.get(eix + 3)) >= 0 or int(satz.get(eix + 3)) <= 0: ################################################################## wie Type und Value verschachteln?
-                        zwei = int(satz.get(eix + 3))
-                except TypeError:
-                    try:
-                        if int(satz.get(eix + 3)) >= 0 or int(satz.get(eix + 3)) <= 0:
-                            zwei = int(satz.get(eix + 3))
-                    except ValueError:
-                        ergebnis = 'Ich kann das Ergebnis leider nicht berechnen'
-            else:
+                    k = int(textlist[index-1]
+                except:
+                    nosuccess = True
+            if re.search(r"scheibe|scheiben|klotz|klötze", word):
                 try:
-                    if int(satz.get(eix + 2)) >= 0 or int(satz.get(eix + 2)) <= 0:
-                        zwei = int(satz.get(eix + 2))
-                except TypeError:
-                    try:
-                        if int(satz.get(eix + 2)) >= 0 or int(satz.get(eix + 2)) <= 0:
-                            zwei = int(satz.get(eix + 2))
-                    except ValueError:
-                        ergebnis = 'Ich kann das Ergebnis leider nicht berechnen'
-        dic = {'eins': eins, 'zwei': zwei}
-        #if text.lower().startswith('und'):
-            #print('asked for: (same), parameter(s): {};{}, operator: {}'.format(eins,zwei,rechenzeichen))
-        #else:
-            #print('asked for: result, parameter(s): {};{}, operator: {}'.format(eins,zwei,rechenzeichen))
-        #print('\n\ncalculating response...')
-        if rechenzeichen == 'mal' or rechenzeichen == 'x' or rechenzeichen == '*':
-            ergebnis = multiplikation(dic, text)
-        elif rechenzeichen == 'geteilt' or rechenzeichen == 'durch' or rechenzeichen == '/':
-            ergebnis = division(dic, text)
-        elif rechenzeichen == 'plus' or rechenzeichen == 'und' or rechenzeichen == '+':
-            ergebnis = addition(dic, text)
-        elif rechenzeichen == 'minus' or rechenzeichen == '-':
-            ergebnis = subtraktion(dic, text)
-        elif rechenzeichen == 'hoch':
-            ergebnis = potenzierung(dic, text)
-        else:
-            ergebnis = ergebnis
-    return ergebnis
+                    n = int(textlist[index-1])
+                except:
+                    nosuccess = True
+    if not nosuccess:
+        ret = "Für {} Scheiben und {} Felder benötigt man mindestens {} Züge.".format(n, k , M(n,k))
+    else:
+        ret = "Ich konnte leider keine Zugzahl ermitteln
+    sucess = not nosuccess
+    return ret, sucess
 
 def handle(txt, tiane, profile):
     '''
