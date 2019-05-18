@@ -250,52 +250,55 @@ def movetime(text):
                 time_string += str(years) + " Jahre"
         
         if months > 0:
-            time_string += ","
+            time_string += ", "
             if months == 1:
                 time_string += "1 Monat"
             else:
                 time_string += str(months) + " Monate"
         
         if days > 0:
-            time_string += ","
+            time_string += ", "
             if months == 1:
                 time_string += "1 Tag"
             else:
-                time_string += str(days) + "Tage"
+                time_string += str(days) + " Tage"
         
         if days > 0:
-            time_string += ","
+            time_string += ", "
             if days == 1:
                 time_string += "1 Tag"
             else:
-                time_string += str(days) + "Tage"
+                time_string += str(days) + " Tage"
 
         if hours > 0:
-            time_string += ","
+            time_string += ", "
             if hours == 1:
                 time_string += "1 Stunde"
             else:
-                time_string += str(hours) + "Stunden"
+                time_string += str(hours) + " Stunden"
         
         if minutes > 0:
-            time_string += ","
+            time_string += ", "
             if minutes == 1:
                 time_string += "1 Minute"
             else:
-                time_string += str(minutes) + "Minuten"
+                time_string += str(minutes) + " Minuten"
         
         if seconds > 0:
-            time_string += ","
+            if minutes > 0 or hours > 0 or days > 0 or months > 0 or years > 0:
+                time_string += " und "
             if seconds == 1:
                 time_string += "1 Sekunde"
             else:
-                time_string += str(seconds) + "Sekunden"
+                time_string += str(seconds) + " Sekunden"
 
         ret = "Wenn man pro Sekunde einen Zug macht, benötigt man für {} Scheiben und {} Felder {}.".format(n, k , timestring)
     else:
         ret = "Ich konnte leider keine Zugzahl ermitteln
     success = not nosuccess
     return ret, success
+
+print(movetime("Wie lange braucht man für 8 Scheiben und 3 Felder"))
 
 def moves(text):
     text = text.lower()
