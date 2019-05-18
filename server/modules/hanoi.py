@@ -1,5 +1,6 @@
 import math
 import re
+import random
 
 PRIORITY = 2
 
@@ -170,13 +171,13 @@ def movessequence_ui(n, k):
 
 def movenumber(text):
     text = text.lower()
-    textlist = re.split("\s", text)
+    textlist = re.split(r"\s", text)
     nosuccess = False
     for index, word in enumerate(textlist):
         if index > 1:
             if re.search(r"feld|felder|platz|plätze|stab|stäbe", word):
                 try:
-                    k = int(textlist[index-1]
+                    k = int(textlist[index-1])
                 except:
                     nosuccess = True
             if re.search(r"scheibe|scheiben|klotz|klötze", word):
@@ -187,18 +188,18 @@ def movenumber(text):
     if not nosuccess:
         ret = "Für {} Scheiben und {} Felder benötigt man mindestens {} Züge.".format(n, k , M(n,k))
     else:
-        ret = "Ich konnte leider keine Zugzahl ermitteln
+        ret = "Ich konnte leider keine Zugzahl ermitteln"
     return ret, not nosuccess
 
-def possibilitynumber(n,k):
+def possibilitynumber(text):
     text = text.lower()
-    textlist = re.split("\s", text)
+    textlist = re.split(r"\s", text)
     success = True
     for index, word in enumerate(textlist):
         if index > 1:
             if re.search(r"feld|felder|platz|plätze|stab|stäbe", word):
                 try:
-                    k = int(textlist[index-1]
+                    k = int(textlist[index-1])
                 except:
                     success = False
             if re.search(r"scheibe|scheiben|klotz|klötze", word):
@@ -209,18 +210,18 @@ def possibilitynumber(n,k):
     if success:
         ret = "Um die Türme von Hanoi mit {} Scheiben und {} Felder optimal zu lösen, gibt es {} Möglichkeiten.".format(n, k , upsilon(n,k))
     else:
-        ret = "Ich konnte die Anzahl der Möglichkeiten leider nicht ermitteln
+        ret = "Ich konnte die Anzahl der Möglichkeiten leider nicht ermitteln"
     return ret, success
 
 def movetime(text):
     text = text.lower()
-    textlist = re.split("\s", text)
+    textlist = re.split(r"\s", text)
     nosuccess = False
     for index, word in enumerate(textlist):
         if index > 1:
             if re.search(r"feld|felder|platz|plätze|stab|stäbe", word):
                 try:
-                    k = int(textlist[index-1]
+                    k = int(textlist[index-1])
                 except:
                     nosuccess = True
             if re.search(r"scheibe|scheiben|klotz|klötze", word):
@@ -250,35 +251,32 @@ def movetime(text):
                 time_string += str(years) + " Jahre"
         
         if months > 0:
-            time_string += ", "
+            if years > 0:
+                time_string += ", "
             if months == 1:
                 time_string += "1 Monat"
             else:
                 time_string += str(months) + " Monate"
         
         if days > 0:
-            time_string += ", "
+            if months > 0 or years >0:
+                time_string += ", "
             if months == 1:
-                time_string += "1 Tag"
-            else:
-                time_string += str(days) + " Tage"
-        
-        if days > 0:
-            time_string += ", "
-            if days == 1:
                 time_string += "1 Tag"
             else:
                 time_string += str(days) + " Tage"
 
         if hours > 0:
-            time_string += ", "
+            if months > 0 or years > 0 or days > 0:
+                time_string += ", "
             if hours == 1:
                 time_string += "1 Stunde"
             else:
                 time_string += str(hours) + " Stunden"
         
         if minutes > 0:
-            time_string += ", "
+            if months > 0 or years > 0 or days > 0 or hours > 0:
+                time_string += ", "
             if minutes == 1:
                 time_string += "1 Minute"
             else:
@@ -290,26 +288,24 @@ def movetime(text):
             if seconds == 1:
                 time_string += "1 Sekunde"
             else:
-                time_string += str(seconds) + " Sekunden"
+                time_string += str(int(seconds)) + " Sekunden"
 
-        ret = "Wenn man pro Sekunde einen Zug macht, benötigt man für {} Scheiben und {} Felder {}.".format(n, k , timestring)
+        ret = "Wenn man pro Sekunde einen Zug macht, benötigt man für {} Scheiben und {} Felder {}.".format(n, k , time_string)
     else:
-        ret = "Ich konnte leider keine Zugzahl ermitteln
+        ret = "Ich konnte leider keine Zugzahl ermitteln"
     success = not nosuccess
     return ret, success
 
-print(movetime("Wie lange braucht man für 8 Scheiben und 3 Felder"))
-
 def moves(text):
     text = text.lower()
-    textlist = re.split("\s", text)
+    textlist = re.split(r"\s", text)
     nosuccess = False
     ret = ''
     for index, word in enumerate(textlist):
         if index > 1:
             if re.search(r"feld|felder|platz|plätze|stab|stäbe", word):
                 try:
-                    k = int(textlist[index-1]
+                    k = int(textlist[index-1])
                 except:
                     nosuccess = True
             if re.search(r"scheibe|scheiben|klotz|klötze", word):
@@ -318,18 +314,20 @@ def moves(text):
                 except:
                     nosuccess = True
     if not nosuccess:
-        moveslist = movessequence(n, k)
-
+        moveslist = movessequence_ui(n, k)
+        firstmove = True
         for move in moveslist:
             #disk = move[0]
             startpeg = str(move[1])
             endpeg = str(move[2])
-            ret += 'Bewege {} die oberste Scheibe von Feld {} nach Feld {}.'.format(konjunctionlist[random.randint(0,len(konjunctionlist))], startpeg, endpeg)
-
-
-        ret = "Für {} Scheiben und {} Felder benötigt man mindestens {} Züge.".format(n, k , M(n,k))
+            konjunctionlist = ["dann", "daraufhin", "nun", "danach", "als nächstes"]
+            if firstmove:
+                ret += 'Bewege {} die oberste Scheibe von Feld {} nach Feld {}. '.format("zunächst", startpeg, endpeg)
+                firstmove = False
+            else:
+                ret += ' Bewege {} die oberste Scheibe von Feld {} nach Feld {}.'.format(konjunctionlist[random.randint(0,len(konjunctionlist)-1)], startpeg, endpeg)
     else:
-        ret = "Ich konnte leider keine Zugzahl ermitteln
+        ret = "Ich konnte leider keine Zugzahl ermitteln"
     return ret, not nosuccess
 
 def handle(txt, tiane, profile):
@@ -375,6 +373,7 @@ def handle(txt, tiane, profile):
     keyMoveNumber    = ['züge']
     keyTime          = ['wie lang','dauert']
     weiter = True
+    success = False
 
     for key in keyMoveNumber:
         if key in text:
@@ -392,18 +391,19 @@ def handle(txt, tiane, profile):
     if weiter:
         for key in keyMoveSequence:
             if key in text:
-                # answer, success = movenumber(text)
-                # Methode für MoveSequence
+                answer, success = moves(text)
                 weiter = False
                 break
                 
     if weiter:
         for key in keyTime:
             if key in text:
-                # answer, success = movenumber(text)
-                # Methode für Zeit sagen
+                answer, success = movetime(text)
                 break
-    
+    if success:
+        tiane.say(answer)
+    else:
+        tiane.say("Das konnte ich leider nicht verstehen")
 
 def isValid(text):
     text = text.lower()
@@ -434,4 +434,8 @@ def main():
     handle('0 / 0', tiane, profile)
 
 if __name__ == '__main__':
-    main()
+    #print(movenumber("Wie viele Züge brauche ich bei 4 Scheiben und 3 Feldern"))
+    #print(possibilitynumber("Wie viele Möglichkeiten gibt es bei 20 Scheiben und 4 Feldern"))
+    print(moves("Wie kann ich die Türme von Hanoi mit 4 Scheiben und 3 Feldern lösen"))
+    #movetime(text)
+    #main()
