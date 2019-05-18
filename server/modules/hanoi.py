@@ -302,6 +302,44 @@ def handle(txt, tiane, profile):
         else:
             tiane.say('Das kann ich leider nicht berechnen.')
     '''
+    tt = txt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    text = tt.lower()
+
+    keyPossibilities = ['möglichkeit','upsilon']
+    keyMoveSequence  = ['zugfolge']
+    keyMoveNumber    = ['züge']
+    keyTime          = ['wie lang','dauert']
+    weiter = True
+
+    for key in keyMoveNumber:
+        if key in text:
+            # Methode für Anzahl der Züge
+            weiter = False
+            break
+
+    if weiter:
+        for key in keyPossibilities:
+            if key in text:
+                # Methode für Possibilities
+                weiter = False
+                break
+
+    if weiter:
+        for key in keyMoveSequence:
+            if key in text:
+                # Methode für MoveSequence
+                weiter = False
+                break
+                
+    if weiter:
+        for key in keyTime:
+            if key in text:
+                # Methode für Zeit sagen
+                break
     
 
 def isValid(text):
