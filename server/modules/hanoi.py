@@ -171,7 +171,7 @@ def movessequence_ui(n, k):
 def movenumber(text):
     text = text.lower()
     textlist = re.split("\s", text)
-    nosucces = False
+    nosuccess = False
     for index, word in enumerate(textlist):
         if index > 1:
             if re.search(r"feld|felder|platz|plätze|stab|stäbe", word):
