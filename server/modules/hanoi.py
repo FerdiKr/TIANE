@@ -296,7 +296,39 @@ def movetime(text):
         ret = "Ich konnte leider keine Zugzahl ermitteln
     sucess = not nosuccess
     return ret, sucess
-                            
+
+def moves(text):
+    text = text.lower()
+    textlist = re.split("\s", text)
+    nosucces = False
+    ret = ''
+    for index, word in enumerate(textlist):
+        if index > 1:
+            if re.search(r"feld|felder|platz|plätze|stab|stäbe", word):
+                try:
+                    k = int(textlist[index-1]
+                except:
+                    nosuccess = True
+            if re.search(r"scheibe|scheiben|klotz|klötze", word):
+                try:
+                    n = int(textlist[index-1])
+                except:
+                    nosuccess = True
+    if not nosuccess:
+        moveslist = movessequence(n, k)
+
+        for move in moveslist:
+            #disk = move[0]
+            startpeg = str(move[1])
+            endpeg = str(move[2])
+            ret += 'Bewege {} die oberste Scheibe von Feld {} nach Feld {}.'.format(konjunctionlist[random.randint(0,len(konjunctionlist))], startpeg, endpeg)
+
+
+        ret = "Für {} Scheiben und {} Felder benötigt man mindestens {} Züge.".format(n, k , M(n,k))
+    else:
+        ret = "Ich konnte leider keine Zugzahl ermitteln
+    return ret, not nosuccess
+
 def handle(txt, tiane, profile):
     '''
     tt = txt.replace('?', (''))
