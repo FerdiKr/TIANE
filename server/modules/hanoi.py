@@ -1,4 +1,5 @@
 import math
+import re
 
 PRIORITY = 2
 
@@ -187,8 +188,7 @@ def movenumber(text):
         ret = "Für {} Scheiben und {} Felder benötigt man mindestens {} Züge.".format(n, k , M(n,k))
     else:
         ret = "Ich konnte leider keine Zugzahl ermitteln
-    sucess = not nosuccess
-    return ret, sucess
+    return ret, not nosuccess
 
 def handle(txt, tiane, profile):
     '''
