@@ -294,13 +294,13 @@ def movetime(text):
         ret = "Wenn man pro Sekunde einen Zug macht, benötigt man für {} Scheiben und {} Felder {}.".format(n, k , timestring)
     else:
         ret = "Ich konnte leider keine Zugzahl ermitteln
-    sucess = not nosuccess
-    return ret, sucess
+    success = not nosuccess
+    return ret, success
 
 def moves(text):
     text = text.lower()
     textlist = re.split("\s", text)
-    nosucces = False
+    nosuccess = False
     ret = ''
     for index, word in enumerate(textlist):
         if index > 1:
