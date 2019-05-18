@@ -307,7 +307,7 @@ def handle(txt, tiane, profile):
 def isValid(text):
     text = text.lower()
     ret = False
-    keyWords = ["scheiben","felder","plätze"]
+    keyWords = ["scheibe","feld","platz","plätze","stab","stäbe","hanoi","upsilon","inkrement"]
     for i in keyWords:
         if i in text:
             ret = True
