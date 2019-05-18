@@ -2,71 +2,170 @@ import math
 
 PRIORITY = 2
 
-def toh
+def faculty(x):
+    if x == 0:
+        return 1
+    value = 1
+    for i in range(1, x+1):
+        value *= i
+    return int(value)
 
-def multiplikation(d, t):
-    eins = d.get('eins')
-    zwei = d.get('zwei')
-    result = eins * zwei
+
+def bk(n, k):
+    if n == k:
+        return 1
+    if k < 0 or k > n:
+        return 0
+    value = faculty(n) / (faculty(k) * faculty(n - k))
+    return int(value)
+
+
+def t_(n, k):
+    t = -1
+    x = 0
+    while n > x:
+        t += 1
+        x = bk(k-2+t, k-2)
+    return t
+
+
+def formula(n, k, t):
+    """berechnet die Mindestzugzahl bei "n" Knickpunkten, "m" Plätzen und "AS" Scheiben"""
+    if k == 3:
+        return 2**(n)-1
+    x = 0
+    for i in range(0, t+1):
+        x = x + 2**i*bk(i+k-3, k-3)
+    correction = 2**t*(n-bk(t+k-2, k-2))
+    return x + correction
+
+
+def M(n, k):
+    """berechnet die Mindestanzahl von Zügen, die für "As" Scheiben bei "m" Plätzen benötigt werden"""
+    t = t_(n, k)
+    x = formula(n, k, t)
+    return x
+
+def upsilon(n,k):
+    s = t_(n,k)
+    above = bk(s+k-3,k-3)
+    below = bk(s+k-2,k-2)-n
+    result = bk(above,below)
     return result
 
-def division(d, t):
-    eins = d.get('eins')
-    zwei = d.get('zwei')
-    if zwei == 0:
-        result = 'Möchtest du ein Wurmloch kreieren? Etwas durch null zu teilen beschwört Dämonen!'
-    else:
-        result = eins / zwei
-    return result
+def movessequence(startpeg, endpeg, disklist, peglist):
+    """gibt alle benoetigten Zuege zurueck"""
+    #print("Die Scheiben {} sollen unter Benutzung der Felder {} von {} nach {} bewegt werden".format(disklist,peglist,startpeg,endpeg))
+    #print(disklist)
+    #spezialfaelle
+    if len(disklist) == 1:
+        #print("es bleibt nur eine Scheibe zum bewegen",disklist[0],startpeg,endpeg)
+        return [[disklist[0], startpeg, endpeg]]
 
-def potenzierung(d, t):
-    eins = d.get('eins')
-    zwei = d.get('zwei')
-    if zwei == 0:
-        result = 1
-    elif zwei == 1:
-        result = eins
     else:
-        result = eins ** zwei
-    return result
+        #zwischenturmhoehe berechnen
+        pegheight = calculatemiddletower(startpeg, endpeg, disklist, peglist)
+        #dann die movessequencelist fuer die Zwischentuerme berechnen
+        movesequencelist = []
+        #bewege einen Zwischenturm nach dem anderen
+        peglist2 = peglist.copy()
+        disklist2 = disklist.copy()
+        for peg in peglist:
+            height = pegheight[peg]
+            if height != 0:
+                #print("aktuell bearbeiteter Zwischenturmpeg:",peg,"in Rekursionstiefe",n_recursion)
+                movingdisks = disklist2[-height:]
+                #print(movingdisks)
+                movesequencelist += movessequence(startpeg,
+                                                  peg, movingdisks, peglist2)
+                peglist2.remove(peg)
+                disklist2 = disklist2[:-height]
 
-def addition(d, t):
-    eins = d.get('eins')
-    zwei = d.get('zwei')
-    f = False
-    if '*' in t:
-        text = t.lower()
-        satz = {}
-        ind = 1
-        i = str.split(text)
-        for w in i:
-            satz[ind] = w
-            ind += 1
-        for i, w in satz.items():
-            if w == '*':
-                try:
-                    e = int(satz.get(i-1))
-                    z = int(satz.get(i+1))
-                    ergebnis = e * z
-                    f = True
-                    g = True
-                except ValueError or TypeError:
-                    g = False
-                    break
-    if f == False:
-        result = eins + zwei
-    else:
-        if g == True:
-            result = ergebnis + eins
+        #<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+        #danach die groesste Scheibe
+        #print("groesste Scheibe:",[disklist[0],startpeg,endpeg])
+        #dann rueckwaerts
+        lastmoves = []
+        for i in range(1, len(movesequencelist)+1):
+            #iterates from len(firstmoves)-1 to 0
+            currentmove = movesequencelist[len(movesequencelist)-i]
+            #tauschen von start und endpeg
+            if currentmove[1] == startpeg:
+                peg2 = endpeg
+            elif currentmove[1] == endpeg:
+                peg2 = startpeg
+            else:
+                peg2 = currentmove[1]
+            if currentmove[2] == startpeg:
+                peg1 = endpeg
+            elif currentmove[2] == endpeg:
+                peg1 = startpeg
+            else:
+                peg1 = currentmove[2]
+            newcurrentmove = [currentmove[0], peg1, peg2]
+            lastmoves.append(newcurrentmove)
+
+        return movesequencelist[:]+[[disklist[0], startpeg, endpeg]]+lastmoves[:]
+
+
+def calculatemiddletower(startpeg, endpeg, disklist, peglist):
+    """berechnet die Hoehe der Zwischentuerme und gibt ein dict mit dem Zwischenturm als key und der hoehe als wert aus"""
+    m = len(peglist)
+    As = len(disklist)
+    mmpegdict = {}
+    n = 0
+    x = 1
+    while As > x:
+        n += 1
+        x = bk(n+m-2, m-2)
+
+    #print(As,n)
+    #berechnen der minimalen und maximalen Hoehe eines Zwischenturms
+    i = 0
+    for peg in peglist:
+        if peg == startpeg or peg == endpeg:
+            mmpegdict[peg] = [0, 0]
         else:
-            result = ''
-    return result
+            mmpegdict[peg] = [int(bk(n+m-i-4, m-i-2)), int(bk(n+m-i-3, m-i-2))]
+            i += 1
 
-def subtraktion(d, t):
-    eins = d.get('eins')
-    zwei = d.get('zwei')
-    result = eins - zwei
-    return result
+    #im Fall von einer Scheibe stimmt die minimale Hoehe nicht
+    for peg in mmpegdict:
+        if mmpegdict[peg][1] == 1:
+            mmpegdict[peg][0] = 0
+
+    #berechnen der abzueglichen Scheibenzahl fuer nicht-inkrementgrenzfaelle
+    knowndisks = int(bk(n+m-2, m-2))
+    toomuchdisks = knowndisks-As
+    pegheightdict = {}
+    #wegnehmen von der pegheigthdisklist
+    takenallaway = False  # true wenn alle ueberfluessigen Scheiben weggenommen sind
+    for peg in peglist:
+        min_value = mmpegdict[peg][0]
+        max_value = mmpegdict[peg][1]
+        difference = max_value-min_value
+        toomuchdisks -= difference
+        if takenallaway:
+            pegheightdict[peg] = max_value
+        elif toomuchdisks >= 0:
+            pegheightdict[peg] = min_value
+        else:
+            pegheightdict[peg] = max_value-toomuchdisks-difference
+            takenallaway = True
+    return pegheightdict
+
+
+def movessequence_ui(n, k):
+    peglist = []
+    disklist = []
+    for i in range(k):
+        peglist.append(i)
+    for i in range(n):
+        disklist.append(i)
+    moves = movessequence(peglist[0], peglist[-1], disklist, peglist)
+    #print(moves, len(moves))
+    return moves
 
 def rechnen(text, tiane):
     ergebnis = ''
