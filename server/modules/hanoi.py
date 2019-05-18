@@ -236,13 +236,14 @@ def handle(txt, tiane, profile):
 
     for key in keyMoveNumber:
         if key in text:
-            # Methode für Anzahl der Züge
+            answer, success = movenumber(text)
             weiter = False
             break
 
     if weiter:
         for key in keyPossibilities:
             if key in text:
+                # answer, success = movenumber(text)
                 # Methode für Possibilities
                 weiter = False
                 break
@@ -250,6 +251,7 @@ def handle(txt, tiane, profile):
     if weiter:
         for key in keyMoveSequence:
             if key in text:
+                # answer, success = movenumber(text)
                 # Methode für MoveSequence
                 weiter = False
                 break
@@ -257,6 +259,7 @@ def handle(txt, tiane, profile):
     if weiter:
         for key in keyTime:
             if key in text:
+                # answer, success = movenumber(text)
                 # Methode für Zeit sagen
                 break
     
