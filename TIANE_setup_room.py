@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from distutils.dir_util import copy_tree
 import shutil
 import time

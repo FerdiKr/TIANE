@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from Crypto import Random
 import shutil
 import base64
