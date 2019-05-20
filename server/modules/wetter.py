@@ -100,7 +100,7 @@ def handle(text, tiane, profile):
     else:
         o = o
     ort = o.lower()
-    web = 'http://api.openweathermap.org/data/2.5/weather?q=' + ort + '&appid=bd4d17c6eedcff6efc70b9cefda99082'
+    web = 'http://api.openweathermap.org/data/2.5/weather?q=' + urllib.parse.quote(ort) + '&appid=bd4d17c6eedcff6efc70b9cefda99082'
     request = Request(web)
     try:
         response = urlopen(request)
