@@ -5,78 +5,7 @@ import time
 import json
 import sys
 import os
-
-def frage_erfordert_antwort(fragentext):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            print('Bitte gib etwas ein.')
-        else:
-            return eingabe
-
-def frage_mit_default(fragentext, default):
-    eingabe = input(fragentext)
-    if eingabe == '' or eingabe == ' ':
-        return default
-    else:
-        return eingabe
-
-def ja_nein_frage(fragentext, default):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        elif 'j' in eingabe.lower() or 'y' in eingabe.lower():
-            return True
-        elif 'n' in eingabe.lower():
-            return False
-        else:
-            print('Das habe ich leider nicht verstanden.')
-
-def frage_nach_zahl(fragentext, default, allowed_answers=None):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        try:
-            eingabe = int(eingabe)
-        except:
-            print('Bitte gib eine Zahl ein.')
-            continue
-        if not allowed_answers == None:
-            if not eingabe in allowed_answers:
-                print('Bitte gib eine dieser Zahlen ein: {}'.format(allowed_answers))
-                continue
-        return eingabe
-
-def frage_nach_float_zahl(fragentext, default, allowed_answers=None):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        try:
-            eingabe = float(eingabe)
-        except:
-            print('Bitte gib eine Zahl ein.')
-            continue
-        if not allowed_answers == None:
-            if not eingabe in allowed_answers:
-                print('Bitte gib eine dieser Zahlen ein: {}'.format(allowed_answers))
-                continue
-        return eingabe
-
-def tf2jn(tf):
-    return "Ja" if tf else "Nein"
-
-def bedingt_kopieren(ursprung, ziel, copy):
-    if copy:
-        if os.path.exists(ziel):
-            return
-        else:
-            shutil.copy(ursprung, ziel)
-    else:
-        if os.path.exists(ziel):
-            os.remove(ziel)
+from TIANE_setup-TIANE_setup_wrapper import *
 
 def configure_camera(cam_config_data, picam_already_used):
     if not picam_already_used:
