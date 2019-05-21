@@ -54,7 +54,7 @@ def frage_nach_zahl(fragentext, default, allowed_answers=None):
             return default
         try:
             eingabe = int(eingabe)
-        except TypeError:
+        except (TypeError, ValueError):
             print(color.YELLOW + 'Bitte gib eine Zahl ein.' + color.END)
             continue
         if not allowed_answers == None:
@@ -70,7 +70,7 @@ def frage_nach_float_zahl(fragentext, default, allowed_answers=None):
             return default
         try:
             eingabe = float(eingabe)
-        except:
+        except (TypeError, ValueError):
             print('Bitte gib eine Zahl ein.')
             continue
         if not allowed_answers == None:

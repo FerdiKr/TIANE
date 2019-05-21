@@ -67,7 +67,7 @@ def end_config(config_data, system_name):
     try:
         copy_tree('room', config_data['Room_name'])
     except:
-        print('[ERROR] Fehler beim kopieren der Dateien. Bitte versuche, den Setup-Assistent mit Root-Rechten auszuführen.')
+        print(color.RED + '[ERROR]' + color.END + ' Fehler beim kopieren der Dateien. Bitte versuche, den Setup-Assistent mit Root-Rechten auszuführen.')
         sys.exit()
     bedingt_kopieren('room/resources/optional_modules/cameras.py', config_data['Room_name'] + '/modules/continuous/cameras.py', room_config_data['use_cameras'])
     print('Die Konfiguration deines {}-Raumclients ist abgeschlossen. Sobald du diesen Assistenten beendest, '
@@ -83,14 +83,14 @@ def end_config(config_data, system_name):
 
 ########################### ANFANG ###########################
 if not os.path.exists('room/TIANE_config.json'):
-    print('\n[ERROR] Die nötigen Dateien (Ordner "room") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "room") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
     text = input('[ENTER drücken zum beenden]')
     sys.exit()
 
 if not os.path.exists('server/TIANE_config.json'):
-    print('\n[ERROR] Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
     text = input('[ENTER drücken zum beenden]')
@@ -109,7 +109,7 @@ time.sleep(1)
 text = input('[ENTER drücken zum fortfahren]')
 
 if server_config_data['TNetwork_Key'] == '':
-    print('\n[ERROR] Es konnte keine fertige Server-Konfiguration gefunden werden (TNetwork-Schlüssel fehlt).\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Es konnte keine fertige Server-Konfiguration gefunden werden (TNetwork-Schlüssel fehlt).\n'
           'Du musst zuerst deinen {}-Server konfigurieren (mit "TIANE_server_setup.py"), bevor du Räume hinzufügen kannst.'.format(system_name))
     text = input('[ENTER drücken zum beenden]')
     sys.exit()

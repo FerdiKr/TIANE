@@ -24,7 +24,7 @@ time.sleep(1)
 enterContinue()
 
 if not os.path.exists('server/TIANE_config.json'):
-    print('\n[ERROR] Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
     enterFinalize()
