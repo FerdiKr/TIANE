@@ -18,5 +18,5 @@ def handle(text, tiane, profile):
     if antwort == 'TIMEOUT_OR_INVALID':
         tiane.say('Ich konnte dich leider nicht verstehen')
     else:
-        url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={antwort}"
+        url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + urllib.parse.quote(antwort)
         tiane.say(url)
