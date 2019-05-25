@@ -34,7 +34,8 @@ function triggerSystemCheck() {
       }
     }
     if(disallowCount == 0) {
-      $("#button_next").removeClass("disabled").attr("href", "setup_3")
+      $("#button_next")
+        .removeClass("disabled").attr("href", "setup_3")
     }
   });
 }

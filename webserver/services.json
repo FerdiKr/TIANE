@@ -1,0 +1,34 @@
+{
+  "opencv": {
+    "apt_installs": [
+      "libopencv-dev",
+      "python3-opencv"
+    ],
+    "required": "partially",
+    "description": "OpenCV wird benötigt, wenn TIANE Kamerabilder verarbeiten soll",
+    "install_check": {
+      "import": "cv2"
+    }
+  },
+  "imutils": {
+    "python_installs": [
+      "imutils"
+    ],
+    "required": "partially",
+    "description": "Das Python-Modul imutils wird benötigt, wenn TIANE Kamerabilder verarbeiten soll.",
+    "install_check": {
+      "import": "imutils"
+    }
+  },
+  "wikipedia": {
+    "python_installs": [
+      "wikipedia"
+    ],
+    "required": "partially",
+    "description": "Das Python-Modul wikipedia wird nur dann benötigt, wenn du das entsprechende Modul benutzt.",
+    "install_check": {
+      "import": "wikipedia"
+    }
+  }
+
+}
