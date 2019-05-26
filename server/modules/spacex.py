@@ -12,18 +12,6 @@ def isValid(text):
 
 def handle(text, tiane, local_storage):
 
-    if tiane.telegram_call == False:
-        tiane.say("Das kann jetzt einiges an text werden, willst du das wirklich alles hören?")
-        antwort = tiane.listen()
-
-        if antwort == 'TIMEOUT_OR_INVALID':
-            tiane.say("Fehler")
-
-        hit_list = ["Ja", "Yes"]
-        else if any((hit for hit in hit_list if hit in text.lower())) == True:
-            
-
-
     text_lower = text.lower()
 
     ################################################################################ 
