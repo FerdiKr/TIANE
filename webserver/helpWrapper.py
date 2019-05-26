@@ -2,9 +2,11 @@
 # -*- coding: utf-8 -*-
 #
 import os
+import time
 import json
-from threading import Thread
+import subprocess
 import importlib
+from threading import Thread
 
 __author__     = "olagino"
 __email__      = "olaginos-buero@outlook.de"
@@ -96,22 +98,24 @@ def checkServerInstallation():
 
 class InstallWrapper():
     """
-    The install wrapper class initiates a thread
+    The install wrapper class initiates a thread and enables a few helper functions
+    to install components described in the services.json file
     """
     def __init__(self):
+        self.readConfig()
+        self.installQueue = []
+        self.installStatus = "idle"
+        self.installLog = ""
+
         self._runThread = True
         self._thread = Thread(target=self._threadedLoop)
         self._thread.start()
-        self.readConfig()
-        # start thread
 
-        pass
 
     def __del__(self):
         # stop thread
         self._runThread = False
         self._thread.join()
-        pass
 
     def listPackages(self, status=False):
         pR = self.readConfig()
@@ -123,21 +127,24 @@ class InstallWrapper():
                 "required": pR[el]["required"] if "required" in pR[el] else "no",
             }
             if status:
-                data["status"] = self.checkStatus(el)
+                data["status"] = str(self.checkStatus(el))
             packList.append(data)
         return packList
 
     def getInstallerStatus(self):
         state = {
-            "status": "idle", # installing
-            "log": "" # log output from installer process
+            "status": self.installStatus,
+            "log": self.installLog
         }
         return state
 
 
     def startInstallation(self, packageName):
-        # start installation
-        return True
+        if packageName in self.packagesRaw:
+            self.installQueue.append(packageName)
+            return True
+        else:
+            return False
 
     def _threadedLoop(self):
         """
@@ -145,9 +152,54 @@ class InstallWrapper():
         it gets started when the class is instanciated.
         """
         while self._runThread:
-            pass
-
+            if len(self.installQueue) == 0:
+                self.installStatus = "idle"
+                self.installLog = ""
+                time.sleep(0.3)
+            else:
+                package = self.installQueue.pop()
+                self.installStatus = "installing"
+                data = self.packagesRaw[package]
+                if "apt_installs" in data:
+                    t_1 = time.time()
+                    self.installLog += "\n Updating package cache…"
+                    proc = subprocess.Popen(["apt-get", "update", "-y"])
+                    proc.wait()
+                    n = time.time() - t_1
+                    self.installLog += "\n took " + str(round(n*10,1)) + " seconds."
+                    for ai in data["apt_installs"]:
+                        self._installRaw(ai, "apache")
+                if "python_installs" in data:
+                    # pip.main() is depracted so let's use subprocesses
+                    for pi in data["python_installs"]:
+                        self._installRaw(pi, "pip3")
         return None
+
+    def _installRaw(self, packageName, type):
+        "This"
+        try:
+            self.installLog += "\n Starting installation for " + str(packageName) + "."
+            t_2 = time.time()
+            if type == "apache":
+                command = ["apt-get", "install", packageName, "-y"]
+            elif type == "pip3":
+                command = ["pip3", "install", packageName]
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            while process.returncode == None:
+                text = process.stdout.read()
+                if len(text) > 0:
+                    self.installLog += str(text)
+                errs = process.stderr.read()
+                if len(errs) > 0:
+                    self.installLog += str(errs)
+                self.installLog += "poll" + str(process.poll())
+            if process.returncode == 0:
+                self.installLog += "\n " + str(packageName) + " got installed properly."
+                self.installLog += " Took " + str(round(time.time() - t_2, 1)) + " seconds."
+            else:
+                self.installLog += "\n Installation for " + str(packageName) + " failed. (apt returned a non-zero code: " + str(process.returncode) + ")"
+        except OSError as e:
+            self.installLog += "\n Installation for " + str(packageName) + " failed. (" + str(e) + ")"
 
 
     def readConfig(self):

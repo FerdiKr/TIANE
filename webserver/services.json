@@ -29,6 +29,13 @@
     "install_check": {
       "import": "wikipedia"
     }
+  },
+  "test": {
+    "apt_installs": [
+      "goaccess"
+    ],
+    "required": "partially",
+    "description": "Diese Komponente dient ausschließlich zu Testzwecken."
   }
 
 }

@@ -4,9 +4,10 @@
 from flask import Flask, render_template, jsonify, request, send_file, make_response
 from gevent import pywsgi
 import werkzeug.serving
-from helpWrapper import checkServerInstallation as cSI
+from helpWrapper import InstallWrapper
 
 webapp = Flask("TIANE", template_folder="template")
+installer = InstallWrapper()
 
 # ------------------------------------------------------------------------------
 # HTTP-Frontend
@@ -36,9 +37,24 @@ def setupServer():
 
 # API-like-Calls
 
-@webapp.route("/api/checkServerInstallation")
-def checkServerInstallation():
-    data = cSI()
+@webapp.route("/api/installer/listPackages")
+@webapp.route("/api/installer/listPackages/<extended>")
+def listPackages(extended=False):
+    if extended == "details":
+        extended = True
+    else:
+        extended = False
+    data = installer.listPackages(extended)
+    return jsonify(data)
+
+@webapp.route("/api/installer/getStatus")
+def getStatus():
+    data = installer.getInstallerStatus()
+    return jsonify(data)
+
+@webapp.route("/api/installer/startInstallation/<packageName>")
+def startInstallation(packageName):
+    data = installer.startInstallation(packageName)
     return jsonify(data)
 
 ws = pywsgi.WSGIServer(("0.0.0.0", 50500), webapp)
