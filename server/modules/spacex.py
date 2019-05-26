@@ -12,6 +12,18 @@ def isValid(text):
 
 def handle(text, tiane, local_storage):
 
+    if tiane.telegram_call == False:
+        tiane.say("Das kann jetzt einiges an text werden, willst du das wirklich alles hören?")
+        antwort = tiane.listen()
+
+        if antwort == 'TIMEOUT_OR_INVALID':
+            tiane.say("Fehler")
+
+        hit_list = ["Ja", "Yes"]
+        else if any((hit for hit in hit_list if hit in text.lower())) == True:
+            
+
+
     text_lower = text.lower()
 
     ################################################################################ 
@@ -25,10 +37,57 @@ def handle(text, tiane, local_storage):
         # Get the launches launch 
         got_launches, header = launches.get_launches()
 
-        return_string = ""
-        return_string += f"Time (UTC): " + got_launches[-1]["launch_date_utc"] + "\n"
-        tiane.say(return_string)
-        return
+
+        if tiane.telegram_call == True:
+            return_string = ""
+            return_string += f"Time (UTC): " + got_launches[-1]["launch_date_utc"] + "\n"
+            tiane.say(return_string)
+            return
+
+        else:
+            day = got_launches[-1]["launch_date_utc"][8:10]
+            month = got_launches[-1]["launch_date_utc"][5:7]
+            minute = got_launches[-1]["launch_date_utc"][15:16]
+            hour = got_launches[-1]["launch_date_utc"][11:13]
+
+            speech_dict = {
+                    "01": "ersten",
+                    "02": "zweiten",
+                    "03": "dritten",
+                    "04": "vierten",
+                    "05": "fünften",
+                    "06": "sechsten",
+                    "07": "siebten",
+                    "08": "achten",
+                    "09": "neunten",
+                    "10": "zehnten",
+                    "11": "elften",
+                    "12": "zwölten",
+                    "13": "dreizehnten",
+                    "14": "vierzehnten",
+                    "15": "fünfzehnten",
+                    "16": "sechzehnten",
+                    "17": "siebzehnten",
+                    "18": "achtzehnten",
+                    "19": "neunzehnten",
+                    "20": "zwanzigsten",
+                    "21": "einundzwanzigsten",
+                    "22": "zweiundzwanzigsten",
+                    "23": "dreiundzwanzigsten",
+                    "24": "vierundzwanzigsten",
+                    "25": "fünfundzwanzigsten",
+                    "26": "sechsundzwanzigsten",
+                    "27": "siebenundzwanzigsten",
+                    "28": "achtundzwanzigsten",
+                    "29": "neunundzwanzigsten",
+                    "30": "dreißigsten",
+                    "31": "einunddreißigsten",
+                    }
+
+            return_string = ""
+            return_string += f"Der nächste Start ist am {speech_dict[day]} {speech_dict[month]} "
+            return_string += f"um {speech_dict[hour]} Uhr {speech_dict[minute]} U T C\n"
+            tiane.say(return_string)
 
     ################################################################################ 
     # Infos zum nächstem Start 
