@@ -35,74 +35,32 @@
       Im Gegensatz zu den roten Zeilen ist es aber nicht ganz so wichtig, TIANE
       funktioniert auch ohne, auch wenn du dann nicht alle Funktionen nutzen kannst.
     </p>
-    <table class="table">
+    <table class="table table-sm">
       <thead>
         <tr>
-          <th scope="col" width="60px"></th>
+          <th scope="col"></th>
           <th scope="col" >Modul</th>
-        </tr>
-        <tr id="tbl_facerecognition">
-          <td><button type="button" class="btn btn-secondary disabled">lädt…</button></td>
-          <td>
-            <p>Gesichtserkennung</p>
-            <i></i>
-          </td>
-        </tr>
-        <tr id="tbl_imutils">
-          <td><button type="button" class="btn btn-secondary disabled">lädt…</button></td>
-          <td>
-            <p>imutils</p>
-            <i></i>
-          </td>
-        </tr>
-        <tr id="tbl_opencv">
-          <td><button type="button" class="btn btn-secondary disabled">lädt…</button></td>
-          <td>
-            <p>OpenCV</p>
-            <i></i>
-          </td>
-        </tr>
-        <tr id="tbl_pyaudio">
-          <td><button type="button" class="btn btn-secondary disabled">lädt…</button></td>
-          <td>
-            <p>PyAudio</p>
-            <i></i>
-          </td>
-        </tr>
-        <tr id="tbl_sklearn">
-          <td><button type="button" class="btn btn-secondary disabled">lädt…</button></td>
-          <td>
-            <p>Science-Kit</p>
-            <i></i>
-          </td>
-        </tr>
-        <tr id="tbl_speechrecognition">
-          <td><button type="button" class="btn btn-secondary disabled">lädt…</button></td>
-          <td>
-            <p>Spracherkennung</p>
-            <i></i>
-          </td>
-        </tr>
-        <tr id="tbl_telepot">
-          <td><button type="button" class="btn btn-secondary disabled">lädt…</button></td>
-          <td>
-            <p>Telegram-Schnittstelle "Telepot"</p>
-            <i></i>
-          </td>
-        </tr>
-        <tr id="tbl_wikipedia">
-          <td><button type="button" class="btn btn-secondary disabled">lädt…</button></td>
-          <td>
-            <p>Wikipedia-Schnittstelle</p>
-            <i></i>
-          </td>
+          <th scope="col" >Installieren</th>
         </tr>
       </thead>
+      <tbody id="mainTable">
+        {% for row in fD %}
+          <tr class="tbl_module">
+            <td><div class="alert alert-secondary">loading…</div></td>
+            <td>
+              <p>{{ row["name"] }}</p>
+              <i>{{ row["desc"] }}</i>
+            </td>
+            <td>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
     </table>
     <a class="btn btn-secondary btn-lg" href="setup" role="button">zurück</a>
-    <a class="btn btn-success btn-lg float-right disabled" role="button" id="button_next">weiter geht's!</a>
+    <a class="btn btn-success btn-lg float-right" role="button" id="button_next" href="setup_3">weiter geht's!</a>
   </div>
 </div>
-<script src="{{ url_for('static', filename='main.js')}}"></script>
+<script src="{{ url_for('static', filename='main_setupServices.js')}}"></script>
 </div>
 </body>

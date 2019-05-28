@@ -1,0 +1,39 @@
+<head>
+  <title>TIANE - Server einrichten</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script src="{{ url_for('static', filename='jquery-3.3.1.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+</head>
+<body>
+<nav class="navbar navbar-light bg-light navbar-expand-sm">
+  <a class="navbar-brand" href="/index">TIANE</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="nav">
+      {% for item in nav %}
+          <li class="nav-item text-muted"><a class="nav-link" href="{{item.href}}">{{ item.text }}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row justify-content-md-center">
+    <div class="col-md-10 col-sm-12">
+    <h2>Server einrichten</h2>
+    <p>
+      Jetzt kannst du deinen neuen Sprachassistenten einrichten.
+    </p>
+
+
+    <a class="btn btn-success btn-lg float-right" role="button" id="button_execute" >Konfiguration sichern</a>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='main.js')}}"></script>
+</div>
+</body>
