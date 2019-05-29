@@ -4,49 +4,7 @@ import time
 import json
 import sys
 import os
-
-def frage_erfordert_antwort(fragentext):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            print('Bitte gib etwas ein.')
-        else:
-            return eingabe
-
-def ja_nein_frage(fragentext, default):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        elif 'j' in eingabe.lower() or 'y' in eingabe.lower():
-            return True
-        elif 'n' in eingabe.lower():
-            return False
-        else:
-            print('Das habe ich leider nicht verstanden.')
-
-def frage_mit_default(fragentext, default):
-    eingabe = input(fragentext)
-    if eingabe == '' or eingabe == ' ':
-        return default
-    else:
-        return eingabe
-
-def frage_nach_zahl(fragentext, default, allowed_answers=None):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        try:
-            eingabe = int(eingabe)
-        except:
-            print('Bitte gib eine Zahl ein.')
-            continue
-        if not allowed_answers == None:
-            if not eingabe in allowed_answers:
-                print('Bitte gib eine dieser Zahlen ein: {}'.format(allowed_answers))
-                continue
-        return eingabe
+from TIANE_setup_wrapper import *
 
 def end_config(config_data, system_name):
     if not os.path.exists('server/users/' + config_data['User_Info']['name']):
@@ -54,7 +12,7 @@ def end_config(config_data, system_name):
     try:
         copy_tree('server/resources/user_default', 'server/users/' + config_data['User_Info']['name'])
     except:
-        print('\n[ERROR] Fehler beim kopieren der Dateien. Bitte versuche, den Setup-Assistent mit Root-Rechten auszuführen.')
+        print('\n' + color.RED + '[ERROR]' + color.END + ' Fehler beim kopieren der Dateien. Bitte versuche, den Setup-Assistent mit Root-Rechten auszuführen.')
         sys.exit()
     print('\nDie Konfiguration dieses {}-Nutzerkontos ist abgeschlossen. Sobald du diesen Assistenten beendest, '
           'werden sämtliche Daten im Ordner "server/users/{}" gespeichert.\n'
@@ -68,7 +26,7 @@ def end_config(config_data, system_name):
         print('\nUm die Gesichtserkennung für diesen Nutzer zu trainieren, solltest du außerdem einige Fotos von diesem Nutzer im Ordner '
               '"server/users/{}/pictures" ablegen und nach dem Start deines {}-Systems mit dem Kommando "Trainiere die Gesichtserkennung neu"'
               ' das Training einleiten.'.format(config_data['User_Info']['name'], system_name))
-    text = input('[ENTER drücken zum beenden]')
+    enterFinalize()
     print('\nDie neuen Daten werden gespeichert...')
     with open('server/users/' + config_data['User_Info']['name'] + '/User_Info.json', 'w') as config_file:
         json.dump(config_data, config_file, indent=4)
@@ -78,28 +36,28 @@ def end_config(config_data, system_name):
 ########################### ANFANG ###########################
 try:
     os.remove('server/users/README.txt')
-except:
+except FileNotFoundError:
     pass
 
 if not os.path.exists('server/resources/user_default/User_Info.json'):
-    print('\n[ERROR] Die nötigen Dateien (Ordner "server/resources/user_default") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "server/resources/user_default") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
-    text = input('[ENTER drücken zum beenden]')
+    enterFinalize()
     sys.exit()
 
 if not os.path.exists('server/users'):
-    print('\n[ERROR] Die nötigen Dateien (Ordner "server/users") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "server/users") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
-    text = input('[ENTER drücken zum beenden]')
+    enterFinalize()
     sys.exit()
 
 if not os.path.exists('server/TIANE_config.json'):
-    print('\n[ERROR] Die nötigen Dateien ("server/TIANE_config.json") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien ("server/TIANE_config.json") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
-    text = input('[ENTER drücken zum beenden]')
+    enterFinalize()
     sys.exit()
 
 with open('server/TIANE_config.json', 'r') as server_config_file:
@@ -112,7 +70,7 @@ print('Willkommen zum Setup-Assistenten für deinen neuen Sprachassistenten.\n'
       'Bitte gib deine Antworten ein und bestätige sie mit [ENTER].\n'
       'Wenn du bei einer Frage die vorgegebene Standard-Antwort übernehmen willst, reicht es, wenn du einfach [ENTER] drückst, ohne etwas einzugeben.'.format(system_name))
 time.sleep(1)
-text = input('[ENTER drücken zum fortfahren]')
+enterContinue()
 
 print('\n')
 user_name = frage_erfordert_antwort('Bitte gib einen Namen für diesen {}-Benutzer ein: '.format(system_name))
@@ -164,7 +122,7 @@ print('Die wichtigsten Schritte zur Einrichtung dieses Nutzers sind damit abgesc
       'Wenn du zu einer Frage keine Angaben machen möchtest, kannst du auch einfach [ENTER] drücken, ohne etwas einzugeben.\n'
       'Die allermeisten {}-Module werden auch ohne diese Informationen problemlos funktionieren.'.format(system_name))
 time.sleep(1)
-text = input('[ENTER drücken zum fortfahren]')
+enterContinue()
 
 default_first_name = user_config_data['User_Info']['first_name']
 if not default_first_name == '':
