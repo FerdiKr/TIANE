@@ -34,7 +34,7 @@
       Informationen.
     </p>
     {% if gold %}
-    <ul class="list-group ">
+    <ul class="list-group" id="mainContentBox">
       <li class="list-group-item list-group-item-secondary">
         <h5>Serverspezifische Einstellungen</h5>
       </li>
@@ -87,7 +87,7 @@
       <li class="list-group-item">
         <div class="form-group">
           <label for="homeLocation">Bitte gib hier den Standort deines TIANE-Systems ein.</label>
-          <span><b>Hinweis:</b>Diese Angabe ist Optional, erleichtert dir und TIANE aber die Arbeit zum Beispiel bei Wettervorhersagen.</span>
+          <span><b>Hinweis:</b> Diese Angabe ist optional, erleichtert dir und TIANE aber die Arbeit zum Beispiel bei Wettervorhersagen.</span>
           <input type="text" class="form-control" id="homeLocation" placeholder="z.B. 'Hamburg', 'München', 'Niederstotzingen'" value="">
           <small class="form-text text-muted">Wenn nichts in diesem Feld steht, wird '"{{st["homeLocation"]}}"' in die Konfiguration eingetragen.</small>
         </div>
@@ -95,7 +95,7 @@
       <li class="list-group-item">
         <div class="form-group">
           <label for="telegramSupport">Bitte gib hier das Bot-Token deines Telegram-Bots ein.</label>
-          <span><b>Hinweis:</b>Diese Angabe ist Optional, sie ermöglicht TIANE, mit dir über den Telegram-Messenger zu kommunizieren.</span>
+          <span><b>Hinweis:</b> Diese Angabe ist optional, sie ermöglicht TIANE, mit dir über den Telegram-Messenger zu kommunizieren.</span>
           <input type="text" class="form-control" id="telegramSupport" placeholder="Format: '123456789:AbCdEfGhIjKlMnOpQrSt-UvWxyzabdefgh3ai'" value="">
           <small class="form-text text-muted">Wenn nichts in diesem Feld steht, bleibt die Telegram-Funktion ausgeschaltet.</small>
         </div>
@@ -132,8 +132,8 @@
       </li>
     </ul>
     <br />
-    <a class="btn btn-success btn-lg float-right" role="button" id="button_execute" >Konfiguration sichern</a>
-    <br />
+    <a class="btn btn-success btn-lg float-right mb-3" role="button" id="button_execute" onclick="finalizeConfig()">Konfiguration sichern</a>
+
     {% else %}
     <div class="alert alert-danger" role="alert">
       <h5>Achtung!</h5>
@@ -147,6 +147,6 @@
     {% endif %}
   </div>
 </div>
-<script src="{{ url_for('static', filename='main.js')}}"></script>
+<script src="{{ url_for('static', filename='main_setupServer.js')}}"></script>
 </div>
 </body>
