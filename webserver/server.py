@@ -4,6 +4,8 @@
 from flask import Flask, render_template, jsonify, request, send_file, make_response
 from gevent import pywsgi
 import werkzeug.serving
+import json
+import os
 from helpWrapper import InstallWrapper
 
 webapp = Flask("TIANE", template_folder="template")
@@ -43,7 +45,23 @@ def setup_3():
 @webapp.route("/setupServer")
 def setupServer():
     data = getData()
-    return render_template("setupServer.html", nav=nav)
+    if os.path.exists("../server/TIANE_config.json"):
+        g = True # "config-exists"-trigger
+    else:
+        g = False
+    with open("../server/TIANE_config.json") as conf:
+        config = json.load(conf)
+    standards = {
+        "tianeName": config["System_name"],
+        "tianeSystem": config["Server_name"],
+        "tianeActivation": config["Activation_Phrase"],
+        "homeLocation": config["Home_location"],
+        "generateKey": True if config["TNetwork_Key"] == "" else False,
+        "useCameras": True if config["use_cameras"] else False,
+        "useFaceRec": True if config["use_facerec"] else False,
+        "useInterface": True if config["use_interface"] else False,
+    }
+    return render_template("setupServer.html", nav=nav, st=standards, gold=g)
 
 @webapp.route("/setupUpser") # TODO
 def setupUser():
@@ -75,6 +93,15 @@ def getStatus():
 @webapp.route("/api/installer/startInstallation/<packageName>")
 def startInstallation(packageName):
     data = installer.startInstallation(packageName)
+    return jsonify(data)
+
+@webapp.route("/api/setup/prerequesites") # TODO
+def getPrereqSetup():
+    """
+    checks things which would be checked on setup start
+    os.path.exists('server/TIANE_config.json') for example
+    """
+    data ={}
     return jsonify(data)
 
 @webapp.route("/api/writeConfig/server") # TODO
