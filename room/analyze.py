@@ -1,8 +1,9 @@
 import datetime
 
 class Sentence_Analyzer:
-    def __init__(self, room_list=[]):
+    def __init__(self, room_list=[], default_location=''):
         self.raumliste = room_list
+        self.default_location = default_location
 
 
     def get_text(self, eingabe):
@@ -45,7 +46,10 @@ class Sentence_Analyzer:
         two_words = 'los new old bad ober unter west ost nord süd south north east Los New Old Bad Ober Unter West Ost Nord Süd South North East'
         if 'in ' not in x:
             if 'zu hause' in x or 'hier' in x:
-                town = 'Weitersburg'
+                if not self.default_location == '':
+                    town = self.default_location
+                else:
+                    town = 'None'
             else:
                 town = 'None'
         else:
