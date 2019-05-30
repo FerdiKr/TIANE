@@ -24,7 +24,7 @@
         "TIANE_telegram_allowed_id_table": {},
         "rejected_telegram_messages": []
     },
-    "use_facerec": true,
+    "use_facerec": false,
     "use_cameras": false,
     "Home_location": "TIANE_SERVER",
     "telegram_key": "",
@@ -33,6 +33,6 @@
     "Activation_Phrase": "Hey TIANE!",
     "telegram": false,
     "TNetwork_Key": "",
-    "use_interface": true,
+    "use_interface": false,
     "System_name": "TIANE"
 }
