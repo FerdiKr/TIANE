@@ -1,0 +1,118 @@
+{
+  "opencv": {
+    "apt_installs": [
+      "libopencv-dev",
+      "python3-opencv"
+    ],
+    "required": "partially",
+    "description": "OpenCV wird benötigt, wenn TIANE Kamerabilder verarbeiten soll",
+    "install_check": {
+      "import": "cv2"
+    }
+  },
+  "imutils": {
+    "python_installs": [
+      "imutils"
+    ],
+    "required": "partially",
+    "description": "Das Python-Modul imutils wird benötigt, wenn TIANE Kamerabilder verarbeiten soll.",
+    "install_check": {
+      "import": "imutils"
+    }
+  },
+  "facerecognition": {
+    "python_installs": [
+      "face_recognition"
+    ],
+    "required": "partially",
+    "description": "Das Python-Modul imutils wird nur benötigt, wenn TIANE Kamerabilder verarbeiten soll.",
+    "install_check": {
+      "import": "face_recognition"
+    }
+  },
+  "scikit": {
+    "python_installs": [
+      "scikit-learn"
+    ],
+    "required": "partially",
+    "description": "Das Python-Modul scikit-learn wird nur benötigt, wenn du TIANEs Gesichtserkennung nutzen willst.",
+    "install_check": {
+      "import": "sklearn"
+    }
+  },
+  "telepot": {
+    "python_installs": [
+      "telepot"
+    ],
+
+    "required": "partially",
+    "description": "telepot wird nur benötigt, wenn du TIANE auch über Telegram erreichen möchtest.",
+    "install_check": {
+      "import": "telepot"
+    }
+  },
+  "pyaudio": {
+    "apt_installs": [
+      "portaudio19-dev", "sox", "flac", "ffmpeg"
+    ],
+    "python_installs": [
+      "pyaudio"
+    ],
+    "required": "partially",
+    "description": "pyaudio wird auf dem Server nur benötigt, wenn du TIANE dich auch bei Telegram-Sprachnachrichten verstehen soll.",
+    "install_check": {
+      "import": "pyaudio"
+    }
+  },
+  "speechrecognition": {
+    "apt_installs": [
+      "libttspico0", "libttspico-utils"
+    ],
+    "python_installs": [
+      "SpeechRecognition"
+    ],
+    "required": "partially",
+    "description": "Das Python-Modul SpeechRecognition wird nur für die Telegram-Unterstützung benötigt.",
+    "install_check": {
+      "import": "SpeechRecognition"
+    }
+  },
+  "wikipedia": {
+    "python_installs": [
+      "wikipedia"
+    ],
+    "required": "partially",
+    "description": "Das Python-Modul wikipedia wird nur dann benötigt, wenn du das entsprechende Modul benutzt.",
+    "install_check": {
+      "import": "wikipedia"
+    }
+  },
+  "beautifulSoup": {
+    "python_installs": [
+      "beautifulSoup"
+    ],
+    "required": "partially",
+    "description": "Das Python-Modul bs4 wird vom Bahn-Modul benötigt, du musst es also nur dann installieren, wenn du dieses auch verwenden möchtest.",
+    "install_check": {
+      "import": "bs4"
+    }
+  },
+  "spacex": {
+    "python_installs": [
+      "spacex-py"
+    ],
+    "required": "partially",
+    "description": "Wenn du wissen willst, wann zum Beispiel die nächste Rakete von Space X startet, benötigt TIANE das Python-Modul spacex_py.",
+    "install_check": {
+      "import": "spacex_py"
+    }
+  },
+  "test": {
+    "apt_installs": [
+      "goaccess"
+    ],
+    "required": "partially",
+    "description": "Diese Komponente dient ausschließlich zu Testzwecken."
+  }
+
+}

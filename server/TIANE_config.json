@@ -1,20 +1,7 @@
 {
-    "System_name": "TIANE",
-    "Server_name": "",
-    "Activation_Phrase": "",
-    "TNetwork_Key": "",
-    "Home_location": "",
-    "use_cameras": true,
-    "use_facerec": true,
-    "use_interface": true,
-    "telegram": true,
-    "Open_mode": false,
-    "telegram_key": "",
     "Local_storage": {
-        "users": {},
-        "system_name": "",
-        "server_name": "",
-        "activation_phrase": "",
+        "TIANE_Modules_defined_Vocabulary": [],
+        "home_location": "",
         "keys_to_distribute": [
             "users",
             "rooms",
@@ -27,12 +14,25 @@
             "TIANE_telegram_name_to_id_table",
             "TIANE_telegram_id_to_name_table"
         ],
-        "rooms": {},
-        "TIANE_Modules_defined_Vocabulary": [],
-        "TIANE_telegram_allowed_id_table": {},
+        "server_name": "TIANE_SERVER",
         "TIANE_telegram_name_to_id_table": {},
+        "system_name": "TIANE",
+        "activation_phrase": "Hey TIANE!",
+        "users": {},
         "TIANE_telegram_id_to_name_table": {},
-        "rejected_telegram_messages": [],
-        "home_location": ""
-    }
+        "rooms": {},
+        "TIANE_telegram_allowed_id_table": {},
+        "rejected_telegram_messages": []
+    },
+    "use_facerec": true,
+    "use_cameras": false,
+    "Home_location": "TIANE_SERVER",
+    "telegram_key": "",
+    "Server_name": "TIANE_SERVER",
+    "Open_mode": false,
+    "Activation_Phrase": "Hey TIANE!",
+    "telegram": false,
+    "TNetwork_Key": "n27C3I0EMKOrmUo3+sYSHuAybiOcTJkoZuaLu0YZh/M=",
+    "use_interface": true,
+    "System_name": "TIANE"
 }
