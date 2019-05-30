@@ -75,7 +75,7 @@ print('(Info: Damit dein Sprachassistent auf diese Ansprache auch tatsächlich r
 time.sleep(1)
 
 default_location = config_data['Home_location']
-if not default_location == 'None':
+if not default_location == '':
     location = input('\nBitte gib deinen Wohnort ein (optional, hilfreich für Funktionen wie Wettervorhersagen) [Standard ist "{}"]: '.format(default_location))
     if location == '' or location == ' ' or type(location) != type('text'):
         config_data['Home_location'] = default_name
@@ -90,7 +90,7 @@ else:
     else:
         config_data['Home_location'] = location
 config_data['Local_storage']['home_location'] = location
-if location == 'None':
+if location == '':
     print('Okay, du hast keinen Wohnort festgelegt.\n')
 else:
     print('Okay, {} wird "{}" als deinen Wohnort annehmen.\n'.format(system_name, location))
