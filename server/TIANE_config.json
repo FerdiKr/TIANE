@@ -32,7 +32,7 @@
     "Open_mode": false,
     "Activation_Phrase": "Hey TIANE!",
     "telegram": false,
-    "TNetwork_Key": "n27C3I0EMKOrmUo3+sYSHuAybiOcTJkoZuaLu0YZh/M=",
+    "TNetwork_Key": "",
     "use_interface": true,
     "System_name": "TIANE"
 }
