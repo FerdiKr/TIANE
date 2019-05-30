@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+    tiane:
+        container_name: tiane
+        restart: always
+        build: ./
+        volumes:
+            - .:/home/tiane
+            - /etc/localtime:/etc/localtime:ro

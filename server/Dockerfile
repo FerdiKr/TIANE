@@ -12,10 +12,10 @@ RUN ["pip3", "install", "wikipedia"]
 # https://github.com/nickoala/telepot/issues/463
 RUN ["pip3", "install", "urllib3==1.24.1"]
 
-WORKDIR /home
-COPY . /home
+WORKDIR /home/tiane
+COPY . ./
 
 ENV PYTHONIOENCODING = utf-8
 ENV PYTHONUNBUFFERED = 1
 
-CMD ["python3", "/home/TIANE_server.py"]
+CMD ["python3", "/home/tiane/TIANE_server.py"]
