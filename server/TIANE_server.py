@@ -1144,6 +1144,7 @@ with open('TIANE_config.json', 'r') as config_file:
 
 System_name = config_data['System_name']
 Server_name = config_data['Server_name']
+Home_location = config_data['Home_location']
 Local_storage = config_data['Local_storage']
 TNetwork_Key = base64.b64decode(config_data['TNetwork_Key'].encode('utf-8')) # sehr umständliche Decoder-Zeile. Leider nötig :(
 
@@ -1177,7 +1178,7 @@ Other_devices = {}
 Room_list = []
 
 Modules = Modules()
-Analyzer = Sentence_Analyzer(room_list=Room_list)
+Analyzer = Sentence_Analyzer(room_list=Room_list, home_location=Home_location)
 Tiane = TIANE()
 Tiane.local_storage['TIANE_starttime'] = time.time()
 
