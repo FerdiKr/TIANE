@@ -20,9 +20,23 @@ def isValid(text):
 
 def handle(text, tiane, local_storage):
     text = text.lower()
+    length = len(text)
+
     gmaps = googlemaps.Client(key='')
 
-    origin = ''
-    destination = ''
+    # get locations
+    matchLocations = re.search('von', text)
+    if matchLocations != None:
+        startLocations = matchLocations.end() + 1
+        locations = text[startLocations:length]
 
-    directions_result = gmaps.distance_matrix(origin,destination)
+        matchMiddle = re.search('(bis|nach)', text)
+        if matchMiddle != None:
+            startMiddle = matchMiddle.start() - 1
+            endMiddle = matchMiddle.end() + 1
+
+    origin = text[startLocations:startMiddle]
+    destination = text[endMiddle:length]
+
+    # get distance and duration
+    directions_result = gmaps.distance_matrix(origin,destination,language='de')
