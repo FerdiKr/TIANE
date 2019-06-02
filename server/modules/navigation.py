@@ -40,3 +40,15 @@ def handle(text, tiane, local_storage):
 
     # get distance and duration
     directions_result = gmaps.distance_matrix(origin,destination,language='de')
+
+    durationTxt = directions_result['rows'][0]['elements'][0]['duration']['text']
+    distanceTxt = directions_result['rows'][0]['elements'][0]['distance']['text']
+
+    match = re.search('km', distanceTxt)
+    if match != None:
+        endTime = match.start() - 1
+        distanceTxt = distanceTxt[0:endTime]
+
+        distance = float(re.sub(",", ".", distanceTxt)[0:endTime])
+
+    tiane.say('Von '+origin+' nach '+destination+' sind es '+distanceTxt+' Kilometer. Die Fahrt dauert '+durationTxt)
