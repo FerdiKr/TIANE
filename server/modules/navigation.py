@@ -13,6 +13,10 @@ Dieses Modul fragt die Distanz und Fahrzeit zwischen zwei Orten von Google Maps 
 
 def isValid(text):
     text = text.lower()
+    if ('wie weit' in text or 'wie lang' in text) and ('von' in text and ('bis' in text or 'nach' in text)):
+        return True
+    else:
+        return False
 
 def handle(text, tiane, local_storage):
     text = text.lower()
