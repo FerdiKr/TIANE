@@ -46,9 +46,9 @@ def handle(text, tiane, local_storage):
 
     match = re.search('km', distanceTxt)
     if match != None:
-        endTime = match.start() - 1
-        distanceTxt = distanceTxt[0:endTime]
+        endNumber = match.start() - 1
+        distanceTxt = distanceTxt[0:endNumber]
 
-        distance = float(re.sub(",", ".", distanceTxt)[0:endTime])
+        distance = float(re.sub(",", ".", distanceTxt))
 
     tiane.say('Von '+origin+' nach '+destination+' sind es '+distanceTxt+' Kilometer. Die Fahrt dauert '+durationTxt)
