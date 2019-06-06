@@ -58,8 +58,6 @@ def handle(text, tiane, profile):
 
         PARAMS = {'device': device}
 
-    tiane.say(str(PARAMS))
-
     r = requests.get(url = URL, params = PARAMS)
     result = r.json()
 
