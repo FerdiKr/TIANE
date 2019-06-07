@@ -288,7 +288,7 @@
         "type": "switch",
         "z": "4f84bbde.dd6434",
         "name": "device switch",
-        "property": "payload.device",
+        "property": "device",
         "propertyType": "msg",
         "rules": [
             {
