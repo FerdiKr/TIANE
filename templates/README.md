@@ -3,6 +3,6 @@
 Dieser Ordner enthält Vorlagen und Beispieldateien.
 
 ## NodeRed Beispiel-Flow
-Die Datei *noderedflow.json* enthält einen Beispielflow für NodeRed, um mit dem nodered_Modul SmartHome-Geräte zu steuern.
+Die Datei *noderedflow.json* enthält einen Beispielflow für NodeRed, um mit dem nodered-Modul SmartHome-Geräte zu steuern oder deren Status abzufragen.
 
-Die Gerätenamen müssen im Flow eingetragen werden. Siehe dazu Kommentare im Flow.
+Die Gerätenamen müssen nach Typ sortiert oben im Flow eingetragen werden. Siehe dazu Kommentare im Flow.
