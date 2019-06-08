@@ -23,20 +23,79 @@
 </nav>
 
 <div class="container-fluid">
-<div class="row">
-  <div class="col-md-12">
-    <div class="jumbotron">
-      <h1 class="display-4">Hallo!</h1>
-      <p class="lead">
-
-      </p>
-      <hr class="my-4">
-      <p>
-      </p>
-      <a class="btn btn-success btn-lg" href="#" role="button">TIANE einrichten!</a>
+<div class="row justify-content-center mt-3">
+  <div class="col-md-10">
+    <div class="row justify-content-center">
+      <div class="card-deck">
+        <!-- CARD-Element-Block -->
+        <div class="card mb-2">
+          <div class="card-body">
+            <h5 class="card-title">Server Status</h5>
+            <h6 class="card-subtitle mb-2 text-muted">In welchem Zustand befindet sich im Moment die TIANE-Zentrale?</h6>
+            <p class="card-text">
+              <button class="btn btn-lg btn-success mt-2" id="StartPageServerStatus">läuft.</button>
+            </p>
+            <a href="#" class="card-link disabled">mehr Informationen…</a>
+          </div>
+        </div>
+        <!-- CARD-Element-Block -->
+        <div class="card mb-2">
+          <div class="card-body">
+            <h5 class="card-title">Installer Status</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Wird gerade etwas im Hintergrund installiert?</h6>
+            <p class="card-text">
+              <button class="btn btn-lg btn-danger mt-2" id="StartPageInstallerStatus">Nein</button>
+              <br />
+              <pre id="StartPageInstallerLogs"></pre>
+            </p>
+          </div>
+        </div>
+        <!-- CARD-Element-Block -->
+        <div class="card mb-2">
+          <div class="card-body">
+            <h5 class="card-title">Aktive Räume</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Welche Raumclients sind aktuell an der TIANE-Zentrale angemeldet?</h6>
+            <p class="card-text">
+              <span>Raum 1</span><br />
+              <span>Raum 2</span><br />
+              <span>Raum 3</span><br />
+            </p>
+            <a href="/setupRoom" class="card-link disabled">zur Raum-Übersicht…</a>
+          </div>
+        </div>
+      </div>
+      <div class="card-deck">
+        <!-- CARD-Element-Block -->
+        <div class="card mb-2">
+          <div class="card-body">
+            <h5 class="card-title">Aktive Benutzer</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Welche Benutzer sind aktuell an der TIANE-Zentrale angemeldet?</h6>
+            <p class="card-text">
+              <span>Benutzer 1</span><br />
+              <span>Benutzer 2</span><br />
+              <span>Benutzer 3</span><br />
+            </p>
+            <a href="/setupUser" class="card-link disabled">zur Benutzer-Übersicht…</a>
+          </div>
+        </div>
+        <!-- CARD-Element-Block -->
+        <div class="card mb-2">
+          <div class="card-body">
+            <h5 class="card-title">Aktive Module</h5>
+            <h6 class="card-subtitle mb-2 text-muted">Welche Befehle und Funktionen sind aktuell aktiviert?</h6>
+            <p class="card-text">
+              <span>Modul 1</span><br />
+              <span>Modul 2</span><br />
+              <span>Modul 3</span><br />
+            </p>
+            <a href="/setupModules" class="card-link disabled">zur Modul-Übersicht…</a>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
 </div>
 </div>
-<script src="{{ url_for('static', filename='main.js')}}"></script>
+<script src="{{ url_for('static', filename='main_index.js')}}"></script>
 </body>

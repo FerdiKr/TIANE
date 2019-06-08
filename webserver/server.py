@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-from flask import Flask, render_template, jsonify, request, send_file, make_response
+from flask import Flask, render_template, jsonify, request, send_file, make_response, redirect
 from gevent import pywsgi
 import werkzeug.serving
 import json
 import os
 import sys
+import random
 from helpWrapper import InstallWrapper
 # TIANE_setup_wrapper-import is a bit hacky but I can't see any nicer way to realize it yet
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -25,14 +26,24 @@ def getData():
 # ------------------------------------------------------------------------------
 
 nav = [
+{"href": "/setup", "text": "\"Erste Schritte\""},
 {"href": "/setupServer", "text": "Server einrichten"},
-{"href": "/setupUser", "text": "Benutzer einrichten (WIP)"},
-{"href": "/setupRoom", "text": "Raum einrichten (WIP)"},
+{"href": "/setupUser", "text": "Benutzer erstellen (WIP)"},
+{"href": "/setupRoom", "text": "Räume einrichten (WIP)"},
+{"href": "/setupModules", "text": "Module bearbeiten (WIP)"},
 ]
 
 
 
 @webapp.route("/")
+@webapp.route("/index")
+def index():
+    firstTime = False
+    if firstTime:
+        return redirect("/setup")
+    else:
+        return render_template("index.html", nav=nav)
+
 @webapp.route("/setup")
 def setup_1():
     return render_template("setup.html", nav=nav)
@@ -67,7 +78,7 @@ def setupServer():
     }
     return render_template("setupServer.html", nav=nav, st=standards, gold=g)
 
-@webapp.route("/setupUpser") # TODO
+@webapp.route("/setupUser") # TODO
 def setupUser():
     data = getData()
     return render_template("setupUser.html", nav=nav)
@@ -179,14 +190,14 @@ def uploadSnowboyFile(userName):
 @webapp.route("/api/server/<action>") # TODO
 def getServerStatus(action):
     if action == "status":
-        pass
+        data = random.choice(["running", "stopped"])
     elif action == "start":
-        pass
+        data = "ok"
     elif action == "stop":
-        pass
+        data = "ok"
     elif action == "version":
-        pass
-    return "ok"
+        data = ""
+    return data
 
 @webapp.route("/api/module/<modName>/<action>") # TODO
 def changeModuleMode(modName, action):
