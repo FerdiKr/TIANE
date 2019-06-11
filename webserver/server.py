@@ -215,6 +215,9 @@ def writeUserConfig(userName):
             config_data = {"User_Info": {}}
         config_data["User_Info"]["name"] = data["userName"]
 
+        subdirs = os.listdir("../server/users")
+        config_data["User_Info"]["uid"] = len(subdirs) + 1
+
         if "userRole" in data and data["userRole"].strip() != "":
             if data["userRole"].strip() in ["USER", "ADMIN"]:
                 config_data["User_Info"]["role"] = data["userRole"]
@@ -270,9 +273,16 @@ def writeUserConfig(userName):
 def loadUserConfig(userName):
     if os.path.exists("../server/users/" + userName + "/User_Info.json"):
         with open("../server/users/" + userName + "/User_Info.json", "r") as confFile:
-            config = json.load(confFile)
+            config = json.load(confFile)["User_Info"]
         data = {
-            "userName": config
+            "userName": config["name"],
+            "userRole": config["role"],
+            "userTelegram": config["telegram_id"],
+            "userBirthYear": config["date_of_birth"]["year"],
+            "userBirthMonth": config["date_of_birth"]["month"],
+            "userBirthDay": config["date_of_birth"]["day"],
+            "userFullName": config["first_name"],
+            "userFullLastName": config["last_name"]
         }
         return jsonify(data)
     else:
