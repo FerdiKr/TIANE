@@ -23,7 +23,3 @@ function finalizeConfig() {
     window.location.replace("/index");
   });
 }
-
-window.onload = function () {
-
-}

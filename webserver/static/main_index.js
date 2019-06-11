@@ -3,13 +3,21 @@ function refreshInformation() {
     if(data == "running") {
       $("#StartPageServerStatus")
         .removeClass("btn-danger")
+        .removeClass("btn-secondary")
         .addClass("btn-success")
-        .html("läuft.");
+        .html("läuft");
+    } else if (data=="stopped") {
+      $("#StartPageServerStatus")
+      .removeClass("btn-success")
+      .removeClass("btn-secondary")
+      .addClass("btn-danger")
+      .html("gestoppt");
     } else {
       $("#StartPageServerStatus")
       .removeClass("btn-success")
-      .addClass("btn-danger")
-      .html("gestoppt.");
+      .removeClass("btn-danger")
+      .addClass("btn-secondary")
+      .html("unbekannt");
     }
   });
   $.get("/api/installer/getStatus", function(data) {
