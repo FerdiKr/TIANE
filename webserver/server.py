@@ -9,10 +9,48 @@ import os
 import sys
 import random
 from helpWrapper import InstallWrapper
+
 # TIANE_setup_wrapper-import is a bit hacky but I can't see any nicer way to realize it yet
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from TIANE_setup_wrapper import *
 from distutils.dir_util import copy_tree
+
+# Imports for handling the main-tiane-System, defining global variable for that thread
+from multiprocessing import Process
+import mmap
+import pickle
+sys.path.append(os.path.join(os.path.dirname(__file__), "../server/"))
+from TIANE_server import runMain
+class mThr():
+    def __init__(self):
+        self.thr = None
+        self.command = mmap.mmap(-1, 2048)
+        self.feedback = mmap.mmap(-1, 20480)
+    def start(self):
+        self.thr = Process(target=runMain, args=(self.command, self.feedback,))
+        try:
+            self.thr.start()
+        except AssertionError:
+            pass
+    def stop(self):
+        self.thr.terminate()
+
+    def status(self):
+        if self.thr is not None:
+            data = "running" if self.thr.is_alive() else "stopped"
+        else:
+            data = "unknown"
+        return data
+
+    def getFeed(self):
+        self.feedback.seek(0)
+        try:
+            pick = pickle.load(self.feedback)
+        except EOFError:
+            pick = {}
+        return pick
+
+mainThread = mThr()
 
 webapp = Flask("TIANE", template_folder="template")
 installer = InstallWrapper()
@@ -33,7 +71,6 @@ nav = [
 {"href": "/setupRoom", "text": "Räume einrichten (WIP)"},
 {"href": "/setupModules", "text": "Module bearbeiten (WIP)"},
 ]
-
 
 
 @webapp.route("/")
@@ -188,7 +225,6 @@ def writeServerConfig():
             config_data["use_interface"] = t
             bedingt_kopieren('../server/resources/optional_modules/POI_Interface.py', '../server/modules/continuous/POI_Interface.py', t)
             bedingt_kopieren('../server/resources/optional_modules/POI_Interface_controls.py', '../server/modules/POI_Interface_controls.py', t)
-    print(config_data)
     with open('../server/TIANE_config.json', 'w') as config_file:
         json.dump(config_data, config_file, indent=4)
         return "ok"
@@ -201,7 +237,6 @@ def writeRoomConfig(roomName):
 @webapp.route("/api/writeConfig/user/<userName>") # TODO
 def writeUserConfig(userName):
     data = getData()
-    print(data)
     if "userName" in data and data["userName"].strip() != "":
         filename = "../server/users/" + data["userName"] + "/User_Info.json"
         default_path = "../server/resources/user_default/User_Info.json"
@@ -296,13 +331,17 @@ def uploadSnowboyFile(userName):
 @webapp.route("/api/server/<action>") # TODO
 def getServerStatus(action):
     if action == "status":
-        data = random.choice(["running", "stopped"])
+        data = mainThread.status()
     elif action == "start":
+        mainThread.start()
         data = "ok"
     elif action == "stop":
+        mainThread.stop()
         data = "ok"
-    elif action == "version":
-        data = ""
+    elif action == "feed":
+        data = jsonify(mainThread.getFeed())
+    else:
+        data = "err"
     return data
 
 @webapp.route("/api/module/<modName>/<action>") # TODO

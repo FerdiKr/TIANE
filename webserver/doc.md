@@ -16,8 +16,8 @@
 * [x] `/api/installer/startInstallation/<packageName>`
 * [ ] `/api/setup/prerequesites`
 * [x] `/api/writeConfig/server`
-* [ ] `/api/writeConfig/user`
-* [ ] `/api/loadConfig/user/<userName>`
+* [x] `/api/writeConfig/user`
+* [x] `/api/loadConfig/user/<userName>`
 * [ ] `/api/writeConfig/room`
 * [ ] `/api/uploadSpeech/<userName>`
 * [x] `/api/server/<action>` (action=status, start, stop, version)
