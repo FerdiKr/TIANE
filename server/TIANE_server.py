@@ -52,6 +52,8 @@ def runMain(commandMap, feedbackMap):
             dirname = os.path.dirname(os.path.abspath(__file__))
             locations = [os.path.join(dirname, directory)]
             modules = []
+            if "modules" not in Local_storage:
+                Local_storage["modules"] = {}
             for finder, name, ispkg in pkgutil.walk_packages(locations):
                 try:
                     loader = finder.find_module(name)
@@ -59,15 +61,19 @@ def runMain(commandMap, feedbackMap):
                 except:
                     traceback.print_exc()
                     Log.write('WARNING', 'Modul {} ist fehlerhaft und wurde übersprungen!'.format(name), show=True)
+                    Local_storage["modules"][name] = {"name": name, "status": "error", "type": "unknown"}
                     continue
                 else:
                     if continuous == True:
                         Log.write('INFO', 'Fortlaufendes Modul {} geladen'.format(name), show=True)
+                        mode = "continuous"
                         modules.append(mod)
                     else:
                         Log.write('INFO', 'Modul {} geladen'.format(name), show=True)
+                        mode = "normal"
                         modules.append(mod)
                     words = mod.WORDS if hasattr(mod, 'WORDS') else []
+                    Local_storage["modules"][name] = {"name": name, "status": "loaded", "type": mode}
                     for word in words:
                         if not word in self.modules_defined_vocabulary:
                             self.modules_defined_vocabulary.append(word)

@@ -20,6 +20,8 @@ from webserverTianeCommunication import mThr
 
 mainThread = mThr()
 
+mainThread.start()
+
 webapp = Flask("TIANE", template_folder="template")
 installer = InstallWrapper()
 

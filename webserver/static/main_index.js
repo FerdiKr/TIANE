@@ -73,7 +73,14 @@ function refreshInformation() {
     var ct = 0;
     for (var modules in data["modules"]) {
       modulesBuf += "<span>" + modules + "</span><br />";
+      if(ct == 3) {
+        modulesBuf += '<div class="collapse" id="collapseModuleBox">';
+      }
       ct = ct +1;
+    }
+    if(ct >= 3) {
+      modulesBuf += "</div>";
+      modulesBuf += "<a href=\"#\" data-toggle=\"collapse\" data-target=\"#collapseModuleBox\" aria-expanded=\"false\">mehr anzeigen…</a>"
     }
     $("#mainModuleList").html(modulesBuf);
     $("#mainModuleListBadge").html("Aktive Module <span class=\"badge badge-secondary\">" + ct + "</span>");
