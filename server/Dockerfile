@@ -4,7 +4,7 @@ FROM ubuntu:18.04
 RUN ["apt", "update"]
 RUN ["apt", "install", "-y", "portaudio19-dev", "sox", "flac", "ffmpeg", "libttspico0", "libttspico-utils", "python3-pip", "ca-certificates", "python3-certifi"]
 RUN ["pip3", "install", "pyaudio", "telepot", "SpeechRecognition", "sklearn"]
-RUN ["pip3", "install", "wikipedia"]
+RUN ["pip3", "install", "wikipedia", "googlemaps", "spacex_py"]
 
 # Downgrade urllib
 # This is a temporary fix for the telegram module
