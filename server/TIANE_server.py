@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 import pickle
 
-def runMain(commandMap, feedbackMap):
+def runMain(commandMap=None, feedbackMap=None):
     class Modules:
         def __init__(self):
             self.load_modules()
@@ -1145,6 +1145,7 @@ def runMain(commandMap, feedbackMap):
 
 
     def updateFeedback():
+        if feedbackMap is not None:
         feedbackMap.seek(0)
         newPick = pickle.dumps(Local_storage)
         feedbackMap.write(newPick)
