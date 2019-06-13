@@ -338,6 +338,11 @@ def getServerStatus(action):
         data = "err"
     return jsonify(data)
 
+@webapp.route("/api/module/list")
+def listModules():
+    feed = mainThread.getFeed()
+    return jsonify(feed["modules"] if "modules" in feed else {})
+
 @webapp.route("/api/module/<modName>/<action>") # TODO
 def changeModuleMode(modName, action):
     modules = [] # dummyList

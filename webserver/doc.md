@@ -21,7 +21,7 @@
 * [x] `/api/loadConfig/user/<userName>`
 * [ ] `/api/uploadSpeech/<userName>`
 
-* [ ] `/api/server/list/<action>` (action=room, users, modules, telegram)
+* [x] `/api/server/list/<action>` (action=room, users, modules, telegram)
 * [x] `/api/server/<action>` (action=status, start, stop, version)
-* [ ] `/api/module/list`
+* [x] `/api/module/list` (see `/api/server/list/modules`)
 * [ ] `/api/module/<modName>/<action>` (action=load, unload, status)
