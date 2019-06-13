@@ -16,39 +16,7 @@ from TIANE_setup_wrapper import *
 from distutils.dir_util import copy_tree
 
 # Imports for handling the main-tiane-System, defining global variable for that thread
-from multiprocessing import Process
-import mmap
-import pickle
-sys.path.append(os.path.join(os.path.dirname(__file__), "../server/"))
-from TIANE_server import runMain
-class mThr():
-    def __init__(self):
-        self.thr = None
-        self.command = mmap.mmap(-1, 2048)
-        self.feedback = mmap.mmap(-1, 20480)
-    def start(self):
-        self.thr = Process(target=runMain, args=(self.command, self.feedback,))
-        try:
-            self.thr.start()
-        except AssertionError:
-            pass
-    def stop(self):
-        self.thr.terminate()
-
-    def status(self):
-        if self.thr is not None:
-            data = "running" if self.thr.is_alive() else "stopped"
-        else:
-            data = "unknown"
-        return data
-
-    def getFeed(self):
-        self.feedback.seek(0)
-        try:
-            pick = pickle.load(self.feedback)
-        except EOFError:
-            pick = {}
-        return pick
+from webserverTianeCommunication import mThr
 
 mainThread = mThr()
 
@@ -328,10 +296,34 @@ def uploadSnowboyFile(userName):
     data = getData()
     return "ok"
 
+@webapp.route("/api/server/list/<action>")
+def getExtraServerStatus(action="*"):
+    feed = mainThread.getFeed()
+    if action == "rooms":
+        data = feed["rooms"] if "rooms" in feed else {}
+    elif action == "users":
+        data = feed["users"] if "users" in feed else {}
+    elif action == "modules":
+        data = feed["modules"] if "modules" in feed else {}
+    elif action == "telegram":
+        data = feed["rejected_telegram_messages"] if "rejected_telegram_messages" in feed else []
+    else:
+        data = {
+            "room": feed["rooms"] if "rooms" in feed else {},
+            "users": feed["users"] if "users" in feed else {},
+            "modules": feed["modules"] if "modules" in feed else {}
+        }
+    return jsonify(data)
+
+
 @webapp.route("/api/server/<action>") # TODO
 def getServerStatus(action):
     if action == "status":
-        data = mainThread.status()
+        feed = mainThread.getFeed()
+        data = {
+            "status": mainThread.status(),
+            "since": feed["TIANE_starttime"] if "TIANE_starttime" in feed else 0
+            }
     elif action == "start":
         mainThread.start()
         data = "ok"
@@ -339,10 +331,10 @@ def getServerStatus(action):
         mainThread.stop()
         data = "ok"
     elif action == "feed":
-        data = jsonify(mainThread.getFeed())
+        data = mainThread.getFeed()
     else:
         data = "err"
-    return data
+    return jsonify(data)
 
 @webapp.route("/api/module/<modName>/<action>") # TODO
 def changeModuleMode(modName, action):

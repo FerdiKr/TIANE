@@ -17,8 +17,11 @@
 * [ ] `/api/setup/prerequesites`
 * [x] `/api/writeConfig/server`
 * [x] `/api/writeConfig/user`
-* [x] `/api/loadConfig/user/<userName>`
 * [ ] `/api/writeConfig/room`
+* [x] `/api/loadConfig/user/<userName>`
 * [ ] `/api/uploadSpeech/<userName>`
+
+* [ ] `/api/server/list/<action>` (action=room, users, modules, telegram)
 * [x] `/api/server/<action>` (action=status, start, stop, version)
+* [ ] `/api/module/list`
 * [ ] `/api/module/<modName>/<action>` (action=load, unload, status)

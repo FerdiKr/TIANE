@@ -297,6 +297,8 @@ def runMain(commandMap, feedbackMap):
                 if self.continuous_stopped:
                     break
                 Local_storage['module_counter'][user] += 1
+                Log.write("", "--------- WEBSERVER-THREAD STARTING --------\n")
+                updateFeedback()
                 time.sleep(0.01)
             self.continuous_threads_running -= 1
             return
@@ -1137,12 +1139,11 @@ def runMain(commandMap, feedbackMap):
 
 
     def updateFeedback():
-        while feedbackLoop:
-            feedbackMap.seek(0)
-            newPick = pickle.dumps(Local_storage)
-            feedbackMap.write(newPick)
-            old_lS = Local_storage
-            time.sleep(0.25)
+        feedbackMap.seek(0)
+        newPick = pickle.dumps(Local_storage)
+        feedbackMap.write(newPick)
+        time.sleep(0.25)
+            # TODO: check command-mmap and execute corresponding commands
 
     #################################################-MAIN-#################################################
     relPath = str(Path(__file__).parent) + "/"
@@ -1250,10 +1251,7 @@ def runMain(commandMap, feedbackMap):
     sock.listen(True)
     time.sleep(1.5)
 
-    Log.write("", "--------- WEBSERVER-THREAD STARTING --------\n")
-    feedbackLoop = True
-    WebserverThread = Thread(target=updateFeedback)
-    WebserverThread.start()
+
 
     Log.write('', '--------- FERTIG ---------\n\n', show=True)
 
@@ -1270,7 +1268,6 @@ def runMain(commandMap, feedbackMap):
 
     sock.close()
     Modules.stop_continuous()
-    feedbackLoop = False
     Log.write('', '------ Räume werden beendet...', show=True)
     if Rooms == {}:
         Log.write('INFO', '-- (Keine zu beenden)', show=True)
