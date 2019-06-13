@@ -5,6 +5,7 @@ services:
         container_name: tiane
         restart: always
         build: ./
+        network_mode: "host"
         volumes:
             - .:/home/tiane
             - /etc/localtime:/etc/localtime:ro
