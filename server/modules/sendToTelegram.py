@@ -38,6 +38,7 @@ def handle(text, tiane, local_storage):
         if tiane.telegram_call:
             tiane.say('Du hast folgende Nachricht an dich selbst geschrieben:')
         else:
+            tiane.say("Ok, ich sende " + nachricht + " an dein Smartphone")
             tiane.say("Nachricht an dich:", output='telegram')
         tiane.say(nachricht, output='telegram')
     else:
