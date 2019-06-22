@@ -72,8 +72,8 @@ def runMain(commandMap=None, feedbackMap=None):
                         Log.write('INFO', 'Modul {} geladen'.format(name), show=True)
                         mode = "normal"
                         modules.append(mod)
-                    words = mod.WORDS if hasattr(mod, 'WORDS') else []
                     Local_storage["modules"][name] = {"name": name, "status": "loaded", "type": mode}
+                    words = mod.WORDS if hasattr(mod, 'WORDS') else []
                     for word in words:
                         if not word in self.modules_defined_vocabulary:
                             self.modules_defined_vocabulary.append(word)
@@ -303,8 +303,7 @@ def runMain(commandMap=None, feedbackMap=None):
                 if self.continuous_stopped:
                     break
                 Local_storage['module_counter'][user] += 1
-                Log.write("", "--------- WEBSERVER-THREAD STARTING --------\n")
-                updateFeedback()
+                updateFeedback()  # injected update-local-storage-to-mmap-function
                 time.sleep(0.01)
             self.continuous_threads_running -= 1
             return
@@ -1146,10 +1145,10 @@ def runMain(commandMap=None, feedbackMap=None):
 
     def updateFeedback():
         if feedbackMap is not None:
-        feedbackMap.seek(0)
-        newPick = pickle.dumps(Local_storage)
-        feedbackMap.write(newPick)
-        time.sleep(0.25)
+            feedbackMap.seek(0)
+            newPick = pickle.dumps(Local_storage)
+            feedbackMap.write(newPick)
+            time.sleep(0.25)
             # TODO: check command-mmap and execute corresponding commands
 
     #################################################-MAIN-#################################################
@@ -1163,6 +1162,7 @@ def runMain(commandMap=None, feedbackMap=None):
 
     System_name = config_data['System_name']
     Server_name = config_data['Server_name']
+    Home_location = config_data["Home_location"]
     Local_storage = config_data['Local_storage']
     TNetwork_Key = base64.b64decode(config_data['TNetwork_Key'].encode('utf-8')) # sehr umständliche Decoder-Zeile. Leider nötig :(
 
@@ -1201,7 +1201,7 @@ def runMain(commandMap=None, feedbackMap=None):
     Room_list = []
 
     Modules = Modules()
-    Analyzer = Sentence_Analyzer(room_list=Room_list)
+    Analyzer = Sentence_Analyzer(room_list=Room_list, home_location=Home_location)
     Tiane = TIANE()
     Tiane.local_storage['TIANE_starttime'] = time.time()
 
@@ -1257,9 +1257,6 @@ def runMain(commandMap=None, feedbackMap=None):
 
     sock.listen(True)
     time.sleep(1.5)
-
-
-
     Log.write('', '--------- FERTIG ---------\n\n', show=True)
 
     # "Hauptschleife"
