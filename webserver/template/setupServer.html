@@ -27,8 +27,8 @@
     <h2>Server einrichten</h2>
     <p>
       Jetzt kannst du deinen neuen Sprachassistenten TIANE einrichten. In diesem
-      Menü geht es explizit um den TIANE-Server. Dieser sollte auf einem zentralen
-      Computer in deinem Heimnetzwerk laufen der immer erreichbar sein sollte.
+      Menü geht es explizit um den <b>TIANE-Server</b>. Dieser sollte auf einem zentralen
+      Computer in deinem Heimnetzwerk laufen der <b>immer erreichbar</b> sein sollte.
       Die einzelnen Geräte in den Räumen greifen dann darauf zu. Auf diesem
       Zentralrechner erfolgen meistens die Analyse und die Verarbeitung von
       Informationen.
@@ -54,7 +54,7 @@
       </li>
       <li class="list-group-item">
         <div class="form-group">
-          <label for="tianeActivation">Mit welchem Befehl möchtest du TIANE in Zukunft ansprechen?</label>
+          <label for="tianeActivation">Mit welchem Befehl möchtest du TIANE in Zukunft <b>ansprechen</b>?</label>
           <br />
           <span><b>Hinweis:</b> Damit dein Sprachassistent auf diese Ansprache auch tatsäclich reagiert, musst du zuächst ein <a href="trainNewVoice">Stimm-Modell trainieren</a>.</span>
           <input type="text" class="form-control" id="tianeActivation" placeholder="z.B. 'Hey Tiane!' oder 'Computer!?'" value="">
@@ -63,9 +63,9 @@
       </li>
       <li class="list-group-item">
         <div class="form-group">
-          <label for="keyLength">Wie lang soll der Schlüssel für die sichere Kommunikation zwischen Server und den Raumclients sein?</label>
+          <label for="keyLength">Wie lange soll der <b>Schlüssel</b> für die <b>sichere Kommunikation</b> zwischen Server und den Raumclients sein?</label>
           <br />
-          <span><b>Hinweis:</b> Erlaubte Längen sind 8, 16 und 32 Bytes. Ein längerer Schlüssel ist deutlich sicherer, kann aber auf manchen Geräten zu Geschwindigkeitsproblemen führen.</span>
+          <span><b>Hinweis:</b> Erlaubte Längen sind 8, 16 und 32 Bytes. Ein <b>längerer Schlüssel</b> ist <b>deutlich sicherer</b>, kann aber auf manchen Geräten zu Geschwindigkeitsproblemen führen.</span>
           {% if st["generateKey"] %}
           {% else %}
           <br />
@@ -86,7 +86,7 @@
       </li>
       <li class="list-group-item">
         <div class="form-group">
-          <label for="homeLocation">Bitte gib hier den Standort deines TIANE-Systems ein.</label>
+          <label for="homeLocation">Bitte gib hier den <b>Standort</b> deines TIANE-Systems ein.</label>
           <span><b>Hinweis:</b> Diese Angabe ist optional, erleichtert dir und TIANE aber die Arbeit zum Beispiel bei Wettervorhersagen.</span>
           <input type="text" class="form-control" id="homeLocation" placeholder="z.B. 'Hamburg', 'München', 'Niederstotzingen'" value="">
           <small class="form-text text-muted">Wenn nichts in diesem Feld steht, wird '"{{st["homeLocation"]}}"' in die Konfiguration eingetragen.</small>
@@ -94,7 +94,7 @@
       </li>
       <li class="list-group-item">
         <div class="form-group">
-          <label for="telegramSupport">Bitte gib hier das Bot-Token deines Telegram-Bots ein.</label>
+          <label for="telegramSupport">Bitte gib hier das Bot-Token deines <b>Telegram-Bots</b> ein.</label>
           <span><b>Hinweis:</b> Diese Angabe ist optional, sie ermöglicht TIANE, mit dir über den Telegram-Messenger zu kommunizieren.</span>
           <input type="text" class="form-control" id="telegramSupport" placeholder="Format: '123456789:AbCdEfGhIjKlMnOpQrSt-UvWxyzabdefgh3ai'" value="">
           <small class="form-text text-muted">Wenn nichts in diesem Feld steht, bleibt die Telegram-Funktion ausgeschaltet.</small>
@@ -104,7 +104,7 @@
         <h5>Kamera-Einstellungen</h5>
       </li>
       <li class="list-group-item">
-        <label for="useCameras">Soll dein Sprachassistent Kameras verwenden?</label>
+        <label for="useCameras">Soll dein Sprachassistent <b>Kameras verwenden</b>?</label>
         <div class="input-group">
           <button class="btn btn-success mr-3" id="useCamerasButtonTrue" onclick="$('#useCameras').val('Ja')">Ja</button>
           <button class="btn btn-danger mr-3" id="useCamerasButtonFalse" onclick="$('#useCameras').val('Nein')">Nein</button>
@@ -113,16 +113,15 @@
         <small class="form-text text-muted">Die Kamerafunktion solltest du zum Beispiel aktivieren, wenn du die Gesichtserkennungsfunktion benutzen möchtest.</small>
       </li>
       <li class="list-group-item">
-        <label for="useFaceRec">Soll das Modul für Gesichtserkennung geladen werden?</label>
+        <label for="useFaceRec">Soll das Modul für <b>Gesichtserkennung</b> geladen werden?</label>
         <div class="input-group">
           <button class="btn btn-success mr-3" id="useFaceRecButtonTrue" onclick="$('#useFaceRec').val('Ja')">Ja</button>
           <button class="btn btn-danger mr-3" id="useFaceRecButtonFalse" onclick="$('#useFaceRec').val('Nein')">Nein</button>
           <input type="text" class="form-control disabled" disabled id="useFaceRec" value="{{ "Ja" if st["useFaceRec"] else "Nein"  }}"></input>
         </div>
-        <small class="form-text text-muted">Die Kamerafunktion solltest du zum Beispiel aktivieren, wenn du die Gesichtserkennungsfunktion benutzen möchtest.</small>
       </li>
       <li class="list-group-item">
-        <label for="useInterface">Sofern du die oberen beiden Funktionen aktiviert hast: Soll dein Sprachassistent ein grafisches Interface zur Anzeige der Kamerabilder verwenden?</label>
+        <label for="useInterface">Sofern du die oberen beiden Funktionen aktiviert hast: Soll dein Sprachassistent ein <b>grafisches Interface</b> zur Anzeige der Kamerabilder verwenden?</label>
         <div class="input-group">
           <button class="btn btn-success mr-3" id="useFaceRecButtonTrue" onclick="$('#useInterface').val('Ja')">Ja</button>
           <button class="btn btn-danger mr-3" id="useFaceRecButtonFalse" onclick="$('#useInterface').val('Nein')">Nein</button>
@@ -132,13 +131,13 @@
       </li>
     </ul>
     <br />
-    <a class="btn btn-success btn-lg float-right mb-3" role="button" id="button_execute" onclick="finalizeConfig()">Konfiguration sichern</a>
+    <a class="btn btn-success btn-lg float-right mb-3 ml-3" role="button" id="button_execute" onclick="finalizeConfig()">Speichern und zurück zur Übersicht</a>
 
     {% else %}
     <div class="alert alert-danger" role="alert">
       <h5>Achtung!</h5>
       <p>
-        Die nötigen Dateien für diesen Setup-Schritt konnten nicht gefunden werden.
+        Die <b>nötigen Dateien</b> für diesen Setup-Schritt konnten <b>nicht gefunden</b> werden.
         Hast du alle benötigten Dateien heruntergeladen? Bitte überprüfe zuerst
         den Ordner auf Vollständigkeit bevor du mit der Installaiton fortfährst.
       </p>

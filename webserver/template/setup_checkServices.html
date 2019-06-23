@@ -16,7 +16,7 @@
     <div class="collapse navbar-collapse" id="mainNav">
       <ul class="nav">
       {% for item in nav %}
-          <li class="nav-item text-muted"><a class="nav-link" href="#">{{ item.text }}</a></li>
+          <!-- <li class="nav-item text-muted"><a class="nav-link" href="#">{{ item.text }}</a></li> -->
       {% endfor %}
       </ul>
     </div>
@@ -58,7 +58,7 @@
       </tbody>
     </table>
     <a class="btn btn-secondary btn-lg" href="setup" role="button">zurück</a>
-    <a class="btn btn-success btn-lg float-right" role="button" id="button_next" href="setup_3">weiter geht's!</a>
+    <a class="btn btn-success btn-lg float-right mb-3" role="button" id="button_next" href="setup_3">weiter geht's!</a>
   </div>
 </div>
 <script src="{{ url_for('static', filename='main_setupServices.js')}}"></script>

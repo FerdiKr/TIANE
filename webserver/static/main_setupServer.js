@@ -2,6 +2,10 @@ function finalizeConfig() {
   // freeze all input-boxes and buttons
   $("#mainContentBox input").addClass("disabled").attr("disabled", "disabled");
   $("#mainContentBox button").addClass("disabled").attr("onclick", "");
+  $("#button_execute")
+    .removeClass("btn-success")
+    .addClass("btn-warning")
+    .html("aktualisiere…");
   // fetch all data
   data = {
       "tianeName": $("#tianeName").val(),
@@ -16,10 +20,6 @@ function finalizeConfig() {
   }
   // push data to server
   $.get("/api/writeConfig/server", data, function(data) {
-    console.log(data);
+    window.location.replace("/index");
   });
-}
-
-window.onload = function () {
-
 }
