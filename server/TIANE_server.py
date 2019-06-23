@@ -1108,7 +1108,6 @@ def runMain(commandMap=None, feedbackMap=None):
             ndt.daemon = True
             ndt.start()
 
-        def start_connection(self):
             try:
                 self.Clientconnection.connect(self.conn, self.addr)
             except:

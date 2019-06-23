@@ -1,0 +1,413 @@
+[
+    {
+        "id": "4f84bbde.dd6434",
+        "type": "tab",
+        "label": "TIANE",
+        "disabled": false,
+        "info": "Steuerung von SmartHome-Geräten mittels TIANE\n\nfunktioniert über HTTP-Request mit drei URLs:\n1. /tiane/getDevices: TIANE fragt die Geräteliste ab (nicht verwendet)\n2. /tiane/controllDevice: ein schaltbares Gerät wird gesteuert\n3. /tiane/getStatus: TIANE ruft den Status eines gerätes ab"
+    },
+    {
+        "id": "803f50d2.77b8",
+        "type": "http in",
+        "z": "4f84bbde.dd6434",
+        "name": "",
+        "url": "/tiane/getDevices",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 140,
+        "y": 160,
+        "wires": [
+            [
+                "c2d08f00.6aa94"
+            ]
+        ]
+    },
+    {
+        "id": "c2f94269.1b321",
+        "type": "http response",
+        "z": "4f84bbde.dd6434",
+        "name": "send device-list",
+        "statusCode": "",
+        "headers": {},
+        "x": 560,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "c2d08f00.6aa94",
+        "type": "function",
+        "z": "4f84bbde.dd6434",
+        "name": "get device-list",
+        "func": "msg.payload = flow.get('devices')\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 360,
+        "y": 160,
+        "wires": [
+            [
+                "c2f94269.1b321"
+            ]
+        ]
+    },
+    {
+        "id": "618e606.72905a",
+        "type": "inject",
+        "z": "4f84bbde.dd6434",
+        "name": "trigger at start",
+        "topic": "",
+        "payload": "true",
+        "payloadType": "bool",
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "x": 120,
+        "y": 60,
+        "wires": [
+            [
+                "f3c04bd1.147468"
+            ]
+        ]
+    },
+    {
+        "id": "f3c04bd1.147468",
+        "type": "function",
+        "z": "4f84bbde.dd6434",
+        "name": "devices to flow-storage",
+        "func": "devices = {\n    controllable: ['device1','device2'], \n    statuses: ['temp1', 'temp2']\n}\nflow.set('devices', devices)",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 330,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dd8bc16e.3224",
+        "type": "comment",
+        "z": "4f84bbde.dd6434",
+        "name": "Geräteliste",
+        "info": "Im dieses JSON werden alle Geräte gespeichert. \nNach Änderungen muss der Trigger ausgelöst werden, damit die Änderungen übernommen werden.\n\nEs gibt zwei Arten von Geräten:\n1. Schaltbare Geräte, die \"an\" und \"aus\" verstehen, z. B. Lampen\n2. Geräte mit Status-Informationen, z. B. Temperatursensoren\n\nFür jeden Typ gibt es eine Liste, die die Namen enthält.",
+        "x": 100,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "67b00be5.1ce474",
+        "type": "comment",
+        "z": "4f84bbde.dd6434",
+        "name": "Geräte an TIANE übergeben",
+        "info": "Falls die Geräteliste in TIANE benötigt wird, \nkann sie über diese URL angefordert werden. \nDann werden beide Gerätelisten (als JSON) übergeben.\n\nBeispielsweise mit einem continuous_module zum Speichern im local_storage",
+        "x": 160,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "2066b138.26769e",
+        "type": "http in",
+        "z": "4f84bbde.dd6434",
+        "name": "",
+        "url": "/tiane/controllDevice",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 260,
+        "wires": [
+            [
+                "8ea5a61f.c69f78"
+            ]
+        ]
+    },
+    {
+        "id": "a169f512.84b668",
+        "type": "http response",
+        "z": "4f84bbde.dd6434",
+        "name": "send request-status",
+        "statusCode": "",
+        "headers": {},
+        "x": 610,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "8ea5a61f.c69f78",
+        "type": "function",
+        "z": "4f84bbde.dd6434",
+        "name": "find device and action",
+        "func": "devices = flow.get('devices')['controllable']\naction = msg.payload.action\n\nfor (i = 0; i < devices.length; i++) {\n    if (devices[i] == msg.payload.device) {\n        if (action == 'on') {\n            msg.do = devices[i] + ' ' + 'an'\n            msg.payload = {status: 'OK'}\n            return msg;\n        } else if (action == 'off') {\n            msg.do = devices[i] + ' ' + 'aus'\n            msg.payload = {status: 'OK'}\n            return msg;\n        }\n    }\n}\n\nmsg.payload = {status: 'ERROR'}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 380,
+        "y": 260,
+        "wires": [
+            [
+                "17f28248.996e7e",
+                "a169f512.84b668"
+            ]
+        ]
+    },
+    {
+        "id": "66deb092.bf0a",
+        "type": "comment",
+        "z": "4f84bbde.dd6434",
+        "name": "Gerät über TIANE schalten",
+        "info": "Zum Schalten ruft TIANE die URL auf und übergibt als Parameter\nden Gerätenamen sowie die Schaltaktion.",
+        "x": 150,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "7927ff65.341f4",
+        "type": "switch",
+        "z": "4f84bbde.dd6434",
+        "name": "action switch",
+        "property": "do",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "device1 an",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "device1 aus",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "device2 an",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "device2 aus",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 4,
+        "x": 590,
+        "y": 320,
+        "wires": [
+            [],
+            [],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "a477477d.82e0a8",
+        "type": "comment",
+        "z": "4f84bbde.dd6434",
+        "name": "Aktion bestimmen",
+        "info": "msg.do enthält den Gerätenamen und \"an\" oder \"aus\".\nDer Switch löst dann entsprechende Flow-Teile aus.",
+        "x": 410,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "17f28248.996e7e",
+        "type": "change",
+        "z": "4f84bbde.dd6434",
+        "name": "delete http",
+        "rules": [
+            {
+                "t": "delete",
+                "p": "req",
+                "pt": "msg"
+            },
+            {
+                "t": "delete",
+                "p": "res",
+                "pt": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 430,
+        "y": 320,
+        "wires": [
+            [
+                "7927ff65.341f4"
+            ]
+        ]
+    },
+    {
+        "id": "7d457a7a.d9d964",
+        "type": "comment",
+        "z": "4f84bbde.dd6434",
+        "name": "Gerätestatus über TIANE abrufen",
+        "info": "Zum Abfragen eines statuses ruft TIANE die URL auf \nund übergibt als Parameter den Gerätenamen.\nDie Antwort ist der Status.",
+        "x": 170,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "8633df95.f8d9a",
+        "type": "http in",
+        "z": "4f84bbde.dd6434",
+        "name": "",
+        "url": "/tiane/getStatus",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 130,
+        "y": 480,
+        "wires": [
+            [
+                "585a7747.0103e8"
+            ]
+        ]
+    },
+    {
+        "id": "585a7747.0103e8",
+        "type": "function",
+        "z": "4f84bbde.dd6434",
+        "name": "find device",
+        "func": "devices = flow.get('devices')['statuses']\n\nfor (i = 0; i < devices.length; i++) {\n    if (devices[i] == msg.payload.device) {\n        msg.device = msg.payload.device\n        msg.payload = 'OK'\n        return msg;\n    }\n}\n\nmsg.payload = 'ERROR'\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 310,
+        "y": 480,
+        "wires": [
+            [
+                "23d8271d.981868"
+            ]
+        ]
+    },
+    {
+        "id": "930a1c9b.34acb",
+        "type": "switch",
+        "z": "4f84bbde.dd6434",
+        "name": "device switch",
+        "property": "device",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "temp1",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "status",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 2,
+        "x": 700,
+        "y": 520,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "23d8271d.981868",
+        "type": "switch",
+        "z": "4f84bbde.dd6434",
+        "name": "device found or error",
+        "property": "payload",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "ERROR",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "OK",
+                "vt": "str"
+            }
+        ],
+        "checkall": "false",
+        "repair": false,
+        "outputs": 2,
+        "x": 500,
+        "y": 480,
+        "wires": [
+            [
+                "2a47395e.333256"
+            ],
+            [
+                "930a1c9b.34acb",
+                "a527f23c.6974c"
+            ]
+        ]
+    },
+    {
+        "id": "11a5d6ed.7ac309",
+        "type": "http response",
+        "z": "4f84bbde.dd6434",
+        "name": "send request-status",
+        "statusCode": "",
+        "headers": {},
+        "x": 870,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "a527f23c.6974c",
+        "type": "function",
+        "z": "4f84bbde.dd6434",
+        "name": "get status",
+        "func": "if (msg.device == 'temp1') {\n    msg.payload = {status: 'OK', val: '20'}\n} else if (msg.device == 'temp2') {\n    msg.payload = {status: 'OK', val: '10'}\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 680,
+        "y": 560,
+        "wires": [
+            [
+                "d8abd0de.e1128"
+            ]
+        ]
+    },
+    {
+        "id": "d8abd0de.e1128",
+        "type": "http response",
+        "z": "4f84bbde.dd6434",
+        "name": "send request-status",
+        "statusCode": "",
+        "headers": {},
+        "x": 870,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "bc60701d.f2355",
+        "type": "comment",
+        "z": "4f84bbde.dd6434",
+        "name": "Status abfragen",
+        "info": "msg.device enthält den Gerätennamen.\nDer Status sollte bereits im Context gespeichert sein, \nsodass er in der Funktion abgerufen werden kann.\nAnsonsten steht auch ein Switch für weitere Aktionen bereit.",
+        "x": 520,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "2a47395e.333256",
+        "type": "function",
+        "z": "4f84bbde.dd6434",
+        "name": "format json",
+        "func": "msg.payload = {status: msg.payload}\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 690,
+        "y": 460,
+        "wires": [
+            [
+                "11a5d6ed.7ac309"
+            ]
+        ]
+    }
+]

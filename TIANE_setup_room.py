@@ -5,7 +5,7 @@ import time
 import json
 import sys
 import os
-from TIANE_setup-TIANE_setup_wrapper import *
+from TIANE_setup_wrapper import *
 
 def configure_camera(cam_config_data, picam_already_used):
     if not picam_already_used:
@@ -185,7 +185,7 @@ print('Im letzten Schritt kannst du festlegen, welche der mitgelieferten optiona
       'optionale Module, die du bei dieser Einrichtung noch nicht auswählst, finden sich im Ordner "resources/optional_modules"'.format(system_name))
 text = input('[ENTER drücken zum fortfahren]')
 
-default = room_config_data['use_cameras']
+default = server_config_data['use_cameras']
 use_cameras = ja_nein_frage('\nSollen an dieses {}-Raum-Gerät Kameras angeschlossen werden (Voraussetzung: OpenCV installiert) [Ja / Nein]? [Standard ist "{}"]: '.format(system_name, tf2jn(default)), default)
 room_config_data['use_cameras'] = use_cameras
 if use_cameras == True:

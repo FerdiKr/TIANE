@@ -1,8 +1,9 @@
 import datetime
 
 class Sentence_Analyzer:
-    def __init__(self, room_list=[]):
+    def __init__(self, room_list=[], default_location=''):
         self.raumliste = room_list
+        self.default_location = default_location
 
 
     def get_text(self, eingabe):
@@ -45,7 +46,10 @@ class Sentence_Analyzer:
         two_words = 'los new old bad ober unter west ost nord süd south north east Los New Old Bad Ober Unter West Ost Nord Süd South North East'
         if 'in ' not in x:
             if 'zu hause' in x or 'hier' in x:
-                town = 'Weitersburg'
+                if not self.default_location == '':
+                    town = self.default_location
+                else:
+                    town = 'None'
             else:
                 town = 'None'
         else:
@@ -488,7 +492,7 @@ class Sentence_Analyzer:
         minute = '01'
         zeit = 0
         if 'in einer minute' in text:
-            minute = '01'
+            minute = now.minute + 1
         elif ' in ' in text and ' minuten' in text:
             for i, w in satz.items():
                 if w == 'minuten':
@@ -502,11 +506,10 @@ class Sentence_Analyzer:
             hour = 'None'
             minute = 'None'
         if minute != 'None':
-            m = now.minute
-            add = m + zeit
+            add = now.minute + zeit
             if add >= 60:
                 ubertrag = add - 60
-                hour = 1
+                hour = now.hour + 1
                 if ubertrag <= 9:
                     minute = '0' + str(ubertrag)
                 else:
@@ -517,7 +520,11 @@ class Sentence_Analyzer:
                     minute = '0' + str(minute)
                 else:
                     minute = str(minute)
-                hour = 'None'
+                hour = now.hour
+            if hour <= 9:
+                hour = '0' + str(hour)
+            else:
+                hour = str(hour)
         dictionary = {'minute': minute, 'hour': hour}
         return dictionary
 
@@ -1304,7 +1311,7 @@ class Sentence_Analyzer:
 
 def main():
     Analyzer = Sentence_Analyzer(room_list=['Küche', 'Wohnzimmer', 'Bad'])
-    eingabe = 'Erinner mich in 2 Minuten an test'
+    eingabe = 'Erinner mich in 2 Minuten ans putzen'
     print (Analyzer.analyze(eingabe))
 
 if __name__ == '__main__':

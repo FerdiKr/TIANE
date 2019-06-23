@@ -19,7 +19,7 @@ def get_date(text, tiane):
     monat = time.get('month')
     if monat == 'None':
         if int(tag) == 28:
-            if now.month == 2:.get('users')
+            if now.month == 2:
                 if int(jahr) / 4 == 0:
                     monat = '3'
                 else:
@@ -137,7 +137,7 @@ def get_birthday(txt, tiane):
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
     answer = ''
-    nutzer = local_storage['users'][tiane.user]
+    nutzer = tiane.local_storage['users'][tiane.user]
     try:
         geburtsdatum = nutzer['date_of_birth']
         jahr = geburtsdatum['year']
@@ -150,15 +150,27 @@ def get_birthday(txt, tiane):
             21: 'einundzwanzigsten', 22: 'zweiundzwanzigsten', 23: 'dreiundzwanzigsten', 24: 'vierundzwanzigsten',
             25: 'fünfundzwanzigsten', 26: 'sechsundzwanzigsten', 27: 'siebenundzwanzigsten', 28: 'achtundzwanzigsten',
             29: 'neunundzwanzigsten', 30: 'dreißigsten', 31: 'einunddreißigsten', 32: 'zweiunddreißigsten'}
-            day = tage.get(tag)
-            month = tage.get(monat)
-            answer = 'Dein Geburtstag ist am ' + day + ' ' + month + ' ' + str(jahr)
+        day = tage.get(tag)
+        month = tage.get(monat)
+        answer = 'Dein Geburtstag ist am ' + day + ' ' + month + ' ' + str(jahr)
     except KeyError:
         answer = 'Ich weiß leider nicht, wann dein Geburtstag ist.'
     return answer
 
 
-def handle(text, tiane, profile):
+def handle(txt, tiane, profile):
+    tt = txt.replace('.', (''))
+    tt = tt.replace('?', (''))
+    tt = tt.replace('!', (''))
+    tt = tt.replace('.', (''))
+    tt = tt.replace(',', (''))
+    tt = tt.replace('"', (''))
+    tt = tt.replace('(', (''))
+    tt = tt.replace(')', (''))
+    tt = tt.replace('â‚¬', ('Euro'))
+    tt = tt.replace('%', ('Prozent'))
+    tt = tt.replace('$', ('Dollar'))
+    text = tt.lower()
     ausgabe = ''
     if 'geburtstag' in text:
         ausgabe = get_birthday(text, tiane)
@@ -187,6 +199,8 @@ def isValid(txt):
     if 'wie' in text:
         if 'lange' in text or 'tage' in text and 'viele' in text or 'wann ' in text and 'geburtstag' in text:
             return True
+    if 'geburtstag' in text:
+        return True
 
 class Tiane:
     def __init__(self):
