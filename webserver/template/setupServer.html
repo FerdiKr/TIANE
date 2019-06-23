@@ -1,0 +1,151 @@
+<head>
+  <title>TIANE - Server einrichten</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script src="{{ url_for('static', filename='jquery-3.3.1.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+</head>
+<body>
+<nav class="navbar navbar-light bg-light navbar-expand-sm">
+  <a class="navbar-brand" href="/index">TIANE</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="nav">
+      {% for item in nav %}
+          <li class="nav-item text-muted"><a class="nav-link" href="{{item.href}}">{{ item.text }}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
+</nav>
+<div class="container-fluid">
+  <div class="row justify-content-md-center">
+    <div class="col-md-10 col-sm-12">
+    <h2>Server einrichten</h2>
+    <p>
+      Jetzt kannst du deinen neuen Sprachassistenten TIANE einrichten. In diesem
+      Menü geht es explizit um den <b>TIANE-Server</b>. Dieser sollte auf einem zentralen
+      Computer in deinem Heimnetzwerk laufen der <b>immer erreichbar</b> sein sollte.
+      Die einzelnen Geräte in den Räumen greifen dann darauf zu. Auf diesem
+      Zentralrechner erfolgen meistens die Analyse und die Verarbeitung von
+      Informationen.
+    </p>
+    {% if gold %}
+    <ul class="list-group" id="mainContentBox">
+      <li class="list-group-item list-group-item-secondary">
+        <h5>Serverspezifische Einstellungen</h5>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="tianeName">Wie soll dein Sprachassistent heißen?</label>
+          <input type="text" class="form-control" id="tianeName" placeholder="z.B. TIANE, Alexa oder J.A.R.V.I.S" value="">
+          <small class="form-text text-muted">Wenn du dieses Feld leer lässt wird stattdessen "{{st["tianeName"]}}" als Name verwendet.</small>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="tianeSystem">Wie soll die Server-Instanz heißen?</label>
+          <input type="text" class="form-control" id="tianeSystem" placeholder="z.B. TIANE-Server, Zentralrechner" value="">
+          <small class="form-text text-muted">Wenn du dieses Feld leer lässt wird "{{st["tianeSystem"]}}" dafür verwendet.</small>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="tianeActivation">Mit welchem Befehl möchtest du TIANE in Zukunft <b>ansprechen</b>?</label>
+          <br />
+          <span><b>Hinweis:</b> Damit dein Sprachassistent auf diese Ansprache auch tatsäclich reagiert, musst du zuächst ein <a href="trainNewVoice">Stimm-Modell trainieren</a>.</span>
+          <input type="text" class="form-control" id="tianeActivation" placeholder="z.B. 'Hey Tiane!' oder 'Computer!?'" value="">
+          <small class="form-text text-muted">Wenn du dieses Feld leer lässt, kannst du TIANE künftig mit "{{st["tianeActivation"]}}" ansprechen.</small>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="keyLength">Wie lange soll der <b>Schlüssel</b> für die <b>sichere Kommunikation</b> zwischen Server und den Raumclients sein?</label>
+          <br />
+          <span><b>Hinweis:</b> Erlaubte Längen sind 8, 16 und 32 Bytes. Ein <b>längerer Schlüssel</b> ist <b>deutlich sicherer</b>, kann aber auf manchen Geräten zu Geschwindigkeitsproblemen führen.</span>
+          {% if st["generateKey"] %}
+          {% else %}
+          <br />
+          <div class="alert alert-danger">
+            <h5>Achtung!</h5>
+            Es ist bereits ein Schlüssel eingerichtet. Wenn du das Feld leer lässt,
+            wird der alte Netzwerk-Schlüssel beibehalten. Wenn du etwas einträgst,
+            wird automatisch ein neuer Schlüssel generiert. Dann musst du aber
+            gegebenfalls die Konfiguration von bestehenden Clients manuell anpassen.
+          </div>
+          {% endif %}
+          <input type="number" class="form-control" id="keyLength" placeholder="" value="{{st["keyLength"]}}" min="8" max="32" value="32">
+          <small class="form-text text-muted">Standardmäßig wird ein Schlüssel mit 32 Byte generiert.</small>
+        </div>
+      </li>
+      <li class="list-group-item list-group-item-secondary">
+        <h5>Weitere Funktionen</h5>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="homeLocation">Bitte gib hier den <b>Standort</b> deines TIANE-Systems ein.</label>
+          <span><b>Hinweis:</b> Diese Angabe ist optional, erleichtert dir und TIANE aber die Arbeit zum Beispiel bei Wettervorhersagen.</span>
+          <input type="text" class="form-control" id="homeLocation" placeholder="z.B. 'Hamburg', 'München', 'Niederstotzingen'" value="">
+          <small class="form-text text-muted">Wenn nichts in diesem Feld steht, wird '"{{st["homeLocation"]}}"' in die Konfiguration eingetragen.</small>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="telegramSupport">Bitte gib hier das Bot-Token deines <b>Telegram-Bots</b> ein.</label>
+          <span><b>Hinweis:</b> Diese Angabe ist optional, sie ermöglicht TIANE, mit dir über den Telegram-Messenger zu kommunizieren.</span>
+          <input type="text" class="form-control" id="telegramSupport" placeholder="Format: '123456789:AbCdEfGhIjKlMnOpQrSt-UvWxyzabdefgh3ai'" value="">
+          <small class="form-text text-muted">Wenn nichts in diesem Feld steht, bleibt die Telegram-Funktion ausgeschaltet.</small>
+        </div>
+      </li>
+      <li class="list-group-item list-group-item-secondary">
+        <h5>Kamera-Einstellungen</h5>
+      </li>
+      <li class="list-group-item">
+        <label for="useCameras">Soll dein Sprachassistent <b>Kameras verwenden</b>?</label>
+        <div class="input-group">
+          <button class="btn btn-success mr-3" id="useCamerasButtonTrue" onclick="$('#useCameras').val('Ja')">Ja</button>
+          <button class="btn btn-danger mr-3" id="useCamerasButtonFalse" onclick="$('#useCameras').val('Nein')">Nein</button>
+          <input type="text" class="form-control disabled" disabled id="useCameras" value="{{ "Ja" if st["useCameras"] else "Nein"  }}"></input>
+        </div>
+        <small class="form-text text-muted">Die Kamerafunktion solltest du zum Beispiel aktivieren, wenn du die Gesichtserkennungsfunktion benutzen möchtest.</small>
+      </li>
+      <li class="list-group-item">
+        <label for="useFaceRec">Soll das Modul für <b>Gesichtserkennung</b> geladen werden?</label>
+        <div class="input-group">
+          <button class="btn btn-success mr-3" id="useFaceRecButtonTrue" onclick="$('#useFaceRec').val('Ja')">Ja</button>
+          <button class="btn btn-danger mr-3" id="useFaceRecButtonFalse" onclick="$('#useFaceRec').val('Nein')">Nein</button>
+          <input type="text" class="form-control disabled" disabled id="useFaceRec" value="{{ "Ja" if st["useFaceRec"] else "Nein"  }}"></input>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <label for="useInterface">Sofern du die oberen beiden Funktionen aktiviert hast: Soll dein Sprachassistent ein <b>grafisches Interface</b> zur Anzeige der Kamerabilder verwenden?</label>
+        <div class="input-group">
+          <button class="btn btn-success mr-3" id="useFaceRecButtonTrue" onclick="$('#useInterface').val('Ja')">Ja</button>
+          <button class="btn btn-danger mr-3" id="useFaceRecButtonFalse" onclick="$('#useInterface').val('Nein')">Nein</button>
+          <input type="text" class="form-control disabled" disabled id="useInterface" value="{{ "Ja" if st["useInterface"] else "Nein"  }}"></input>
+        </div>
+        <small class="form-text text-muted">mit dem Modul "POI_Interface.py" kannst du dann auf einem Computer Kamerabilder und sonstige Daten in einem grafischen Interface anzeigen lassen.</small>
+      </li>
+    </ul>
+    <br />
+    <a class="btn btn-success btn-lg float-right mb-3 ml-3" role="button" id="button_execute" onclick="finalizeConfig()">Speichern und zurück zur Übersicht</a>
+
+    {% else %}
+    <div class="alert alert-danger" role="alert">
+      <h5>Achtung!</h5>
+      <p>
+        Die <b>nötigen Dateien</b> für diesen Setup-Schritt konnten <b>nicht gefunden</b> werden.
+        Hast du alle benötigten Dateien heruntergeladen? Bitte überprüfe zuerst
+        den Ordner auf Vollständigkeit bevor du mit der Installaiton fortfährst.
+      </p>
+    </div>
+    <br />
+    {% endif %}
+  </div>
+</div>
+<script src="{{ url_for('static', filename='main_setupServer.js')}}"></script>
+</div>
+</body>

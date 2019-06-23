@@ -1,0 +1,66 @@
+<head>
+  <title>TIANE - Systemcheck</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script src="{{ url_for('static', filename='jquery-3.3.1.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+</head>
+<body>
+<nav class="navbar navbar-light bg-light navbar-expand-sm">
+  <a class="navbar-brand" href="/index">TIANE</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="nav">
+      {% for item in nav %}
+          <!-- <li class="nav-item text-muted"><a class="nav-link" href="#">{{ item.text }}</a></li> -->
+      {% endfor %}
+      </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row justify-content-md-center">
+    <div class="col-md-10 col-sm-12">
+    <h2>System-Check</h2>
+    <p>
+      Als erstes überprüfen wir mal, ob überhaupt schon alles installiert ist,
+      das du für den TIANE-Server benötigst.
+      <br />
+      Wenn noch etwas fehlt, siehst du das an einem roten Feld. Wenn eine Zeile
+      in der Liste gelb markiert, fehlt das entsprechende Modul ebenfalls.
+      Im Gegensatz zu den roten Zeilen ist es aber nicht ganz so wichtig, TIANE
+      funktioniert auch ohne, auch wenn du dann nicht alle Funktionen nutzen kannst.
+    </p>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th scope="col"></th>
+          <th scope="col" >Modul</th>
+          <th scope="col" >Installieren</th>
+        </tr>
+      </thead>
+      <tbody id="mainTable">
+        {% for row in fD %}
+          <tr class="tbl_module">
+            <td><div class="alert alert-secondary">loading…</div></td>
+            <td>
+              <p>{{ row["name"] }}</p>
+              <i>{{ row["desc"] }}</i>
+            </td>
+            <td>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <a class="btn btn-secondary btn-lg" href="setup" role="button">zurück</a>
+    <a class="btn btn-success btn-lg float-right mb-3" role="button" id="button_next" href="setup_3">weiter geht's!</a>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='main_setupServices.js')}}"></script>
+</div>
+</body>

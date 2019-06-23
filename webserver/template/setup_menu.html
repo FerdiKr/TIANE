@@ -1,0 +1,62 @@
+<head>
+  <title>TIANE - Servereinrichtung</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script src="{{ url_for('static', filename='jquery-3.3.1.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+</head>
+<body>
+<nav class="navbar navbar-light bg-light navbar-expand-sm">
+  <a class="navbar-brand" href="/index">TIANE</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="nav">
+      {% for item in nav %}
+          <!-- <li class="nav-item text-muted"><a class="nav-link" href="#">{{ item.text }}</a></li> -->
+      {% endfor %}
+      </ul>
+    </div>
+</nav>
+
+<div class="container-fluid">
+  <div class="row justify-content-md-center">
+    <div class="col-md-10 col-sm-12">
+    <h2>Server einrichten</h2>
+    <p>
+      Herzlichen <b>Glückwunsch</b>, jetzt kannst du anfangen, deinen neuen Sprachassistenten einzurichten.
+      Als erstes konfigurierst du am besten den <b>zentralen TIANE-Server</b> hier.
+      <br />
+      Danach bietet es sich an, Benutzer anzulegen und die entsprechenden Sprachdateien zu hinterlegen.
+      Als letztes konfigurierst du dann die einzelnen Räume.
+    </p>
+    <div id="installationAlert" class="alert alert-primary">
+      <h5>Achtung!</h5>
+      <p>
+        Im Hintergrund werden noch einige Pakete installiert. Du kannst schon
+        anfangen den Server weiter einzurichten. <b>Starten</b> solltest du Ihn aber
+        erst, <b>wenn diese Box nicht mehr auftaucht</b>.
+      </p>
+    </div>
+    <p id="installationButtons">
+      <a class="btn btn-primary btn-lg disabled" role="button" id="button_next" href="setupServer">Server einrichten</a>
+      <br />
+      <br />
+      <a class="btn btn-primary btn-lg disabled" role="button" id="button_next" href="setupUser">Benutzer einrichten</a>
+      <br />
+      <br />
+      <a class="btn btn-primary btn-lg disabled" role="button" id="button_next" href="setupRoom">Räume einrichten</a>
+      <br />
+      <br />
+
+    </p>
+
+
+  </div>
+</div>
+<script src="{{ url_for('static', filename='main_setupMenu.js')}}"></script>
+</div>
+</body>

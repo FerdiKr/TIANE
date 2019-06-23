@@ -1,0 +1,123 @@
+<head>
+  <title>TIANE - Benutzer einrichten</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+  <script src="{{ url_for('static', filename='jquery-3.3.1.min.js')}}"></script>
+  <script src="{{ url_for('static', filename='bootstrap.min.js')}}"></script>
+</head>
+<body>
+<nav class="navbar navbar-light bg-light navbar-expand-sm">
+  <a class="navbar-brand" href="/index">TIANE</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="nav">
+      {% for item in nav %}
+          <li class="nav-item text-muted"><a class="nav-link" href="{{item.href}}">{{ item.text }}</a></li>
+      {% endfor %}
+      </ul>
+    </div>
+</nav>
+<div class="container-fluid">
+  <div class="row justify-content-md-center">
+    <div class="col-md-10 col-sm-12">
+    <h2>Benutzer einrichten</h2>
+    <p>
+      Hier kannst du einen neuen Benutzer im TIANE-System anlegen oder bearbeiten.
+      Bei einem <b>neuen Benutzer</b> kannst du den Nutzernamen <b>frei wählen</b>.
+      Wenn du dagegen einen <b>bestehenden bearbeiten</b> willst, gib in das erste
+      Formularfeld den <b>dazugehörigen Benutzernamen</b> ein.
+    </p>
+    {% if gold %}
+    <ul class="list-group" id="mainContentBox">
+      <li class="list-group-item list-group-item-secondary">
+        <h5>Generelle Einstellungen</h5>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="userName">Wie soll der Benutzerzugang im System heißen?</label>
+          <input type="text" class="form-control" id="userName" placeholder="z.B. max, klaus, heinz, matrix" value="{{ st["userName"] }}">
+        </div>
+        <small class="form-text text-muted">Dieses Feld wird hauptsächlich für <b>interne Anwendungen</b> genutzt, trotzdem ist er <b>wichtig</b>: Am besten verwendest du hier den Vornamen oder etwas anderes, das du eindeutig zuordnen kannst.</small>
+        <div id="alert-box"></div>
+      </li>
+      <li class="list-group-item">
+        <label for="userRole">Bitte wähle eine Berechtigungsstufe für den Benutzer aus.</label>
+        <div class="input-group">
+          <button class="btn btn-success mr-3" id="useFaceRecButtonTrue" onclick="$('#userRole').val('USER')">Benutzer "USER"</button>
+          <button class="btn btn-warning mr-3" id="useFaceRecButtonFalse" onclick="$('#userRole').val('ADMIN')">Administrator "ADMIN"</button>
+          <input type="text" class="form-control disabled" disabled id="userRole" value="{{ "USER" if st["useInterface"] == "USER" else "ADMIN" }}"></input>
+        </div>
+        <small class="form-text text-muted">Ein normaler Benutzer-Zugang darf zum Beispiel keine Einstellungen am Server vornehmen, ein Administrator dagegen schon.</small>
+      </li>
+      {% if st["userTelegram"] == "-1" %}
+      <li class="list-group-item">
+        <div class="alert alert-info" role="alert">
+          <h5>Hinweis</h5>
+          <p>
+            Falls du an dieser Stelle eine Benutzer-ID für die Nutzung per Telegram-Bot einfügen wolltest:
+            Das geht nur, wenn du die Telegram-Funktion auf <a href="/setupServer">dieser Einstellungs-Seite</a> aktivierst.
+          </p>
+        </div>
+      </li>
+      {% else %}
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="userTelegram">Telegram-Benutzer-ID</label>
+          <input type="number" class="form-control" id="userTelegram" placeholder="" value="{{st["userTelegram"]}}" min="0">
+          <small class="form-text text-muted">Gib hier die Telegram-ID des Benutzers an. Wenn der Benutzer Telegram gar <b>nicht</b> benutzen will, <b>lasse dieses Feld leer</b> oder schreibe eine "0" hinein.</small>
+        </div>
+      </li>
+      {% endif %}
+      <li class="list-group-item list-group-item-secondary">
+        <h5>Persönliche Einstellungen</h5>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="userFullName">Bitte gib einen Vornamen für diesen Benutzer an.</label>
+          <input type="text" class="form-control" id="userFullName" placeholder="z.B. Max, Klaus, Heinz" value="{{st["userFullName"]}}">
+          <small class="form-text text-muted">Ohne Namen wäre TIANE ganz schön anonym, findest du nicht?</small>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="userFullName">Bitte gib einen Nachnamen für diesen Benutzer an.</label>
+          <input type="text" class="form-control" id="userFullLastName" placeholder="z.B. Mustermann, Maier, Müller" value="{{st["userFullLastName"]}}">
+          <small class="form-text text-muted">Aller guten Dinge sind zwei - zu einem Vornamen gehört auch immer mindestens ein Nachname!</small>
+        </div>
+      </li>
+      <li class="list-group-item">
+        <div class="form-group">
+          <label for="userBirth">Wenn du willst, kannst du hier noch das <b>Geburtsdatum</b> des Benutzers angeben.</label>
+          <div class="input-group">
+            <input type="number" class="form-control" id="userBirthDay" placeholder="DD" value="{{st["userBirthDay"]}}" min="1" max="31">
+            <input type="number" class="form-control" id="userBirthMonth" placeholder="MM" value="{{st["userBirthMonth"]}}" min="1" max="12">
+            <input type="number" class="form-control" id="userBirthYear" placeholder="YYYY" value="{{st["userBirthYear"]}}" min="1900">
+          </div>
+          <small class="form-text text-muted">Es wäre doch nett, wenn TIANE dir zum Beispiel zum Geburtstag gratuliert, oder?</small>
+        </div>
+      </li>
+
+    </ul>
+    <br />
+    <a class="btn btn-success btn-lg float-right mb-3 ml-3" role="button" id="button_execute" onclick="finalizeConfig()">Speichern und zurück zur Übersicht</a>
+
+    {% else %}
+    <div class="alert alert-danger" role="alert">
+      <h5>Achtung!</h5>
+      <p>
+        Die <b>nötigen Dateien</b> für diesen Setup-Schritt konnten <b>nicht gefunden</b> werden.
+        Hast du alle benötigten Dateien heruntergeladen? Bitte überprüfe zuerst
+        den Ordner auf Vollständigkeit bevor du mit der Installaiton fortfährst.
+      </p>
+    </div>
+    <br />
+    {% endif %}
+  </div>
+</div>
+<script src="{{ url_for('static', filename='main_setupUser.js')}}"></script>
+</div>
+</body>

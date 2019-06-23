@@ -1,77 +1,13 @@
 #!/usr/bin/env python3
-from Crypto import Random
-import shutil
-import base64
 import time
 import json
 import sys
 import os
-
-def generate_key(length):
-    key = Random.get_random_bytes(length)
-    key_encoded = base64.b64encode(key)
-    key_string = key_encoded.decode('utf-8')
-    return key_string
-
-def ja_nein_frage(fragentext, default):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        elif 'j' in eingabe.lower() or 'y' in eingabe.lower():
-            return True
-        elif 'n' in eingabe.lower():
-            return False
-        else:
-            print('Das habe ich leider nicht verstanden.')
-
-def frage_erfordert_antwort(fragentext):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            print('Bitte gib etwas ein.')
-        else:
-            return eingabe
-
-def frage_mit_default(fragentext, default):
-    eingabe = input(fragentext)
-    if eingabe == '' or eingabe == ' ':
-        return default
-    else:
-        return eingabe
-
-def frage_nach_zahl(fragentext, default, allowed_answers=None):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        try:
-            eingabe = int(eingabe)
-        except:
-            print('Bitte gib eine Zahl ein.')
-            continue
-        if not allowed_answers == None:
-            if not eingabe in allowed_answers:
-                print('Bitte gib eine dieser Zahlen ein: {}'.format(allowed_answers))
-                continue
-        return eingabe
-
-def bedingt_kopieren(ursprung, ziel, copy):
-    if copy:
-        if os.path.exists(ziel):
-            return
-        else:
-            shutil.copy(ursprung, ziel)
-    else:
-        if os.path.exists(ziel):
-            os.remove(ziel)
-
-def tf2jn(tf):
-    return "Ja" if tf else "Nein"
+from TIANE_setup_wrapper import *
 
 def end_config(config_data):
     print('Die Konfiguration deines {}-Servers ist abgeschlossen. Als nächstes solltest du mit den entsprechenden Assistenten Räume oder Nutzer einrichten.'.format(config_data['System_name']))
-    text = input('[ENTER drücken zum beenden]')
+    enterFinalize()
     print('\nDie neuen Daten werden gespeichert...')
     with open('server/TIANE_config.json', 'w') as config_file:
         json.dump(config_data, config_file, indent=4)
@@ -85,13 +21,13 @@ print('Willkommen zum Setup-Assistenten für deinen neuen Sprachassistenten.\n'
       'Bitte gib deine Antworten ein und bestätige sie mit [ENTER].\n'
       'Wenn du bei einer Frage die vorgegebene Standard-Antwort übernehmen willst, reicht es, wenn du einfach [ENTER] drückst, ohne etwas einzugeben.')
 time.sleep(1)
-text = input('[ENTER drücken zum fortfahren]')
+enterContinue()
 
 if not os.path.exists('server/TIANE_config.json'):
-    print('\n[ERROR] Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
-    text = input('[ENTER drücken zum beenden]')
+    enterFinalize()
     sys.exit()
 
 with open('server/TIANE_config.json', 'r') as config_file:
@@ -139,7 +75,7 @@ print('(Info: Damit dein Sprachassistent auf diese Ansprache auch tatsächlich r
 time.sleep(1)
 
 default_location = config_data['Home_location']
-if not default_location == 'None':
+if not default_location == '':
     location = input('\nBitte gib deinen Wohnort ein (optional, hilfreich für Funktionen wie Wettervorhersagen) [Standard ist "{}"]: '.format(default_location))
     if location == '' or location == ' ' or type(location) != type('text'):
         config_data['Home_location'] = default_name
@@ -154,16 +90,16 @@ else:
     else:
         config_data['Home_location'] = location
 config_data['Local_storage']['home_location'] = location
-if location == 'None':
+if location == '':
     print('Okay, du hast keinen Wohnort festgelegt.\n')
 else:
     print('Okay, {} wird "{}" als deinen Wohnort annehmen.\n'.format(system_name, location))
 time.sleep(1)
 
 print('Als nächstes geht es um die Generierung eines Schlüssels für die sichere Kommunikation zwischen deinen {}-Geräten.'.format(system_name))
-text = input('[ENTER drücken zum fortfahren]')
+enterContinue()
 if not config_data['TNetwork_Key'] == '':
-    print('\nACHTUNG: Es wurde bereits eine vorhandene Konfiguration erkannt.\n'
+    print('\n' + color.YELLOW + 'ACHTUNG:' + color.END + ' Es wurde bereits eine vorhandene Konfiguration erkannt.\n'
           'Möchtest du einen neuen Schlüssel generieren? Wenn du "Ja" auswählst, musst du Räume, die du bereits mit dem Setup-Assistenten eingerichtet hast, neu einrichten.')
     antwort = ja_nein_frage('Neuen Schlüssel generieren [Ja / Nein]? [Standard ist "Nein"]: ', False)
     if antwort == True:
@@ -207,7 +143,7 @@ time.sleep(1)
 print('\nIm letzten Schritt kannst du festlegen, welche der mitgelieferten optionalen Module dein Sprachassistent verwenden soll.\n'
       'Du kannst die verwendeten Module jederzeit im Ordner "server/modules(/continuous)" einsehen und bearbeiten, '
       'optionale Module, die du bei dieser Einrichtung noch nicht auswählst, finden sich im Ordner "server/resources/optional_modules".')
-text = input('[ENTER drücken zum fortfahren]')
+enterContinue()
 
 print('\n')
 default = config_data['use_cameras']

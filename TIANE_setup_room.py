@@ -5,78 +5,7 @@ import time
 import json
 import sys
 import os
-
-def frage_erfordert_antwort(fragentext):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            print('Bitte gib etwas ein.')
-        else:
-            return eingabe
-
-def frage_mit_default(fragentext, default):
-    eingabe = input(fragentext)
-    if eingabe == '' or eingabe == ' ':
-        return default
-    else:
-        return eingabe
-
-def ja_nein_frage(fragentext, default):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        elif 'j' in eingabe.lower() or 'y' in eingabe.lower():
-            return True
-        elif 'n' in eingabe.lower():
-            return False
-        else:
-            print('Das habe ich leider nicht verstanden.')
-
-def frage_nach_zahl(fragentext, default, allowed_answers=None):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        try:
-            eingabe = int(eingabe)
-        except:
-            print('Bitte gib eine Zahl ein.')
-            continue
-        if not allowed_answers == None:
-            if not eingabe in allowed_answers:
-                print('Bitte gib eine dieser Zahlen ein: {}'.format(allowed_answers))
-                continue
-        return eingabe
-
-def frage_nach_float_zahl(fragentext, default, allowed_answers=None):
-    while True:
-        eingabe = input(fragentext)
-        if eingabe == '' or eingabe == ' ':
-            return default
-        try:
-            eingabe = float(eingabe)
-        except:
-            print('Bitte gib eine Zahl ein.')
-            continue
-        if not allowed_answers == None:
-            if not eingabe in allowed_answers:
-                print('Bitte gib eine dieser Zahlen ein: {}'.format(allowed_answers))
-                continue
-        return eingabe
-
-def tf2jn(tf):
-    return "Ja" if tf else "Nein"
-
-def bedingt_kopieren(ursprung, ziel, copy):
-    if copy:
-        if os.path.exists(ziel):
-            return
-        else:
-            shutil.copy(ursprung, ziel)
-    else:
-        if os.path.exists(ziel):
-            os.remove(ziel)
+from TIANE_setup_wrapper import *
 
 def configure_camera(cam_config_data, picam_already_used):
     if not picam_already_used:
@@ -138,7 +67,7 @@ def end_config(config_data, system_name):
     try:
         copy_tree('room', config_data['Room_name'])
     except:
-        print('[ERROR] Fehler beim kopieren der Dateien. Bitte versuche, den Setup-Assistent mit Root-Rechten auszuführen.')
+        print(color.RED + '[ERROR]' + color.END + ' Fehler beim kopieren der Dateien. Bitte versuche, den Setup-Assistent mit Root-Rechten auszuführen.')
         sys.exit()
     bedingt_kopieren('room/resources/optional_modules/cameras.py', config_data['Room_name'] + '/modules/continuous/cameras.py', room_config_data['use_cameras'])
     print('Die Konfiguration deines {}-Raumclients ist abgeschlossen. Sobald du diesen Assistenten beendest, '
@@ -154,14 +83,14 @@ def end_config(config_data, system_name):
 
 ########################### ANFANG ###########################
 if not os.path.exists('room/TIANE_config.json'):
-    print('\n[ERROR] Die nötigen Dateien (Ordner "room") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "room") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
     text = input('[ENTER drücken zum beenden]')
     sys.exit()
 
 if not os.path.exists('server/TIANE_config.json'):
-    print('\n[ERROR] Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Die nötigen Dateien (Ordner "server") für diesen Setup-Schritt konnten nicht gefunden werden.\n'
           'Hast du die Dateien heruntergeladen?\n'
           'Befindet sich das Setup-Skript im richtigen Ordner?')
     text = input('[ENTER drücken zum beenden]')
@@ -180,7 +109,7 @@ time.sleep(1)
 text = input('[ENTER drücken zum fortfahren]')
 
 if server_config_data['TNetwork_Key'] == '':
-    print('\n[ERROR] Es konnte keine fertige Server-Konfiguration gefunden werden (TNetwork-Schlüssel fehlt).\n'
+    print('\n' + color.RED + '[ERROR]' + color.END + ' Es konnte keine fertige Server-Konfiguration gefunden werden (TNetwork-Schlüssel fehlt).\n'
           'Du musst zuerst deinen {}-Server konfigurieren (mit "TIANE_server_setup.py"), bevor du Räume hinzufügen kannst.'.format(system_name))
     text = input('[ENTER drücken zum beenden]')
     sys.exit()
@@ -256,7 +185,7 @@ print('Im letzten Schritt kannst du festlegen, welche der mitgelieferten optiona
       'optionale Module, die du bei dieser Einrichtung noch nicht auswählst, finden sich im Ordner "resources/optional_modules"'.format(system_name))
 text = input('[ENTER drücken zum fortfahren]')
 
-default = room_config_data['use_cameras']
+default = server_config_data['use_cameras']
 use_cameras = ja_nein_frage('\nSollen an dieses {}-Raum-Gerät Kameras angeschlossen werden (Voraussetzung: OpenCV installiert) [Ja / Nein]? [Standard ist "{}"]: '.format(system_name, tf2jn(default)), default)
 room_config_data['use_cameras'] = use_cameras
 if use_cameras == True:
