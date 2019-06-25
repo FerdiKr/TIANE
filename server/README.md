@@ -13,7 +13,7 @@ Um das System mithilfe von [Docker](https://www.docker.com/) aufzusetzen, muss e
 Nachdem dies getan ist kann ein Docker-Image mit `docker build . -t tiane_container` gebaut werden. Das Image kann, nachdem es fertig gebaut ist, mit `docker run tiane_container:latest` gestartet werden.
 
 #### Docker Compose
-Alternativ kann auch docker-copose genutzt werden.
+Alternativ kann auch docker-compose genutzt werden.
 Die Installation erfolgt mit `pip install docker-compose`.
 Anschließend wird der Container mit `docker-compose up -d` gestartet; das Image wird dabei automatisch gebaut.
 
