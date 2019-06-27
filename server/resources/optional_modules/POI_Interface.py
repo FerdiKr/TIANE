@@ -48,6 +48,8 @@ def overlayimg(back, fore, x, y, w, h):
 def poi_image(frame, x, y, w, h, sub_type):
     if sub_type == 'AUX_ADMIN':
         sub_type = 'ADMIN'
+    if sub_type == 'PRESIDENT' or sub_type == 'MINISTER':
+        sub_type = 'USER'
     assets_path = "resources/POI_Interface/"
     box_path = assets_path + sub_type.lower() + '_focus.tif'
     box = cv2.imread(box_path)
@@ -60,7 +62,7 @@ def poi_image(frame, x, y, w, h, sub_type):
 def poi_infobox(frame, x, y, subject_number, subject_name, subject_type, proba):
     if subject_type == 'ADMIN' or subject_type == 'ANALOG' or subject_type == 'AUX_ADMIN':
         id_colour = (58, 238, 247)
-    elif subject_type == 'USER':
+    elif subject_type == 'USER' or subject_type == 'PRESIDENT' or subject_type == 'MINISTER':
         id_colour = (243, 124, 13)
     elif subject_type == 'THREAT':
         id_colour = (000, 000, 255)
@@ -352,6 +354,7 @@ def run(tiane, profile):
             frame_combined_bordered = poi_statusbox(frame_combined_bordered, 60, frame_combined_bordered.shape[0] - 150, get_time(profile), len(users_detected))
         for x,y,w,h,name,proba in coordinates_combined_bordered:
             if name == 'Unknown':
+                #pass
                 if profile['TIANE_POI_INTERFACE_OPTIONS']['boxes'] == True:
                     frame_combined_bordered = poi_image(frame_combined_bordered,x,y,w,h,'UNKNOWN')
                 if profile['TIANE_POI_INTERFACE_OPTIONS']['infoboxes'] == True:
@@ -362,6 +365,7 @@ def run(tiane, profile):
                 if profile['TIANE_POI_INTERFACE_OPTIONS']['infoboxes'] == True:
                     frame_combined_bordered = poi_infobox(frame_combined_bordered, x+w+30, y+int(h*.5-50), profile['users'][name]['uid'], profile['users'][name]['name'],profile['users'][name]['role'],proba)
 
+        profile['Complete_camera_frame'] = frame_combined_bordered
         cv2.imshow('TIANE',frame_combined_bordered)
 
     else:
