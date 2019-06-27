@@ -249,7 +249,7 @@ def movetime(text):
                 time_string += "1 Jahr"
             else:
                 time_string += str(years) + " Jahre"
-        
+
         if months > 0:
             if years > 0:
                 time_string += ", "
@@ -257,7 +257,7 @@ def movetime(text):
                 time_string += "1 Monat"
             else:
                 time_string += str(months) + " Monate"
-        
+
         if days > 0:
             if months > 0 or years >0:
                 time_string += ", "
@@ -273,7 +273,7 @@ def movetime(text):
                 time_string += "1 Stunde"
             else:
                 time_string += str(hours) + " Stunden"
-        
+
         if minutes > 0:
             if months > 0 or years > 0 or days > 0 or hours > 0:
                 time_string += ", "
@@ -281,7 +281,7 @@ def movetime(text):
                 time_string += "1 Minute"
             else:
                 time_string += str(minutes) + " Minuten"
-        
+
         if seconds > 0:
             if minutes > 0 or hours > 0 or days > 0 or months > 0 or years > 0:
                 time_string += " und "
@@ -394,7 +394,7 @@ def handle(txt, tiane, profile):
                 answer, success = moves(text)
                 weiter = False
                 break
-                
+
     if weiter:
         for key in keyTime:
             if key in text:

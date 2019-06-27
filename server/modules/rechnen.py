@@ -1,6 +1,6 @@
 import math
 
-PRIORITY = 2
+PRIORITY = 5
 
 def multiplikation(d, t):
     eins = d.get('eins')

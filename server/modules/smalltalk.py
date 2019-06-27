@@ -19,8 +19,9 @@ def isValid(text):
         return True
     if ' aha' in text or 'aha?' in text:
         return True
-    if 'bist' in text and 'dumm' in text:
-        return True
+    if 'bist' in text:
+        if 'dumm' in text or 'doof' in text or 'schlecht' in text or 'behindert' in text:
+            return True
     if 'bist' in text and 'toll' in text or 'bist' in text and 'genial' in text:
         return True
     if 'liebe' in text and 'dich' in text:
@@ -31,6 +32,8 @@ def isValid(text):
     if 'hast' in text and 'recht' in text:
         return True
     if ('sicher' in text or 'verschlüsselt' in text) and ('chat' in text or 'kanal' in text or 'verbindung' in text):
+        return True
+    if ('wieso' in text or 'warum' in text) and 'stroh' in text and 'liegt' in text:
         return True
 
 def handle(text, tiane, profile):
@@ -61,8 +64,9 @@ def handle(text, tiane, profile):
         tiane.say('{} Tage seit den ersten Tests.'.format(daynr))
     elif ' aha' in text or 'aha?' in text:
         tiane.say('Frag mal was vernünftiges ;)')
-    elif 'bist' in text and 'dumm' in text:
-        tiane.say('Nein, du stellst nur die falschen Fragen.')
+    elif 'bist' in text:
+        if 'dumm' in text or 'doof' in text or 'schlecht' in text or 'behindert' in text:
+            tiane.say('Nein, du stellst nur die falschen Fragen.')
     elif 'bist' in text and 'toll' in text or 'bist' in text and 'genial' in text:
         tiane.say(random.choice(['Vielen Dank, {}'.format(tiane.user), 'Dankeschön, {}'.format(tiane.user), 'Es freut mich, dass ich hilfreich bin!'.format(tiane.user)]))
     elif 'liebe' in text and 'dich' in text:
@@ -74,3 +78,5 @@ def handle(text, tiane, profile):
         tiane.say('Ich weiß.')
     elif ('sicher' in text or 'verschlüsselt' in text) and ('chat' in text or 'kanal' in text or 'verbindung' in text):
         tiane.say('Meine internen Verbindungen sind sicher verschlüsselt, bei Telegram weiß ich das nicht so genau. Aber generell, bevor du mir irgendwelche Geheimnisse anvertraust: Denk daran, dass der Besitzer des Computers, auf dem ich laufe, immer alles sieht...')
+    elif ('wieso' in text or 'warum' in text) and 'stroh' in text and 'liegt' in text:
+        tiane.say('Und warum hast du eine Maske auf?')

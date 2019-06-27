@@ -99,10 +99,10 @@ def get_reply(tiane, dicanalyse):
     day = tage.get(tag)
     month = Monate.get(monat)
     hour = Stunden.get(stunde)
-    zeit_des_weckers = str(day) + ' ' + str(month) + ' um ' + str(hour) + ' Uhr ' + str(mine) + '.'            
+    zeit_des_weckers = str(day) + ' ' + str(month) + ' um ' + str(hour) + ' Uhr ' + str(mine) + '.'
     reply = 'Alles klar, ich wecke dich am ' + zeit_des_weckers
     return reply
-    
+
 
 
 
@@ -131,7 +131,7 @@ def handle(text, tiane, profile):
                     del liste[len(liste) - 2]
                 else:
                     del liste[len(liste) - 3]
-        
+
 
 def isValid(txt):
     tt = txt.replace('.', (''))
@@ -146,7 +146,7 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    if 'weck ' in text or 'wecke ' in text:
+    if 'weck ' in text or 'wecke' in text:
         return True
 
 class Tiane:
@@ -157,13 +157,13 @@ class Tiane:
 
     def say(self, text):
         print (text)
-        
+
 
 def main():
     profile = {}
     tiane = Tiane()
     handle('Bitte weck mich morgen um 11', tiane, profile)
-    
-    
+
+
 if __name__ == "__main__":
     main()

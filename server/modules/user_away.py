@@ -2,10 +2,11 @@ import random
 
 def handle(text, tiane, profile):
     user = tiane.user
-    farewells = ['Auf wiedersehen, {}!',
+    '''farewells = ['Auf wiedersehen, {}!',
                  'Bis bald {}',
                  'Machs gut {}',
-                 'Viel Spaß!']
+                 'Viel Spaß!']'''
+    farewells = ['Bis bald, wir werden uns wiedersehen...']
     farewell = random.choice(farewells)
     if '{}' in farewell:
         farewell = farewell.format(user)

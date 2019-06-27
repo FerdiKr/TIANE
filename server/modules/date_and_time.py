@@ -218,7 +218,7 @@ def isValid(txt):
     tt = tt.replace('%', ('Prozent'))
     tt = tt.replace('$', ('Dollar'))
     text = tt.lower()
-    if 'guten abend' in text or 'hallo' in text or 'uhrzeit' in text or 'guten morgen' in text or 'gute nacht' in text or 'welches datum' in text or 'wie spät' in text or 'wie viel uhr' in text or 'wochentag' in text or 'welcher tag' in text or 'welchen tag' in text or 'guten tag' in text:
+    if 'guten abend' in text or 'uhrzeit' in text or 'guten morgen' in text or 'gute nacht' in text or 'welches datum' in text or 'wie spät' in text or 'wie viel uhr' in text or 'wochentag' in text or 'welcher tag' in text or 'welchen tag' in text or 'guten tag' in text:
         return True
 
 class Tiane:
