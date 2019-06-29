@@ -160,6 +160,7 @@ def run(tiane, profile):
     # Dementsprechend Borders übrig: 150,150,250,250
     cams = []
     roomnames = []
+    collected_cams = {}
     # Der folgende Abschnitt dient zunächst dazu, die nach Räumen sortierten Kamerabilder in eine zweidimensionale Liste zu verwanden.
     # Außerdem werden die Bilder "zeitlich geglättet": Wenn ein Raum nur ein einziges mal keine Kamerabilder liefert (was aufgrund von
     # Latenzen durchaus vorkommen kann) soll sich noch nicht direkt das Fenster verkleinern, sondern es wird noch für kurze Zeit mit dem
@@ -170,24 +171,31 @@ def run(tiane, profile):
         if not roomname in profile['TIANE_prev_roomnames']:
             profile['TIANE_prev_roomnames'].append(roomname)
         profile['TIANE_room_cam_timeout'][roomname] = 0
+        collected_cams[roomname] = []
         for camname, camframe in roomcams.items():
             try:
                 cam = (camframe, camname, profile['TIANE_face_boxes_names'][roomname][camname], roomname)
             except KeyError:
                 cam = (camframe, camname, [], roomname)
-            cams.append(cam)
+            collected_cams[roomname].append(cam)
         profile['TIANE_face_boxes_names'][roomname] = {}
+    # Hier wird bei Bedarf das letzte Bild geladen
     for roomname in profile['TIANE_prev_roomnames']:
         if not roomname in roomnames:
             if profile['TIANE_room_cam_timeout'][roomname] <= 25:
                 roomcams, camdata = profile['TIANE_prev_room_camframes'][roomname]
+                collected_cams[roomname] = []
                 for camname, camframe in roomcams.items():
                     cam = (camframe, camname, camdata[camname], roomname)
-                    cams.append(cam)
+                    collected_cams[roomname].append(cam)
                 profile['TIANE_room_cam_timeout'][roomname] += 1
             else:
                 profile['TIANE_prev_roomnames'].remove(roomname)
                 del profile['TIANE_prev_room_camframes'][roomname]
+    # Kameras / Räume sortieren
+    for roomname in profile['TIANE_prev_roomnames']:
+        for cam in collected_cams[roomname]:
+            cams.append(cam)
 
     if not cams == []:
         coordinates_combined_bordered = []
