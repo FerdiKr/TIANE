@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+    tiane:
+        container_name: tiane
+        restart: always
+        build: server
+        network_mode: "host"
+        volumes:
+            - ./server:/home/tiane
+            - /etc/localtime:/etc/localtime:ro
+
+    tiane-webserver:
+        container_name: tiane-webserver
+        restart: unless-stopped
+        build: webserver
+        network_mode: "host"
+        volumes:
+            - .:/home/tiane
+            - /etc/localtime:/etc/localtime:ro
