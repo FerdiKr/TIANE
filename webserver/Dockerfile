@@ -20,4 +20,5 @@ COPY . ./
 ENV PYTHONIOENCODING = utf-8
 ENV PYTHONUNBUFFERED = 1
 
-CMD ["python3", "./webserver/server.py"]
+WORKDIR /home/tiane/webserver
+CMD ["python3", "./server.py"]
