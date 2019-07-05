@@ -125,7 +125,8 @@ class InstallWrapper():
         packagesRaw-Variable where the contents of the services.json files are stored
         """
         config = os.path.join(os.path.dirname(os.path.abspath(__file__)), "services.json")
-        self.packagesRaw = json.load(open(config))
+        self.packagesRaw = json.load(open(config, encoding="utf-8"))
+
         return self.packagesRaw
 
     def checkStatus(self, packageName):

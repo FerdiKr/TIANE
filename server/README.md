@@ -10,11 +10,17 @@ Die manuelle Installation ist [hier](https://github.com/FerdiKr/TIANE/blob/maste
 
 ### Docker
 Um das System mithilfe von [Docker](https://www.docker.com/) aufzusetzen, muss erst die nötige config mithilfe der setup-skripte erstellt werden.
-Nachdem dies getan ist kann ein Docker-Image mit `docker build . -t tiane_container` gebaut werden. Das Image kann, nachdem es fertig gebaut ist, mit `docker run tiane_container:latest` gestartet werden.
+Nachdem dies getan ist kann ein Docker-Image mit `docker build . -t tiane_container` gebaut werden. Das Image kann, nachdem es fertig gebaut ist, mit `docker run tiane_container:latest` gestartet werden. [Beide Kommandos müssen im *server*-Verzeichnis ausgeführt werden.]
 
 #### Docker Compose
 Alternativ kann auch docker-compose genutzt werden.
 Die Installation erfolgt mit `pip install docker-compose`.
-Anschließend wird der Container mit `docker-compose up -d` gestartet; das Image wird dabei automatisch gebaut.
+Nun gibt es zwei Möglichkeiten:
+* **mit** Webserver:
+Dazu wird der Container mit `docker-compose up -d tiane-webserver` gestartet.
+* **ohne** Webserver:
+Dazu wird der Container mit `docker-compose up -d tiane` gestartet.
+In beiden Fällen wird das Image dabei automatisch gebaut.
+[Das Kommando muss im *TIANE*-Verzeichnis ausgeführt werden.]
 
 Bei dieser Methode den TIANE-Server aufzusetzen sind die (TIANE-)Dateien auf dem Hostrechner mit denen im Container identisch. Daher ist es, wenn notwendig, möglich, die Dateien auf dem Host zu bearbeiten. Diese werden sofort im Conatiner übernommen.
