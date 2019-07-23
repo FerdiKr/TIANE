@@ -13,7 +13,7 @@ def isValid(text):
         return True
     if ('was' in text and 'kannst' in text and 'du' in text) or 'verstehst du' in text or ('was' in text and 'funktionen' in text) or ('was' in text and 'fragen' in text):
         return True
-    if '😂' in text:
+    if '😂' in text or 'haha' in text:
         return True
     if 'wie' in text and 'alt' in text and 'du' in text:
         return True
@@ -35,6 +35,8 @@ def isValid(text):
         return True
     if ('wieso' in text or 'warum' in text) and 'stroh' in text and 'liegt' in text:
         return True
+    if ('was' in text or 'welchen preis' in text or 'welchen platz' in text) and ('ihr' in text or 'wir' in text or 'du' in text) and ('gewonnen' in text or 'gemacht' in text):
+        return True
 
 def handle(text, tiane, profile):
     text = text.lower()
@@ -52,7 +54,7 @@ def handle(text, tiane, profile):
                   'Aber ich kann dir zum Beispiel das Wetter ansagen, ein paar allgemeine Wissensfragen beantworten '
                   'rechnen, würfeln und so weiter. '
                   'Und für alles weitere bist du gerne eingeladen, selbst auf in meinem GitHub-Repository aktiv zu werden!')
-    elif '😂' in text:
+    elif '😂' in text or 'haha' in text:
         tiane.say('Warum lachst du? 😂')
         response = tiane.listen()
         tiane.say('Aha...')
@@ -80,3 +82,5 @@ def handle(text, tiane, profile):
         tiane.say('Meine internen Verbindungen sind sicher verschlüsselt, bei Telegram weiß ich das nicht so genau. Aber generell, bevor du mir irgendwelche Geheimnisse anvertraust: Denk daran, dass der Besitzer des Computers, auf dem ich laufe, immer alles sieht...')
     elif ('wieso' in text or 'warum' in text) and 'stroh' in text and 'liegt' in text:
         tiane.say('Und warum hast du eine Maske auf?')
+    elif ('was' in text or 'welchen preis' in text or 'welchen platz' in text) and ('ihr' in text or 'wir' in text or 'du' in text) and ('gewonnen' in text or 'gemacht' in text):
+        tiane.say('Wir haben im Bundeswettbewerb Jugend forscht 2019 den 2. Preis in der Kategorie Mathematik/Informatik gewonnen.')
