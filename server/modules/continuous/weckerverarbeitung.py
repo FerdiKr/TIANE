@@ -9,7 +9,7 @@ def run(tiane, profile):
         for item in erinnerungen:
             benutzer = item['Benutzer']
             zeit = item['Zeit']
-            zeit = datetime.datetime.strptime(zeit, '%Y-%m-%d %H:%M:%S.%f')
+            '''zeit = datetime.datetime.strptime(zeit, '%Y-%m-%d %H:%M:%S.%f')'''
             ausgabe = 'Guten Morgen {}. Ich hoffe, du hast gut geschlafen'.format(benutzer)
             differenz = zeit - now
             dic = {'Benutzer': benutzer, 'Text': ausgabe}
