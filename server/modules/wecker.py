@@ -1,78 +1,16 @@
 import datetime
 
-def uhrzeit(dicanalyse):
-    now = datetime.datetime.now()
-    time = dicanalyse.get('time')
-    jahr = time.get('year')
-    if jahr == 'None':
-        jahr = str(now.year)
-    tag = time.get('day')
-    if tag == 'None':
-        tag = str(now.day + 1)
-        if int(tag) <= 9:
-            tag = '0' + tag
-    monat = time.get('month')
-    if monat == 'None':
-        if int(tag) == 28:
-            if now.monat == 2:
-                if int(jahr) / 4 == 0:
-                    monat = '03'
-                else:
-                    monat = '02'
-            else:
-                monat = str(now.month)
-                if int(monat) <= 9:
-                    monat = '0' + monat
-        elif int(tag) == 29:
-            if now.month == 2:
-                monat = '03'
-            else:
-                monat = str(now.month)
-                if int(monat) <= 9:
-                    monat = '0' + monat
-        elif int(tag) == 30:
-            if now.month == 4 or now.month == 6 or now.month == 9 or now.month == 11:
-                monat = str(now.month + 1)
-            else:
-                monat = str(now.month)
-            if int(monat) <= 9:
-                monat = '0' + monat
-        elif int(tag) == 31:
-            monat = str(now.month + 1)
-            if int(monat) <= 9:
-                monat = '0' + monat
-        else:
-            monat = str(now.month)
-            if int(monat) <= 9:
-                monat = '0' + monat
-    stunde = time.get('hour')
-    if stunde == 'None':
-         stunde = '08'
-    minute = time.get('minute')
-    if minute == 'None':
-         minute = '00'
-    zeit = jahr + '-' + monat + '-' + tag + ' ' + stunde + ':' + minute + ':' + '00.000000'
-    return zeit
-
-
-def get_time_for_reply(dicanalyse):
-    now = datetime.datetime.now()
-    time = uhrzeit(dicanalyse)
-    jahr = time[:4]
-    monat = time[5:7]
-    tag = time[8:10]
-    stunde = time[11:13]
-    minute = time[14:16]
-    zeit = {'year': jahr, 'month': monat, 'day': tag, 'hour': stunde, 'minute': minute}
-    return zeit
-
 def get_reply(tiane, dicanalyse):
-    time = get_time_for_reply(dicanalyse)
-    jahr = time.get('year')
-    monat = time.get('month')
-    tag = time.get('day')
-    stunde = time.get('hour')
-    minute = time.get('minute')
+    time = dicanalyse.get('time')
+    jahr = str(time['year'])
+    monat = str(time['month'])
+    tag = str(time['day'])
+    stunde = str(time['hour'])
+    minute = str(time['minute'])
+    if int(minute) <= 9:
+        minute = '0' + minute
+    if int(monat) <= 9:
+        monat = '0' + monat
     tage = {'01': 'ersten', '02': 'zweiten', '03': 'dritten', '04': 'vierten', '05': 'fünften',
                 '06': 'sechsten', '07': 'siebten', '08': 'achten', '09': 'neunten', '10': 'zehnten',
                 '11': 'elften', '12': 'zwölften', '13': 'dreizehnten', '14': 'vierzehnten', '15': 'fünfzehnten',
@@ -109,7 +47,7 @@ def get_reply(tiane, dicanalyse):
 def handle(text, tiane, profile):
     if text != '_UNDO_':
         Wecker = {}
-        W_eins = {'Zeit': uhrzeit(tiane.analysis), 'Benutzer': tiane.user}
+        W_eins = {'Zeit': tiane.analysis['datetime'], 'Benutzer': tiane.user}
         if 'Wecker' in tiane.local_storage.keys():
             tiane.local_storage['Wecker'].append(W_eins)
         else:
@@ -153,7 +91,7 @@ class Tiane:
     def __init__(self):
         self.local_storage = {}
         self.user = 'Baum'
-        self.analysis = {'room': 'None', 'time': {'month': '10', 'hour': '11', 'year': '2018', 'minute': 'None', 'day': 'None'}, 'town': 'None'}
+        self.analysis = {'town': None, 'room': None, 'rooms': [None, 'Schlafzimmer'], 'datetime': datetime.datetime(2019, 8, 15, 19, 45, 6, 601174), 'time': {'day': 15, 'month': 8, 'year': 2019, 'hour': 19, 'minute': 45, 'second': 6}}
 
     def say(self, text):
         print (text)
