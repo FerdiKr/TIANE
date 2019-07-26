@@ -67,7 +67,7 @@ def handle(text, tiane, profile):
         else:
             antwort = antwort.lower()
             if len(antwort.split()) == 1:
-                o = antwort 
+                o = antwort
             elif 'hier' in antwort or 'zu hause' in antwort:
                 o = 'weitersburg'
             else:
@@ -76,10 +76,10 @@ def handle(text, tiane, profile):
                 mind = 0
                 falsches_in = 0
                 i = str.split(antwort)
-                ind = 1 
+                ind = 1
                 for w in i:
-                    satz[ind] = w 
-                    ind += 1 
+                    satz[ind] = w
+                    ind += 1
                 for iindex, word in satz.items():
                     if word in sonst:
                         mind = mind + iindex
@@ -88,7 +88,7 @@ def handle(text, tiane, profile):
                         falsches_in = falsches_in + iindex
                 if falsches_in >= 1:
                     del satz[falsches_in]
-                for iindex, word in satz.items(): #findet Wort 'in''s key 
+                for iindex, word in satz.items(): #findet Wort 'in''s key
                     if word == 'in':
                         in_index = iindex
                         myind = in_index + 1
@@ -111,7 +111,7 @@ def handle(text, tiane, profile):
     html = str(html)
     ohneb = html[2:len(html)-1]
     dictionary = ast.literal_eval(ohneb)
-    
+
     line = dictionary.get("weather")
     des = line[0].get("description")
     line2 = dictionary.get("main")
@@ -149,7 +149,7 @@ class Tiane:
     def __init__(self):
         self.local_storage = {}
         self.user = 'Baum'
-        self.analysis = {'room': 'None', 'time': {'month': '10', 'hour': '10', 'year': '2018', 'minute': '00', 'day': '09'}, 'town': 'Stockholm'}
+        self.analysis = {'town': None, 'room': None, 'rooms': [None, 'Schlafzimmer'], 'datetime': datetime.datetime(2019, 8, 15, 19, 45, 6, 601174), 'time': {'day': 15, 'month': 8, 'year': 2019, 'hour': 19, 'minute': 45, 'second': 6}}
 
     def say(self, text):
         print (text)
@@ -161,6 +161,6 @@ def main():
     profile = {}
     tiane = Tiane()
     handle('Wie ist das Wetter', tiane, profile)
-      
+
 if __name__ == "__main__":
     main()
