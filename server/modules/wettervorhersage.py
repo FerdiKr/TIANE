@@ -61,39 +61,17 @@ def get_temperature(pl):
 def zeitabfrage(dic):
     drei_h_takt = 1
     now = datetime.datetime.now()
-    time = dic.get('time')
-    jahr = time.get('year')
-    if jahr == 'None':
-        jahr = str(now.year)
-    tag = time.get('day')
-    if tag == 'None':
-        tag = str(now.day)
-        if int(tag) <= 9:
-            tag = '0' + tag
-    monat = time.get('month')
-    if monat == 'None':
-        monat = str(now.month)
-        if int(monat) <= 9:
-            monat = '0' + monat
-    stunde = time.get('hour')
-    if stunde == 'None':
-         stunde = '13'
-    minute = time.get('minute')
-    if minute == 'None':
-         minute = str(now.minute)
-    zeit = jahr + '-' + monat + '-' + tag + ' ' + stunde + ':' + minute + ':000000'
-    zeit = datetime.datetime.strptime(zeit, '%Y-%m-%d %H:%M:%f')
-    differenz = zeit - now
+    time = dic.get('datetime')
+    differenz = time - now
     if differenz.total_seconds() >= 40*10800:
-        zeit = 'Ich kann leider nicht so weit in die Zukunft sehen.' #Möchtest du wissen, wie das Wetter in 5 Tagen wird?
-    return zeit
-
+        time = 'Ich kann leider nicht so weit in die Zukunft sehen.' #Möchtest du wissen, wie das Wetter in 5 Tagen wird?
+    return time
 
 
 def handle(text, tiane, profile):
     now = datetime.datetime.now()
     o = tiane.analysis['town']
-    if o == 'None':
+    if o == None:
         tiane.say('Für welchen Ort möchtest du das Wetter erfahren?')
         antwort = tiane.listen()
         if antwort == 'TIMEOUT_OR_INVALID':
@@ -214,7 +192,7 @@ class Tiane:
     def __init__(self):
         self.local_storage = {}
         self.user = 'Baum'
-        self.analysis = {'room': 'None', 'time': {'month': '10', 'hour': '14', 'year': '2018', 'minute': '00', 'day': '11'}, 'town': 'None'}
+        self.analysis = {'town': None, 'room': None, 'rooms': [None, 'Schlafzimmer'], 'datetime': datetime.datetime(2019, 7, 30, 19, 45, 6, 601174), 'time': {'day': 30, 'month': 7, 'year': 2019, 'hour': 19, 'minute': 45, 'second': 6}}
 
     def say(self, text):
         print (text)
