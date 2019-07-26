@@ -10,7 +10,7 @@ def run(tiane, profile):
             benutzer = item['Benutzer']
             output = item['Text']
             zeit = item['Zeit']
-            zeit = datetime.datetime.strptime(zeit, '%Y-%m-%d %H:%M:%S.%f')
+            '''zeit = datetime.datetime.strptime(zeit, '%Y-%m-%d %H:%M:%S.%f')'''
             if 'dass ' in output:
                 ausgabe = 'Ich sollte dir Bescheid sagen, ' + output + '.'
             else:
