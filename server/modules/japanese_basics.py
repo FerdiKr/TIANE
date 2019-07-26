@@ -5,7 +5,7 @@ import datetime
 
 
 def handle(text, tiane, profile):
-    zahlen = {1: 'itschi', 2: 'ni', 3: 'san', 4: 'jonn', 5: 'go', 6: 'rokü', 7: 'tchiiji', 8: 'hatschi', 9: 'kjüü', 10: 'shiuu'}
+    zahlen = {1: 'itschi', 2: 'ni', 3: 'san', 4: 'jonn', 5: 'go', 6: 'rokü', 7: 'tchiiji', 8: 'hatschi', 9: 'kjüü', 10: 'shiuu', 77: 'nanna'}
     n = datetime.datetime.now()
     text = text.lower()
     translation = ''
@@ -38,6 +38,8 @@ def handle(text, tiane, profile):
             h = n.hour - 12
         else:
             h = n.hour
+        if h == 7:
+            h = 77
         if n.minute == 0:
             translation = 'iima wa ' + zahlen[h] + 'tshii des'
         else:
