@@ -223,7 +223,7 @@ def runMain(commandMap=None, feedbackMap=None):
             # über den Modulnamen auf jeden Fall unbehelligt und nur so können Sonderfälle wie "Erinner mich... wenn ich in der Küche bin"
             # korrekt interpretiert werden!
             if not analysis == {}:
-                if not analysis['room'] == 'None':
+                if analysis['room'] is not None:
                     return Tiane.route_query_modules(user, name, text, analysis['room'], direct=direct, origin_room=origin_room, data=data)
 
             return False
