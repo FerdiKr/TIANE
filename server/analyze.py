@@ -1,1318 +1,642 @@
 import datetime
+import re
 
 class Sentence_Analyzer:
     def __init__(self, room_list=[], default_location=''):
-        self.raumliste = room_list
+        self.room_list = room_list
         self.default_location = default_location
+        self.zahlwörter = ['null', 'eins', 'zwei', 'drei', 'vier', 'fünf', 'sechs', 'sieben', 'acht', 'neun', 'zehn', 'elf', 'zwölf']
+        self.zahlwörter_eins = ['einem', 'ein', 'einer', 'eine', 'nem', 'nen', 'ne', 'ner']
+        self.zahlwörter_bruchteile = {'viertel':0.25, 'viertelstunde':0.25, 'halb':0.5, 'halbe':0.5, 'halben':0.5, 'einhalb':0.5, 'dreiviertel':0.75, 'dreiviertelstunde':0.75, 'anderthalb':1.5, 'zweieinhalb':2.5, 'dreieinhalb':3.5, 'viereinhalb':4.5}
+        self.zahlwörter_reihenfolge = ['nullten', 'ersten', 'zweiten', 'dritten', 'vierten', 'fünften', 'sechsten', 'siebten', 'achten', 'neunten', 'zehnten', 'elften', 'zwölften', 'dreizehnten', 'vierzehnten', 'fünfzehnten', 'sechzehnten',
+                                       'siebzehnten', 'achtzehnten', 'neunzehnten', 'zwanzigsten', 'einundzwanzigsten', 'zweiundzwanzigsten', 'dreiundzwanzigsten', 'vierundzwanzigsten', 'fünfundzwanzigsten', 'sechsundzwanzigsten',
+                                       'siebenundzwanzigsten', 'achtundzwanzigsten', 'neunundzwanzigsten', 'dreißigsten', 'einunddreißigsten']
+        self.zahlwörter_sonstige = {'mitternacht':0}
+        self.weekdays = ['montag', 'dienstag', 'mittwoch', 'donnerstag', 'freitag', 'samstag', 'sonntag']
+        self.months = ['platzhaltar', 'januar', 'februar', 'märz', 'april', 'mai', 'juni', 'juli', 'august', 'september', 'oktober', 'november', 'dezember']
+        self.daytime_clues_pm = ['nachmittags', 'abends', 'spät']
+        self.daytime_clues_am = ['morgens', 'früh']
+        self.two_word_town_clues = ['los', 'las', 'san', 'sankt', 'new', 'old', 'neu', 'alt', 'bad', 'ober', 'unter', 'west', 'ost', 'nord', 'süd', 'south', 'north' 'east']
+        self.böse_wörter_nach_in = ['dem', 'den', 'diesem', 'diesen', 'welchem', 'welchen', 'jenem', 'jenen', 'der', 'dieser', 'welcher', 'jener', 'die', 'diese', 'welche', 'jene', 'diese', 'das', 'welches', 'jenes', 'einem', 'einer',
+                                    'meinem', 'deinem', 'seinem', 'ihrem', 'unserem', 'eurem', 'ihrem', 'meinen', 'deinen', 'seinen', 'ihren', 'unseren', 'euren', 'meiner', 'deiner', 'seiner', 'ihrer', 'unserer', 'eurer', 'meine', 'deine', 'seine', 'ihre',
+                                    'unsere', 'eure', 'mein', 'dein', 'sein', 'ihr', 'unser', 'euer', 'ihr',
+                                    'egal', 'anderen', 'dubio', 'zu', 'gefahr', 'wie']
+        self.default_false = None
 
-
-    def get_text(self, eingabe):
-        sonst = 'der dem den einer'
-        tt = eingabe.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        satz = {}
-        mind = 0
-        falsches_in = 0
-        i = str.split(tt)
-        ind = 1
-        for w in i:
-            satz[ind] = w
-            ind += 1
-        for iindex, word in satz.items():
-            if word in sonst:
-                mind = mind + iindex
-        for iindex, word in satz.items():
-            if iindex == mind - 1:
-                falsches_in = falsches_in + iindex
-        if falsches_in >= 1:
-            del satz[falsches_in]
-        return satz
-
-
-    def get_town(self, x):
-        satz = self.get_text(x)
-        town = 'None'
-        in_index = 0
-        nope = 'der dem einem einer drei zwei vier fünf sechs sieben acht neun zehn Der Dem Einem Einer Drei Zwei Vier Fünf Sechs Sieben Acht Neun Zehn 1 2 3 4 5 6 7 8 9 10'
-        two_words = 'los new old bad ober unter west ost nord süd south north east Los New Old Bad Ober Unter West Ost Nord Süd South North East'
-        if 'in ' not in x:
-            if 'zu hause' in x or 'hier' in x:
-                if not self.default_location == '':
-                    town = self.default_location
+    def prepare_text(self, text):
+        # sämtliche Satz- und Sonderzeichen entfernen, Text bereinigen
+        text = text.replace('€', (' Euro'))
+        text = text.replace('%', (' Prozent'))
+        text = text.replace('$', (' Dollar'))
+        text = (" ".join(re.findall(r"[A-Za-z0-9üäöÜÄÖß]*", text))).replace("  "," ")
+        # Fügt an Übergängen zwischen Buchstaben und Zahlen immer ein Leerzeichen ein
+        int_char = False
+        cleared_text = ''
+        i = 0
+        for char in text:
+            if self.to_int(char) is not None:
+                if i == 0 or int_char == True:
+                    cleared_text = cleared_text + char
                 else:
-                    town = 'None'
+                    cleared_text = cleared_text + ' ' + char
+                int_char = True
             else:
-                town = 'None'
-        else:
-            for iindex, word in satz.items():
-                if word == 'in':
-                    in_index = iindex
-                    town_ind = in_index + 1
-                    town = satz.get(town_ind)
-                    if town in two_words:
-                        try:
-                            second_word = satz.get(town_ind + 1)
-                            town = town + ' ' + second_word
-                        except KeyError:
-                            town = town
+                if int_char == False:
+                    cleared_text = cleared_text + char
+                else:
+                    cleared_text = cleared_text + ' ' + char
+                int_char = False
+            i += 1
+        text = cleared_text
+        # Weitere Bereinigungen
+        while '  ' in text:
+            text = text.replace('  ', ' ')
+        if text.startswith(' '):
+            text = text[1:]
+        if text.endswith(' '):
+            text = text[:-1]
+        return text
 
+    def split_text(self, text):
+        return(text.split(' '))
 
-                    if town in nope:
-                        town = 'None'
-        if town != 'None':
+    def lower_split_text(self, text_split):
+        return[word.lower() for word in text_split]
+
+    def to_int(self, word):
+        # Wandelt so ziemlich alles in eine Zahl um oder gibt 'None' aus, wenn nicht möglich.
+        # Achtung, nicht vom Namen trügen lassen: Diese Funktion gibt meistens floats aus!
+        if word is None:
+            return None
+        number = None
+        try:
+            number = float(word)
+        except:
+            word = word.lower()
             try:
-                if int(town) >= 1:
-                    town = 'None'
-            except TypeError:
-                town = town
-            except ValueError:
-                town = town
+                number = self.zahlwörter.index(word)
+            except:
+                try:
+                    number = self.zahlwörter_bruchteile[word]
+                except:
+                    try:
+                        number = self.zahlwörter_reihenfolge.index(word)
+                    except:
+                        try:
+                            number = self.months.index(word)
+                        except:
+                            try:
+                                number = self.weekdays.index(word)
+                            except:
+                                try:
+                                    number = self.zahlwörter_sonstige[word]
+                                except:
+                                    if word in self.zahlwörter_eins:
+                                        number = 1
+        return number
+
+    def to_time_unit(self, word):
+        # Vereinheitlicht Zeiteinheiten, oder gibt 'None' aus, wenn nicht möglich
+        if word.lower() in ['s', 'sec', 'secs', 'second', 'seconds', 'sek', 'sekunde', 'sekunden']:
+            return 'seconds'
+        elif word.lower() in ['min', 'minute', 'minutes', 'minuten']:
+            return 'minutes'
+        elif word.lower() in ['h', 'hour', 'hours', 'std', 'stunde', 'stunden']:
+            return 'hours'
+        elif word.lower() in ['d', 'day', 'days', 'tag', 'tage', 'tagen']:
+            return 'days'
+        elif word.lower() in ['week', 'weeks', 'woche', 'wochen']:
+            return 'weeks'
+        elif word.lower() in ['month', 'months', 'monat', 'monate', 'monaten']:
+            return 'months'
+        elif word.lower() in ['y', 'year', 'years', 'jahr', 'jahre', 'jahren']:
+            return 'years'
+        else:
+            return None
+
+    def get_town(self, text, text_split, text_split_lower):
+        town = self.default_false
+        offset = 0
+        try:
+            while True:
+                # Sucht das nächste "in" im Text
+                in_index = text_split_lower[offset:].index('in')
+                try:
+                    # Versucht, den Ort zu extrahieren
+                    town = text_split[offset:][in_index+1]
+                except IndexError:
+                    raise ValueError
+                if town.lower() in self.two_word_town_clues:
+                    try:
+                        town = town + ' ' + text_split[offset:][in_index+2]
+                    except IndexError:
+                        town = town
+                # Checkt den erhaltenen Ort
+                if self.to_int(town) is not None or town.lower() in self.böse_wörter_nach_in or town in self.room_list:
+                    town = self.default_false
+                    offset = offset + in_index + 1
+                else:
+                    break
+        except ValueError:
+            # Kein weiteres "in" mehr gefunden
+            if 'zu hause' in text.lower() or 'daheim' in text.lower() or 'hier' in text_split_lower:
+                town = self.default_location
         return town
 
+    def get_room(self, text_split_lower):
+        rooms = [self.default_false]
+        for room in self.room_list:
+            if room.lower() in text_split_lower:
+                rooms.append(room)
+        return rooms[0], rooms
 
-
-    def get_room(self, text):
-        room = ''
-        raum = str(self.raumliste)
-        tt = text.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        i = str.split(tt)
-        for r in raum:
-            if r not in i:
-                room = 'None'
-        for w in i:
-            if w in raum and len(w) >= 3:
-                room = w
-        return room
-
-
-    def get_month_abs(self, txt):
-        now = datetime.datetime.now()
-        tt = txt.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        text = tt.lower()
-        month = 'None'
-        if 'am ' not in text:
-            month = 'None'
-        else:
-            Monate = {1: 'januar', 2: 'februar', 3: 'märz', 4: 'april', 5: 'mai', 6: 'juni',
-                      7: 'juli', 8: 'august', 9: 'september', 10: 'oktober', 11: 'november',
-                      12: 'dezember'}
-            satz = self.get_text(text)
-            for i, w in Monate.items():
-                if w in text:
-                    m = w
-                    month = i
-                    if month <= 9:
-                        month = '0' + str(month)
-                    else:
-                        month = str(month)
-                    break
-            if month == 'None':
-                for i, w in satz.items():
-                    if w == 'am':
-                        amindex = i
-                        tagindex = i + 1
-                        if tagindex in satz.keys():
-                            tag = satz.get(tagindex)
-                            lange = len(tag)
-                            nur_ende = lange - 1
-                            if tag[nur_ende] == '.':
-                                month = 'None'
-                                break
-                            else:
-                                monat = tag[2:]
-                                if monat != '.':
-                                    try:
-                                        if int(monat) >= 1:
-                                            try:
-                                                if int(monat) >= 1:
-                                                    month = int(monat)
-                                            except TypeError:
-                                                monat_zwei = monat[1:]
-                                    except ValueError:
-                                        monat_zwei = monat[1:]
-                                    try:
-                                        if int(monat_zwei) >= 1:
-                                            try:
-                                                if int(monat_zwei) >= 1:
-                                                    month = int(monat_zwei)
-                                            except TypeError:
-                                                month = month
-                                    except ValueError:
-                                        month = 'None'
-                                    if month != 'None':
-                                        if month <= 9:
-                                            month = '0' + str(month)
-                                        else:
-                                            month = str(month)
-                        else:
-                            month = 'None'
-        return month
-
-    def get_month_by_name(self, txt):
-        tt = txt.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        text = tt.lower()
-        month = 'None'
-        Monate = {'januar': '01', 'februar': '02', 'märz': '03', 'april': '04', 'mai': '05', 'juni': '06',
-                  'juli': '07', 'august': '08', 'september': '09', 'oktober': '10', 'november': '11', 'dezember': '12'}
-        s = str.split(text)
-        x = ''
-        for w in s:
-            if w in Monate.keys():
-                x = w
-                month = Monate.get(x)
-                break
-        day = 'None'
-        mind = 0
-        if month != 'None':
-            satz = {}
-            i = str.split(text)
-            ind = 1
-            for w in i:
-                satz[ind] = w
-                ind += 1
-            for iindex, word in satz.items():
-                if word == x:
-                    mind = iindex - 1
-            if mind >= 1:
+    def get_time_after_in(self, text_split_lower):
+        add_times = []
+        offset = 0
+        time_amount = None
+        time_unit = None
+        try:
+            while True:
+                # Sucht das nächste "in" im Text
+                in_index = text_split_lower[offset:].index('in')
                 try:
-                    day = satz.get(mind)
-                except ValueError:
-                    day = 'None'
-        if day != 'None':
-            tage = {1: 'ersten', 2: 'zweiten', 3: 'dritten', 4: 'vierten', 5: 'fünften',
-                    6: 'sechsten', 7: 'siebten', 8: 'achten', 9: 'neunten', 10: 'zehnten',
-                    11: 'elften', 12: 'zwölften', 13: 'dreizehnten', 14: 'vierzehnten', 15: 'fünfzehnten',
-                    16: 'sechzehnten', 17: 'siebzehnten', 18: 'achtzehnten', 19: 'neunzehnten', 20: 'zwanzigsten',
-                    21: 'einundzwanzigsten', 22: 'zweiundzwanzigsten', 23: 'dreiundzwanzigsten', 24: 'vierundzwanzigsten',
-                    25: 'fünfundzwanzigsten', 26: 'sechsundzwanzigsten', 27: 'siebenundzwanzigsten', 28: 'achtundzwanzigsten',
-                    29: 'neunundzwanzigsten', 30: 'dreißigsten', 31: 'einunddreißigsten', 32: 'zweiunddreißigsten'}
-            for i, w in tage.items():
-                if day == w:
-                    day = i
-                    break
-            day = int(day)
-            if day <= 9:
-                day = '0' + str(day)
-            else:
-                day = str(day)
-        m_and_d = [month, day]
-        return m_and_d
+                    # Versucht, die Zeit inkl. Einheit zu extrahieren
+                    time_amount = text_split_lower[offset:][in_index+1]
+                    time_unit = text_split_lower[offset:][in_index+2]
+                except IndexError:
+                    raise ValueError
 
+                # Checkt die erhaltene Zeit und Zeiteinheit
+                if self.to_int(time_amount) is not None and self.to_time_unit(time_unit) is not None:
+                    # z.B. "in einem Jahr"
+                    add_times.append((self.to_int(time_amount), self.to_time_unit(time_unit)))
+                    offset = offset + in_index + 3
+                    # Geht es vielleicht mit Konstruktionen wie "in 12 Stunden, 40 Minuten und 10 Sekunden" noch weiter?
+                    offset, add_times = self.get_time_after_und_after_in(text_split_lower, offset, add_times)
 
-    def get_day_abs(self, txt):
-        tt = txt.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        text = tt.lower()
-        day = 'None'
-        if 'am ' not in text:
-            day = 'None'
-        else:
-            tage = {1: 'ersten', 2: 'zweiten', 3: 'dritten', 4: 'vierten', 5: 'fünften',
-                    6: 'sechsten', 7: 'siebten', 8: 'achten', 9: 'neunten', 10: 'zehnten',
-                    11: 'elften', 12: 'zwölften', 13: 'dreizehnten', 14: 'vierzehnten', 15: 'fünfzehnten',
-                    16: 'sechzehnten', 17: 'siebzehnten', 18: 'achtzehnten', 19: 'neunzehnten', 20: 'zwanzigsten',
-                    21: 'einundzwanzigsten', 22: 'zweiundzwanzigsten', 23: 'dreiundzwanzigsten', 24: 'vierundzwanzigsten',
-                    25: 'fünfundzwanzigsten', 26: 'sechsundzwanzigsten', 27: 'siebenundzwanzigsten', 28: 'achtundzwanzigsten',
-                    29: 'neunundzwanzigsten', 30: 'dreißigsten', 31: 'einunddreißigsten', 32: 'zweiunddreißigsten'}
-            satz = self.get_text(text)
-            for ind, word in satz.items():
-                if word == 'am':
-                    am_index = ind
-                    day_index = ind + 1
-                    if day_index in satz.keys():
-                        dayy = satz.get(day_index)
-                        if dayy in tage.values():
-                            for ind, w in tage.items():
-                                if w == dayy:
-                                    day = ind
-                                    if day <= 9:
-                                        day = '0' + str(day)
-                                    else:
-                                        day = str(day)
-                        else:
-                            try:
-                                if int(dayy) >= 1:
-                                    tag = int(dayy)
-                            except ValueError:
-                                tag = dayy[0:2]
-                                try:
-                                    if int(tag) >= 1:
-                                        tag = int(tag)
-                                except ValueError:
-                                    tag = tag[0]
-                                    try:
-                                        if int(tag) >= 1:
-                                            tag = int(tag)
-                                    except ValueError:
-                                        tag = 'None'
-                                        break
-                            if tag <= 9:
-                                day = '0' + str(tag)
-                            else:
-                                day = str(tag)
-        return day
-
-    def get_year_abs(self, text):
-        text = text.lower()
-        satz = self.get_text(text)
-        year = 'None'
-        if 'am ' not in text:
-            year = 'None'
-        else:
-            for ind, word in satz.items():
-                if word == 'am':
-                    am_index = ind
-                    year_index = ind + 3
-                    if year_index in satz.keys():
-                        year = satz.get(year_index)
-                        try:
-                            if int(year) >= 1000:
-                                year = str(year)
-                        except ValueError:
-                            year = 'None'
-                    else:
-                        year_index = ind + 2
-                        if year_index in satz.keys():
-                            year = satz.get(year_index)
-                            try:
-                                if int(year) >= 1000:
-                                    year = str(year)
-                            except ValueError:
-                                year = 'None'
-        return year
-
-    def get_hour_abs(self, text):
-        hour = ''
-        text = text.lower()
-        satz = self.get_text(text)
-        if 'um ' not in text and 'uhr ' not in text:
-            hour = 'None'
-        elif 'um ' in text:
-            for ind, word in satz.items():
-                if word == 'um':
-                    um_index = ind
-                    hour_index = ind + 1
-                    hour = satz.get(hour_index)
-                    if len(hour) <= 2:
-                        try:
-                            if int(hour) <= 23 and int(hour) >= 0:
-                                hour = int(hour)
-                        except ValueError:
-                            hour = default
-                        if hour >= 0 and hour <= 23:
-                            hour = str(hour)
-                            if len(hour) <= 1:
-                                hour = '0' + hour
-                    else:
-                        ho = hour[0]
-                        ur = hour[1]
-                        try:
-                            if int(ur) <= 9 and int(ur) >= 0:
-                                hour = ho + ur
-                        except ValueError:
-                            hour = '0' + ho
-        elif 'uhr ' in text:
-            for ind, word in satz.items():
-                if word == 'uhr':
-                    uhr_index = ind
-                    hour_index = ind - 1
-                    minute_index = ind + 1
-                    hour = satz.get(hour_index)
-                    minute = satz.get(minute_index)
-                    if len(hour) <= 2 and len(minute) <= 2:
-                        try:
-                            if int(hour) <= 23 and int(hour) >= 0:
-                                hour = int(hour)
-                                break
-                        except ValueError:
-                            hour = default
-                        if hour >= 0 and hour <= 23:
-                            hour = str(hour)
-                            if len(hour) <= 1:
-                                hour = '0' + hour
-                    elif len(hour) <= 2:
-                        try:
-                            minute = int(hour)
-                        except ValueError:
-                            minute = 'None' ###################
-        if hour != 'None' and hour != '12':
-            if ' abend' in text or ' nachmittag' in text:
-                stunde = int(hour) + 12
-                hour = str(stunde)
-        return hour
-
-    def get_minute_abs(self, text):
-        minute = '00'
-        text = text.lower()
-        satz = self.get_text(text)
-        if 'um ' not in text and 'uhr' not in text:
-            minute = 'None'
-        elif 'um ' in text:
-            for ind, word in satz.items():
-                if word == 'um':
-                    um_index = ind
-                    minute1_index = ind + 3
-                    mi = satz.get(minute1_index)
-                    if len(satz)<= minute1_index + 1:
-                        try:
-                            try:
-                                if int(mi) <= 59 and int(mi) >= 0:
-                                    minute = mi
-                            except TypeError:
-                                for ind, word in satz.items():
-                                    if word == 'um':
-                                        um_iindex = ind
-                                        uhr_index = um_iindex + 1
-                                        uhr = satz.get(uhr_index)
-                                        lang = len(uhr)
-                                        if lang >= 3:
-                                            mi = uhr[lang - 2]
-                                            nute = uhr[lang - 1]
-                                            minute = mi + nute
-                        except ValueError:
-                            minute = 0
-                    else:
-                        try:
-                            try:
-                                if int(mi) <= 59 and int(mi) >= 0:
-                                    minute = mi
-                                    break
-                            except ValueError:
-                                for ind, word in satz.items():
-                                    if word == 'um':
-                                        um_iindex = ind
-                                        uhr_index = um_iindex + 1
-                                        uhr = satz.get(uhr_index)
-                                        lang = len(uhr)
-                                        if lang >= 2:
-                                            mi = uhr[lang - 2]
-                                            nute = uhr[lang - 1]
-                                            minute = mi + nute
-                        except TypeError:
-                            minute = 0
-        elif 'uhr' in text:
-            f = False
-            for i, w in satz.items():
-                if w == 'uhr':
-                    uhr_index = i
-                    m_index = i + 1
+                elif self.to_int(time_amount) is not None and time_unit in self.zahlwörter_bruchteile.keys():
+                    # z.B. "in einer dreiviertel Stunde"...
+                    time_factor = time_unit
                     try:
-                        minu = satz.get(m_index)
-                        try:
-                            if int(minu) <= 59 and int(minu) >= 0:
-                                minute = minu
-                                break
-                        except TypeError:
-                            minute = 'None'
+                        time_unit = text_split_lower[offset:][in_index+3]
+                    except IndexError:
+                        if time_factor not in ['viertelstunde', 'dreiviertelstunde']:
+                            raise ValueError
+                        else:
+                            pass
+                    if time_factor in ['viertelstunde', 'dreiviertelstunde']:
+                        time_unit = 'hour'
+                        offset = offset + in_index + 3
+                    else:
+                        offset = offset + in_index + 4
+                    if self.to_time_unit(time_unit) is not None:
+                        add_times.append((self.to_int(time_amount)*self.to_int(time_factor), self.to_time_unit(time_unit)))
+                        # Geht es vielleicht mit Konstruktionen wie "in 12 Stunden, 40 Minuten und 10 Sekunden" noch weiter?
+                        offset, add_times = self.get_time_after_und_after_in(text_split_lower, offset, add_times)
+                    else:
+                        time_amount = None
+                        time_unit = None
+                        offset = offset + in_index + 1
+
+                else:
+                    time_amount = None
+                    time_unit = None
+                    offset = offset + in_index + 1
+        except ValueError:
+            # Kein weiteres "in" mehr gefunden
+            return add_times
+
+    def get_time_after_und_after_in(self, text_split_lower, offset, add_times):
+        # Geht es vielleicht mit Konstruktionen wie "in 12 Stunden, 40 Minuten und 10 Sekunden" noch weiter?
+        try:
+            while True:
+                if text_split_lower[offset:][0] in ['und', 'and']:
+                    offset += 1
+                    continue
+                time_amount = text_split_lower[offset:][0]
+                time_unit = text_split_lower[offset:][1]
+                if self.to_int(time_amount) is not None and self.to_time_unit(time_unit) is not None:
+                    add_times.append((self.to_int(time_amount), self.to_time_unit(time_unit)))
+                    offset += 2
+                    continue
+                elif self.to_int(time_amount) is not None and time_unit in self.zahlwörter_bruchteile.keys():
+                    # z.B. "in einer Dreiviertelstunde"...
+                    time_factor = time_unit
+                    try:
+                        time_unit = text_split_lower[offset:][2]
+                    except IndexError:
+                        if time_factor not in ['viertelstunde', 'dreiviertelstunde']:
                             break
-                    except TypeError:
-                        minu = 'None'
-                        satz1 = satz.remove(uhr_index)
-                        f = True
+                        else:
+                            pass
+                    if time_factor in ['viertelstunde', 'dreiviertelstunde']:
+                        time_unit = 'hour'
+                        offset += 2
+                    else:
+                        offset += 3
+                    if self.to_time_unit(time_unit) is not None:
+                        add_times.append((self.to_int(time_amount)*self.to_int(time_factor), self.to_time_unit(time_unit)))
+                    else:
                         break
-            if f == True:
-                for i, w in satz1.items():
-                    if w == 'uhr':
-                        uhr_index = i
-                        m_index = i + 1
+                else:
+                    break
+        except IndexError:
+            pass
+        return offset, add_times
+
+    def get_time_after_um(self, text_split_lower):
+        set_hours = None
+        set_minutes = None
+        tag_übertrag = 0 ### z.Zt. ungenutzt, aber ich kann mir vorstellen, dass man es braucht...
+        daytime = None
+        possible_daytime_clues = []
+        offset = 0
+        # löscht das "Füllwort" "Uhr" aus dem Text, das brauchen wir hier nicht ;)
+        while 'uhr' in text_split_lower:
+            text_split_lower.remove('uhr')
+        try:
+            while set_hours is None and set_minutes is None:
+                # Sucht das nächste "um" im Text
+                um_index = text_split_lower[offset:].index('um')
+
+                # Fall 1: "Um 5 Uhr"
+                add_offset = 0
+                try:
+                    hours = text_split_lower[offset:][um_index+1]
+                except IndexError:
+                    raise ValueError
+                if self.to_int(hours) is not None and hours not in self.zahlwörter_bruchteile and 0 <= self.to_int(hours) < 24:
+                    add_offset += 1
+                    set_hours = self.to_int(hours)
+                    set_minutes = 0
+                    try:
+                        minutes = text_split_lower[offset:][um_index+2]
+                    except IndexError:
+                        raise ValueError
+                    # Fall 1.1: "Um 5 Uhr 45"
+                    if self.to_int(minutes) is not None and 0 <= self.to_int(minutes) < 60:
+                        add_offset += 1
+                        set_minutes = self.to_int(minutes)
+                    # Fall nicht-1 (weil 2): "Um 5 vor 10"
+                    elif minutes in ['vor', 'nach']:
+                        # ...und ich versuche mit diesem ganzen Konstrukt auch eher notdürftig, Fälle wie "wir treffen uns um 5 vor der Tür" aufzufangen
                         try:
-                            minu = satz.get(m_index)
-                            try:
-                                if int(minu) <= 59 and int(minu) >= 0:
-                                    minute = minu
-                                    break
-                            except TypeError:
-                                minute = 'None'
-                                break
-                        except TypeError:
-                            minute = 'None'
-                            break
-        if minute != 'None':
-            if int(minute) <= 9:
-                minute = '0' + str(minute)
-            else:
-                minute = str(minute)
-            if len(minute) >= 3:
-                minute = minute[1:]
-        return minute
-
-
-    def get_minute_rel(self, text):
-        text = text.lower()
-        now = datetime.datetime.now()
-        satz = self.get_text(text)
-        minute = '01'
-        zeit = 0
-        if 'in einer minute' in text:
-            minute = now.minute + 1
-        elif ' in ' in text and ' minuten' in text:
-            for i, w in satz.items():
-                if w == 'minuten':
-                    m_ind = i
+                            word_after_vornach = text_split_lower[offset:][um_index+3]
+                        except IndexError:
+                            word_after_vornach = '0'
+                        if word_after_vornach not in self.böse_wörter_nach_in:
+                            # ...Aber ansonsten gehen wir halt davon aus, dass eigentlich Fall 2 gemeint ist
+                            set_hours = None
+                            set_minutes = None
+                            add_offset = 0
+                    else:
+                        possible_daytime_clues.append(minutes)
                     try:
-                        if int(satz.get(m_ind - 1)) >= 0:
-                            zeit = int(satz.get(m_ind - 1))
-                    except TypeError:
-                        minute = '00'
-        else:
-            hour = 'None'
-            minute = 'None'
-        if minute != 'None':
-            add = now.minute + zeit
-            if add >= 60:
-                ubertrag = add - 60
-                hour = now.hour + 1
-                if ubertrag <= 9:
-                    minute = '0' + str(ubertrag)
-                else:
-                    minute = str(ubertrag)
-            else:
-                minute = add
-                if minute <= 9:
-                    minute = '0' + str(minute)
-                else:
-                    minute = str(minute)
-                hour = now.hour
-            if hour <= 9:
-                hour = '0' + str(hour)
-            else:
-                hour = str(hour)
-        dictionary = {'minute': minute, 'hour': hour}
-        return dictionary
+                        possible_daytime_clues.append(text_split_lower[offset + um_index-1])
+                    except:
+                        pass
 
+                    offset += add_offset
 
-
-
-    def get_year_rel(self, txt):
-        tt = txt.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        text = tt.lower()
-        now = datetime.datetime.now()
-        year = now.year
-        if 'übernächstes jahr' in text:
-            year = year + 2
-        elif 'nächstes jahr' in text:
-            year = year + 1
-        elif 'in' in text and 'jahren' in text:
-            satz = self.get_text(text)
-            for ind, word in satz.items():
-                if word == 'jahren':
-                    j_index = ind
-                    myind = j_index - 1
-                    year = now.year
-                    y = satz.get(myind)
+                # Fall 2: "Um 20 vor 5"
+                try:
+                    minutes = text_split_lower[offset:][um_index+1]
+                    vor_nach = text_split_lower[offset:][um_index+2]
+                    add_offset = 2
+                except IndexError:
+                    raise ValueError
+                try:
+                    hours = text_split_lower[offset:][um_index+3]
+                    add_offset = 3
+                except IndexError:
+                    hours = None
+                    pass
+                if self.to_int(minutes) is not None and vor_nach in ['vor', 'nach']:
+                    if vor_nach == 'vor':
+                        if minutes == 'viertel':
+                            set_minutes = 45
+                        else:
+                            set_minutes = 60 - self.to_int(minutes)
+                        if hours is not None and self.to_int(hours) is not None and 0 <= self.to_int(hours) < 24:
+                            set_hours = self.to_int(hours) - 1
+                    elif vor_nach == 'nach':
+                        if minutes == 'viertel':
+                            set_minutes = 15
+                        else:
+                            set_minutes = self.to_int(minutes)
+                        if hours is not None and self.to_int(hours) is not None and 0 <= self.to_int(hours) < 24:
+                            set_hours = self.to_int(hours)
                     try:
-                        if int(y) >= 1:
-                            year = year + int(y)
-                    except TypeError:
-                        year = year
-        else:
-            year = 'None'
-        jahr = str(year)
-        return jahr
-
-
-    def get_month_rel(self, txt):
-        tt = txt.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        text = tt.lower()
-        now = datetime.datetime.now()
-        month = now.month
-        if 'monaten' in text:
-            satz = self.get_text(text)
-            for ind, word in satz.items():
-                if word == 'monaten':
-                    m_index = ind
-                    myind = m_index - 1
-                    add_monat = satz.get(myind)
+                        possible_daytime_clues.append(text_split_lower[offset:][um_index-1])
+                    except:
+                        pass
                     try:
-                        if int(add_monat) <= 12:
-                            month = now.month
-                            month = month + int(add_monat)
-                    except TypeError:
-                        month = month
-        elif 'übernächsten monat' in text:
-            month = now.month + 2
-        elif 'nächsten monat' in text:
-            month = now.month + 1
-        elif 'in einem monat' in text:
-            month = now.month + 1
-        else:
-            month = 0
-        if int(month) <= 9:
-            month = '0' + str(month)
-        else:
-            month = str(month)
-        if month == '00':
-            month = 'None'
-        return month
+                        possible_daytime_clues.append(text_split_lower[offset:][um_index+add_offset+1])
+                    except:
+                        pass
+                else:
+                    add_offset = 0
+                offset += add_offset
 
-    def get_wochentag_rel(self, txt): #subject to change
-        now = datetime.datetime.now()
-        wochentag = datetime.datetime.today().weekday()
-        tt = txt.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        text = tt.lower()
-        t = 0
-        if 'übernächste woche' in text or 'übernächsten' in text:
-            if 'montag' in text:
-                t = 7 - wochentag
-            elif 'dienstag' in text:
-                if wochentag <= 0:
-                    t = 1 - wochentag
-                else:
-                    t = 8 - wochentag
-            elif 'mittwoch' in text:
-                if wochentag <= 1:
-                    t = 2 - wochentag
-                else:
-                    t = 9 - wochentag
-            elif 'donnerstag' in text:
-                if wochentag <= 2:
-                    t = 3 - wochentag
-                else:
-                    t = 10 - wochentag
-            elif 'freitag' in text:
-                if wochentag <= 3:
-                    t = 4 - wochentag
-                else:
-                    t = 11 - wochentag
-            elif 'samstag' in text:
-                if wochentag <= 4:
-                    t = 5 - wochentag
-                else:
-                    t = 12 - wochentag
-            elif 'sonntag' in text:
-                if wochentag <= 5:
-                    t = 6 - wochentag
-                else:
-                    t = 13 - wochentag
-            day = now.day + t + 7 #/+14
-        elif 'nächste woche' in text or 'nächsten' in text:
-            if 'montag' in text:
-                t = 7 - wochentag
-            elif 'dienstag' in text:
-                if wochentag <= 0:
-                    t = 1 - wochentag
-                else:
-                    t = 8 - wochentag
-            elif 'mittwoch' in text:
-                if wochentag <= 1:
-                    t = 2 - wochentag
-                else:
-                    t = 9 - wochentag
-            elif 'donnerstag' in text:
-                if wochentag <= 2:
-                    t = 3 - wochentag
-                else:
-                    t = 10 - wochentag
-            elif 'freitag' in text:
-                if wochentag <= 3:
-                    t = 4 - wochentag
-                else:
-                    t = 11 - wochentag
-            elif 'samstag' in text:
-                if wochentag <= 4:
-                    t = 5 - wochentag
-                else:
-                    t = 12 - wochentag
-            elif 'sonntag' in text:
-                if wochentag <= 5:
-                    t = 6 - wochentag
-                else:
-                    t = 13 - wochentag
-            day = now.day + t #+7
-        else:
-            if 'montag' in text:
-                t = 7 - wochentag
-            elif 'dienstag' in text:
-                if wochentag <= 0:
-                    t = 1 - wochentag
-                else:
-                    t = 8 - wochentag
-            elif 'mittwoch' in text:
-                if wochentag <= 1:
-                    t = 2 - wochentag
-                else:
-                    t = 9 - wochentag
-            elif 'donnerstag' in text:
-                if wochentag <= 2:
-                    t = 3 - wochentag
-                else:
-                    t = 10 - wochentag
-            elif 'freitag' in text:
-                if wochentag <= 3:
-                    t = 4 - wochentag
-                else:
-                    t = 11 - wochentag
-            elif 'samstag' in text:
-                if wochentag <= 4:
-                    t = 5 - wochentag
-                else:
-                    t = 12 - wochentag
-            elif 'sonntag' in text:
-                if wochentag <= 5:
-                    t = 6 - wochentag
-                else:
-                    t = 13 - wochentag
-            day = now.day + t
-        if day <= 9:
-            day = '0' + str(day)
-        else:
-            day = str(day)
-        return day
+                # Fall 3: "Um halb 6"
+                try:
+                    halb = text_split_lower[offset:][um_index+1]
+                    add_offset = 1
+                except IndexError:
+                    raise ValueError
+                try:
+                    hours = text_split_lower[offset:][um_index+2]
+                    add_offset = 2
+                except IndexError:
+                    hours = None
+                    pass
+                if halb == 'halb':
+                    set_minutes = 30
+                    if self.to_int(hours) is not None and 0 <= self.to_int(hours) < 24:
+                        set_hours = self.to_int(hours) - 1
+                    try:
+                        possible_daytime_clues.append(text_split_lower[offset:][um_index-1])
+                    except:
+                        pass
+                    try:
+                        possible_daytime_clues.append(text_split_lower[offset:][um_index+add_offset+1])
+                    except:
+                        pass
+                    offset += add_offset
 
-    def get_day_rel(self, txt):  #incl. get_wochentag_rel()
-        tt = txt.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        text = tt.lower()
-        now = datetime.datetime.now()
-        day = now.day
-        wochentag = datetime.datetime.today().weekday()
-        if 'übermorgen in' in text and 'woche' in text:
-            satz = self.get_text(text)
-            for ind, word in satz.items():
-                if word == 'woche' or word == 'wochen':
-                    w_ind = ind
-                    myind = w_ind - 1
-                    w = satz.get(myind)
-                    try:
-                        if int(w) >= 1:
-                            day = day + int(w) * 7 + 2
-                    except TypeError:
-                        day = day
-        elif 'morgen in' in text and 'woche' in text:
-            satz = self.get_text(text)
-            for ind, word in satz.items():
-                if word == 'woche' or word == 'wochen':
-                    w_ind = ind
-                    myind = w_ind - 1
-                    w = satz.get(myind)
-                    try:
-                        if int(w) >= 1:
-                            day = day + int(w) * 7 + 1
-                    except TypeError:
-                        day = day
-        elif ' in ' in text and ' tag' in text:
-            satz = self.get_text(text)
-            for ind, word in satz.items():
-                if word == 'tag' or word == 'tagen':
-                    t_ind = ind
-                    try:
-                        if satz.get(t_ind - 2) == 'in':
-                            myind = t_ind - 1
-                            day = satz.get(myind)
-                    except KeyError:
-                        day = day
+                if set_hours is None and set_minutes is None:
+                    offset += 1
 
-        elif 'übermorgen' in text:
-            day = now.day + 2
-        elif ' morgen' in text:
-            day = now.day + 1
-        elif 'heute' in text:
-            day = now.day
-        elif 'übernächstes wochenende' in text:
-            w = 5 - wochentag
-            day = now.day + w + 14
-        elif 'nächstes wochenende' in text:
-            w = 5 - wochentag
-            day = now.day + w + 7
-        elif 'am wochenende' in text or 'dieses wochenende' in text:
-            w = 5 - wochentag
-            day = now.day + w
-        elif 'montag' or 'dienstag' or 'mittwoch' or 'donnerstag' or 'freitag' or 'samstag' or 'sonntag' in text:
-            day = self.get_wochentag_rel(text)
-        day = int(day)
-        ub = int(day)
-        if day > 1234:
-            day = 'None'
-        elif day >= 29:
-            if now.month == 2 and now.year % 4 != 0:
-                t = day - 28
-                if t >= 32:
-                    u = t - 31
-                    if u >= 31:
-                        v = u - 30
-                        if v >= 32:
-                            w = v - 31
-                            if w >= 31:
-                                x = w - 30
-                                if x >= 32:
-                                    y = x - 31
-                                    if y >= 32:
-                                        z = y - 31
-                                        day = z
-                                    else:
-                                        day = y
-                                else:
-                                    day = x
-                            else:
-                                day = w
-                        else:
-                            day = v
-                    else:
-                        day = u
+        except ValueError:
+            # Kein weiteres "um" mehr gefunden
+            pass
+        # Hier finden wir noch raus, ob die Tageszeit explizit festgelegt wurde, und rechnen ggf. schon mal 6 Uhr in 18 Uhr um...
+        if set_hours is not None:
+            if set_hours >= 12:
+                daytime = 'pm'
+            elif [x for x in possible_daytime_clues if x in self.daytime_clues_pm]:
+                set_hours += 12
+                daytime = 'pm'
+            elif [x for x in possible_daytime_clues if x in self.daytime_clues_am]:
+                daytime = 'am'
+        return set_hours, set_minutes, daytime
+
+    def get_time_after_am(self, text_split_lower):
+        set_month = None
+        set_day = None
+        set_year = None
+        set_weekday = None
+        offset = 0
+        try:
+            while set_month is None and set_day is None and set_weekday is None:
+                # Sucht das nächste "am" im Text
+                am_index = text_split_lower[offset:].index('am')
+
+                # Fall 1: "Am 23.""
+                try:
+                    day = text_split_lower[offset:][am_index+1]
+                except IndexError:
+                    raise ValueError
+                try:
+                    month = text_split_lower[offset:][am_index+2]
+                except IndexError:
+                    month = None
+                    pass
+                try:
+                    year = text_split_lower[offset:][am_index+3]
+                except IndexError:
+                    year = None
+                    pass
+                # "Am 12."...
+                if self.to_int(day) is not None and day not in self.weekdays and 0 < self.to_int(day) <= 31:
+                    set_day = self.to_int(day)
+                    offset += 1
+                    # ..."3./März"...
+                    if self.to_int(month) is not None and month not in self.weekdays and 1 <= self.to_int(month) <= 12:
+                        set_month = self.to_int(month)
+                        offset += 1
+                        # ..."45/2045"!
+                        if self.to_int(year) is not None and year not in self.weekdays and year not in self.months:
+                            set_year = self.to_int(year)
+                            offset += 1
+
+                # Fall 2: "Am Mittwoch"
+                elif [x for x in text_split_lower if x in self.weekdays]:
+                    weekday = [x for x in text_split_lower if x in self.weekdays][0]
+                    set_weekday = self.to_int(weekday)
+                    # Den sehr speziellen Fall "Mittwoch, den 23.4." berücksichtigen:
+                    weekday_index = text_split_lower.index(weekday)
+                    try:
+                        den = text_split_lower[weekday_index+1]
+                    except IndexError:
+                        den = None
+                        pass
+                    try:
+                        day = text_split_lower[weekday_index+2]
+                    except IndexError:
+                        day = None
+                        pass
+                    try:
+                        month = text_split_lower[weekday_index+3]
+                    except IndexError:
+                        month = None
+                        pass
+                    try:
+                        year = text_split_lower[weekday_index+4]
+                    except IndexError:
+                        year = None
+                        pass
+                    # "den 12."...
+                    if den == 'den' and self.to_int(day) is not None and day not in self.weekdays and 0 < self.to_int(day) <= 31:
+                        set_day = self.to_int(day)
+                        # ..."3./März"...
+                        if self.to_int(month) is not None and month not in self.weekdays and 1 <= self.to_int(month) <= 12:
+                            set_month = self.to_int(month)
+                            # ..."45/2045"!
+                            if self.to_int(year) is not None and year not in self.weekdays and year not in self.months:
+                                set_year = self.to_int(year)
+
                 else:
-                    day = t
-            elif now.month == 2 and now.year % 4 == 0:
-                if day >= 30:
-                    t = day - 29
-                    if t >= 32:
-                        u = t - 31
-                        if u >= 31:
-                            v = u - 30
-                            if v >= 32:
-                                w = v - 31
-                                if w >= 31:
-                                    x = w - 30
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 32:
-                                            z = y - 31
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        else:
-                            day = u
-                    else:
-                        day = t
-            elif now.month == 1:
-                if day >= 32:
-                    t = day - 31
-                    if t >= 29 and now.year % 4 != 0:
-                        u = t - 28
-                        if u >= 31:
-                            v = u - 30
-                            if v >= 32:
-                                w = v - 31
-                                if w >= 31:
-                                    x = w - 30
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 32:
-                                            z = y - 31
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        else:
-                            day = u
-                    elif t >= 30 and now.year % 4 == 0:
-                        u = t - 29
-                        if u >= 31:
-                            v = u - 31
-                            if v >= 32:
-                                w = v - 31
-                                if w >= 31:
-                                    x = w - 30
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 32:
-                                            z = y - 31
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        else:
-                            day = u
-                    else: day = t
-            elif now.month == 3:
-                if day >= 32:
-                    t = day - 31
-                    if t >= 31:
-                        u = t - 30
-                        if u >= 32:
-                            v = u - 31
-                            if v >= 31:
-                                w = v - 30
-                                if w >= 32:
-                                    x = w - 31
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 31:
-                                            z = y - 30
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        else:
-                            day = u
-                    else:
-                        day = t
-            elif now.month == 8:
-                if day >= 32:
-                    t = day - 31
-                    if t >= 31:
-                        u = t - 30
-                        if u >= 32:
-                            v = u - 31
-                            if v >= 31:
-                                w = v - 30
-                                if w >= 32:
-                                    x = w - 31
-                                    if x >= 32:
-                                        y = x - 31
-                                        if (now.year + 1) % 4 == 0 and y >= 30:
-                                            z = y - 29
-                                            day = z
-                                        elif (now.year + 1) % 4 != 0 and y >= 29:
-                                            z = y - 28
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        else:
-                            day = u
-                    else:
-                        day = t
-            elif now.month == 5:
-                if day >= 32:
-                    t = day - 31
-                    if t >= 31:
-                        u = t - 30
-                        if u >= 32:
-                            v = u - 31
-                            if v >= 32:
-                                w = v - 31
-                                if w >= 31:
-                                    x = w - 30
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 31:
-                                            z = y - 30
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        else:
-                            day = u
-                    else:
-                        day = t
-            elif now.month == 10:
-                if day >= 32:
-                    t = day - 31
-                    if t >= 31:
-                        u = t - 30
-                        if u >= 32:
-                            v = u - 31
-                            if v >= 32:
-                                w = v - 31
-                                if (now.year + 1) % 4 == 0 and w >= 30:
-                                    x = w - 29
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 31:
-                                            z = y - 30
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                elif (now.year + 1) % 4 != 0 and w >= 30:
-                                    x = w - 28
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 31:
-                                            z = y - 30
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        else:
-                            day = u
-                    else:
-                        day = t
-            elif now.month == 7:
-                if day >= 32:
-                    t = day - 31
-                    if t >= 32:
-                        u = t - 31
-                        if u >= 31:
-                            v = u - 30
-                            if v >= 32:
-                                w = v - 31
-                                if w >= 31:
-                                    x = w - 30
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 32:
-                                            z = y - 31
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        else:
-                            day = u
-                    else:
-                        day = t
-            elif now.month == 12:
-                if day >= 32:
-                    t = day - 31
-                    if t >= 32:
-                        u = t - 31
-                        if (now.year + 1) % 4 == 0 and u >= 30:
-                            v = u - 29
-                            if v >= 32:
-                                w = v - 31
-                                if w >= 31:
-                                    x = w - 30
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 31:
-                                            z = y - 30
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        elif (now.year + 1) % 4 != 0 and u >= 29:
-                            v = u - 28
-                            if v >= 32:
-                                w = v - 31
-                                if w >= 31:
-                                    x = w - 30
-                                    if x >= 32:
-                                        y = x - 31
-                                        if y >= 31:
-                                            z = y - 30
-                                            day = z
-                                        else:
-                                            day = y
-                                    else:
-                                        day = x
-                                else:
-                                    day = w
-                            else:
-                                day = v
-                        else:
-                            day = u
-                    else:
-                        day = t
+                    offset += 1
+        except ValueError:
+            # Kein weiteres "am" mehr gefunden
+            pass
+        # Das Jahr müssen wir noch ein bisschen vereinheitlichen...
+        if set_year is not None:
+            if set_year < 100:
+                set_year = 2000 + set_year
+        return set_day, set_month, set_year, set_weekday
+
+    def get_time_after_der(self, text_split_lower):
+        set_month = None
+        set_day = None
+        set_year = None
+        set_weekday = None
+        offset = 0
+        try:
+            while set_month is None and set_day is None and set_weekday is None:
+                # Sucht das nächste "der" im Text
+                der_index = text_split_lower[offset:].index('der')
+
+                # Fall 1: "der 23.""
+                try:
+                    day = text_split_lower[offset:][der_index+1]
+                except IndexError:
+                    raise ValueError
+                try:
+                    month = text_split_lower[offset:][der_index+2]
+                except IndexError:
+                    month = None
+                    pass
+                try:
+                    year = text_split_lower[offset:][der_index+3]
+                except IndexError:
+                    year = None
+                    pass
+                # "der 12."...
+                if self.to_int(day) is not None and day not in self.weekdays and 0 < self.to_int(day) <= 31:
+                    set_day = self.to_int(day)
+                    offset += 1
+                    # ..."3./März"...
+                    if self.to_int(month) is not None and month not in self.weekdays and 1 <= self.to_int(month) <= 12:
+                        set_month = self.to_int(month)
+                        offset += 1
+                        # ..."45/2045"!
+                        if self.to_int(year) is not None and year not in self.weekdays and year not in self.months:
+                            set_year = self.to_int(year)
+                            offset += 1
+
+                # Fall 2: "der Mittwoch"
+                elif [x for x in text_split_lower if x in self.weekdays]:
+                    weekday = [x for x in text_split_lower if x in self.weekdays][0]
+                    set_weekday = self.to_int(weekday)
+
+                else:
+                    offset += 1
+        except ValueError:
+            # Kein weiteres "der" mehr gefunden
+            pass
+        # Das Jahr müssen wir noch ein bisschen vereinheitlichen...
+        if set_year is not None:
+            if set_year < 100:
+                set_year = 2000 + set_year
+        return set_day, set_month, set_year, set_weekday
+
+    def get_other_relative_times(self, text_split_lower):
+        add_times = []
+        if 'morgen' in text_split_lower:
+            add_times.append((1, 'days'))
+        if 'übermorgen' in text_split_lower:
+            add_times.append((2, 'days'))
+        return add_times
+
+    def zeit_setzen(self, start_time, microsecond=None, second=None, minute=None, hour=None, day=None, month=None, year=None):
+        # Setzt bei einer gegebenen Zeit gegebene Werte
+        microsecond = int(microsecond) if microsecond is not None else start_time.microsecond
+        second = int(second) if second is not None else start_time.second
+        minute = int(minute) if minute is not None else start_time.minute
+        hour = int(hour) if hour is not None else start_time.hour
+        day = int(day) if day is not None else start_time.day
+        month = int(month) if month is not None else start_time.month
+        year = int(year) if year is not None else start_time.year
+        return datetime.datetime(year=year, month=month, day=day, hour=hour, minute=minute, second=second, microsecond=microsecond)
+
+    def zeiten_addieren(self, start_time, time, unit):
+        # Addiert zu einer gegebenen Zeit eine Zeitmenge mit entsprechender Einheit dazu
+        if unit == 'seconds':
+            return start_time + datetime.timedelta(seconds=time)
+        elif unit == 'minutes':
+            return start_time + datetime.timedelta(minutes=time)
+        elif unit == 'hours':
+            return start_time + datetime.timedelta(hours=time)
+        elif unit == 'days':
+            return start_time + datetime.timedelta(days=time)
+        elif unit == 'weeks':
+            return start_time + datetime.timedelta(days=7*time)
+        elif unit == 'months':
+            while start_time.month + time > 12:
+                if not start_time.year + 1 >= datetime.MAXYEAR:
+                    start_time = self.zeit_setzen(start_time, year=start_time.year+1)
+                    time -= 12
+                else:
+                    start_time = self.zeit_setzen(start_time, year=datetime.MAXYEAR)
+                    time -= 12
+            start_time = self.zeit_setzen(start_time, month=start_time.month+time)
+            return start_time
+        elif unit == 'years':
+            if not start_time.year + time >= datetime.MAXYEAR:
+                start_time = self.zeit_setzen(start_time, year=start_time.year+time)
+                return start_time
             else:
-                if day >= 31:
-                    t = day - 30
-                    if t >= 32:
-                        u = t - 31
-                        day = u
-                    else:
-                        day = t
-        if day != 'None':
-            if day <= 9:
-                day = '0' + str(day)
-            else:
-                day = str(day)
-        dic = {}
-        dic['Daily'] = day
-        dic['Monthly'] = ub
-        return dic
-
-    def getmonth_fromday(self, txt):
-        tt = txt.replace('.', (''))
-        tt = tt.replace('?', (''))
-        tt = tt.replace('!', (''))
-        tt = tt.replace('.', (''))
-        tt = tt.replace(',', (''))
-        tt = tt.replace('"', (''))
-        tt = tt.replace('(', (''))
-        tt = tt.replace(')', (''))
-        tt = tt.replace('€', ('Euro'))
-        tt = tt.replace('%', ('Prozent'))
-        tt = tt.replace('$', ('Dollar'))
-        text = tt.lower()
-        now = datetime.datetime.now()
-        m = now.month
-        d = self.get_day_rel(text)
-        day = 0
-        if d.get('Daily') == 'None':
-            month = '00'
-        else:
-            day = d.get('Monthly')
-        if int(day) >= 29:
-            if now.month == 2 and now.year % 4 != 0:
-                t = day - 28
-                m = now.month + 1
-                if t >= 32:
-                    u = t - 31
-                    m = now.month + 2
-                    if u >= 31:
-                        v = u - 30
-                        m = now.month + 3
-                        if v >= 32:
-                            m = now.month + 4
-            elif now.month == 2 and now.year % 4 == 0:
-                if day >= 30:
-                    t = day - 29
-                    m = now.month + 1
-                    if t >= 32:
-                        u = t - 31
-                        m = now.month + 2
-                        if u >= 31:
-                            v = u - 30
-                            m = now.month + 3
-                            if v >= 32:
-                                m = now.month + 4
-            elif now.month == 1:
-                if day >= 32:
-                    t = day - 31
-                    m = now.month + 1
-                    if t >= 29 and now.year % 4 != 0:
-                        u = t - 28
-                        m = now.month + 2
-                        if u >= 31:
-                            v = u - 30
-                            m = now.month + 3
-                            if v >= 32:
-                                m = now.month + 4
-                    elif t >= 30 and now.year % 4 == 0:
-                        u = t - 29
-                        m = now.month + 2
-                        if u >= 31:
-                            v = u - 31
-                            m = now.month + 3
-                            if v >= 32:
-                                m = now.month + 4
-            elif now.month == 3 or now.month == 8:
-                if day >= 32:
-                    t = day - 31
-                    m = now.month + 1
-                    if t >= 31:
-                        u = t - 30
-                        m = now.month + 2
-                        if u >= 32:
-                            v = u - 31
-                            m = now.month + 3
-                            if v >= 31:
-                                m = now.month + 4
-            elif now.month == 5 or now.month == 10:
-                if day >= 32:
-                    t = day - 31
-                    m = now.month + 1
-                    if t >= 31:
-                        u = t - 30
-                        m = now.month + 2
-                        if u >= 32:
-                            v = u - 31
-                            m = now.month + 3
-                            if v >= 32:
-                                m = now.month + 4
-            elif now.month == 7 or now.month == 12:
-                if day >= 32:
-                    t = day - 31
-                    m = now.month + 1
-                    if t >= 32:
-                        u = t - 31
-                        m = now.month + 2
-                        if u >= 31:
-                            v = u - 30
-                            m = now.month + 3
-                            if v >= 32:
-                                m = now.month + 4
-            else:
-                if day >= 31:
-                    m = now.month + 1
-                    t = day - 30
-                    if t >= 32:
-                        m = now.month + 2
-
-        month = m
-        if month == now.month:
-            month = 0
-        if month <= 9:
-            month = '0' + str(month)
-        else:
-            month = str(month)
-
-        if month == '00':
-            month = 'None'
-        return month
-
-
+                start_time = self.zeit_setzen(start_time, year=datetime.MAXYEAR)
+                return start_time
 
     def analyze(self, text):
-        now = datetime.datetime.now()
-        r = self.get_room(text)
-        t = self.get_town(text)
-        m_a_d = self.get_month_by_name(text)
-        m = m_a_d[0]
-        if m == 'None':
-            m = self.get_month_abs(text)
-            if m == 'None':
-                m = self.get_month_rel(text)
-                if m == 'None':
-                    m = self.getmonth_fromday(text)
-        d = m_a_d[1]
-        if d == 'None':
-            d = self.get_day_abs(text)
-            if d == 'None':
-                day = self.get_day_rel(text)
-                d = day.get('Daily')     #incl. self.get_wochentag_rel(text)
-        y = self.get_year_abs(text)
-        if y == 'None':
-            y = self.get_year_rel(text)
-        h = self.get_hour_abs(text)
-        mi = self.get_minute_abs(text)
-        if mi == 'None':
-            minute = self.get_minute_rel(text)
-            hour = minute.get('hour')
-            mi = minute.get('minute')
-            if mi != 'None':
-                if h == 'None':
-                    stunde = now.hour
-                    if hour != 'None':
-                        h = int(stunde) + int(hour)
-                        if int(h) <= 9:
-                            h = '0' + str(h)
-                        else:
-                            h = str(h)
-            else:
-                if h == 'None':
-                    mi = 'None'
-                    h = 'None'
-        dic = {}
-        dic['town'] = t
-        dic['room'] = r
-        dic['time'] = ti_dic = {}
-        ti_dic['month'] = m
-        ti_dic['day'] = d
-        ti_dic['year'] = y
-        ti_dic['hour'] = h
-        ti_dic['minute'] = mi
-        return dic
+        time = datetime.datetime.now()
+        now = time
+        add_times = []
 
+        # Die verschiedenen "Versionen" des Eingabetextes sammeln
+        text = self.prepare_text(text)
+        text_split = self.split_text(text)
+        text_split_lower = self.lower_split_text(text_split)
+
+        # Ortsinformationen extrahieren
+        town = self.get_town(text, text_split, text_split_lower)
+        room, rooms = self.get_room(text_split_lower)
+
+        # Zeitinformationen extrahieren
+        set_hours, set_minutes, daytime = self.get_time_after_um(text_split_lower)
+        set_day, set_month, set_year, set_weekday = self.get_time_after_am(text_split_lower)
+        set_day_2, set_month_2, set_year_2, set_weekday_2 = self.get_time_after_der(text_split_lower)
+
+        set_day = set_day if set_day is not None else set_day_2
+        set_month = set_month if set_month is not None else set_month_2
+        set_year = set_year if set_year is not None else set_year_2
+        set_weekday = set_weekday if set_weekday is not None else set_weekday_2
+
+        for add_time in self.get_time_after_in(text_split_lower):
+            add_times.append(add_time)
+        for add_time in self.get_other_relative_times(text_split_lower):
+            add_times.append(add_time)
+
+        # Zeiten verrechnen
+        # Erst relative Zeitangaben ("in 3 Wochen") addieren...
+        for time_amount, time_unit in add_times:
+            time = self.zeiten_addieren(time, time_amount, time_unit)
+        # ...dann von der Zielzeit ausgehend die explizit angegebenen Werte setzen
+        if set_year is not None:
+            time = self.zeit_setzen(time, year=set_year)
+        if set_month is not None:
+            time = self.zeit_setzen(time, month=set_month)
+        if set_day is not None:
+            time = self.zeit_setzen(time, day=set_day)
+        elif set_weekday is not None:
+            # Man beachte, dass das hier ein ELif ist. Der Wochentag wird nur hinzugezogen,
+            # wenn keine viel explizitere Angabe gemacht wurde.
+            current_weekday = time.weekday()
+            difference = set_weekday - current_weekday
+            time = self.zeiten_addieren(time, difference, 'days')
+            while time.year < now.year or time.month < now.month or time.day < now.day:
+                time = self.zeiten_addieren(time, 1, 'weeks')
+        if set_minutes is not None:
+            time = self.zeit_setzen(time, minute=set_minutes)
+        if set_hours is not None:
+            time = self.zeit_setzen(time, hour=set_hours)
+            if daytime is not None:
+                while (time - now).total_seconds() <= 0:
+                    time = self.zeiten_addieren(time, 1, 'days')
+            else:
+                while (time - now).total_seconds() <= 0:
+                    time = self.zeiten_addieren(time, 12, 'hours')
+        if set_minutes is not None or set_hours is not None:
+            time = self.zeit_setzen(time, second=0)
+            time = self.zeit_setzen(time, microsecond=0)
+        return {'town':town, 'room':room, 'rooms':rooms, 'datetime':time, 'time':{'day':time.day, 'month':time.month, 'year':time.year, 'hour':time.hour, 'minute':time.minute, 'second':time.second}}
 
 def main():
-    Analyzer = Sentence_Analyzer(room_list=['Küche', 'Wohnzimmer', 'Bad'])
-    eingabe = 'Erinner mich in 2 Minuten ans putzen'
-    print (Analyzer.analyze(eingabe))
+    Analyzer = Sentence_Analyzer(room_list=['Wohnzimmer', 'Schlafzimmer'], default_location='Weitersburg')
+    print(Analyzer.analyze('Welcher Tag ist der 23.12.?'))
 
 if __name__ == '__main__':
     main()
