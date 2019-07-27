@@ -180,9 +180,9 @@ def run(tiane, profile):
             collected_cams[roomname].append(cam)
         profile['TIANE_face_boxes_names'][roomname] = {}
     # Hier wird bei Bedarf das letzte Bild geladen
-    for roomname in profile['TIANE_prev_roomnames']:
+    for roomname in profile['TIANE_prev_roomnames'].copy():
         if not roomname in roomnames:
-            if profile['TIANE_room_cam_timeout'][roomname] <= 25:
+            if profile['TIANE_room_cam_timeout'][roomname] <= 60:
                 roomcams, camdata = profile['TIANE_prev_room_camframes'][roomname]
                 collected_cams[roomname] = []
                 for camname, camframe in roomcams.items():
