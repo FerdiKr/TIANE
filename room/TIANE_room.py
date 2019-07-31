@@ -216,11 +216,18 @@ class Modules:
                 print('[INFO] -- (Keine zu beenden)')
         return
 
+class Users:
+    def __init__(self):
+        self.userlist = []
+        self.userdict = {}
+
+
 class TIANE:
     def __init__(self):
         self.Serverconnection = Serverconnection
         self.Conversation = Conversation
         self.Modules = Modules
+        self.Users = Users
         self.Analyzer = Analyzer
         self.Audio_Input = Audioinput
         self.Audio_Output = Audiooutput
@@ -425,6 +432,8 @@ class TIANE:
             for user in self.local_storage['users'].keys():
                 userlist.append(user)
             self.userlist = userlist
+            self.Users.userlist = userlist
+            self.Users.userdict = self.local_storage['users']
             self.Audio_Input.userlist = userlist
 
         if 'TIANE_Modules_defined_Vocabulary' in information_dict.keys():
@@ -639,6 +648,7 @@ TNetwork_Key = base64.b64decode(config_data['TNetwork_Key'].encode('utf-8')) # s
 dirname = os.path.dirname(os.path.abspath(__file__))
 Local_storage['TIANE_PATH'] = dirname
 
+Users = Users()
 Modules = Modules()
 Analyzer = Sentence_Analyzer()
 Serverconnection = TNetwork_Connection_Client()
