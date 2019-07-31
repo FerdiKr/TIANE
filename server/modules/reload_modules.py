@@ -15,7 +15,7 @@ def handle(text, tiane, profile):
     if 'server' in text.lower() or tiane.server_name in text.lower():
         reload_own(tiane)
         reloaded = True
-    elif not tiane.analysis['room'] == 'None':
+    elif tiane.analysis['room'] is not None:
         # Befehl nur an einen bestimmten Raum senden
         tiane.rooms[tiane.analysis['room']].Clientconnection.send({'TIANE_reload_modules':True})
         rooms_counter += 1
