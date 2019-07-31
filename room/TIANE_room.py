@@ -487,7 +487,8 @@ class Modulewrapper:
         self.room_name = Tiane.room_name
         self.room_list = Tiane.room_list
         self.users = Tiane.users
-        self.userlist = Tiane.userlist
+        self.Users = Tiane.Users
+        self.userlist = Tiane.Users.userlist
         self.local_storage = Tiane.local_storage
         self.server_name = Tiane.server_name
         self.system_name = Tiane.system_name
@@ -578,7 +579,8 @@ class Modulewrapper_continuous:
         self.room_name = Tiane.room_name
         self.room_list = Tiane.room_list
         self.users = Tiane.users
-        self.userlist = Tiane.userlist
+        self.Users = Tiane.Users
+        self.userlist = Tiane.Users.userlist
         self.local_storage = Tiane.local_storage
         self.server_name = Tiane.server_name
         self.system_name = Tiane.system_name
