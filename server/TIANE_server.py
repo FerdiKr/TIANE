@@ -15,8 +15,6 @@ import pickle
 def runMain(commandMap=None, feedbackMap=None):
     class Modules:
         def __init__(self):
-            self.load_modules()
-
             self.Modulewrapper = Modulewrapper
             self.Modulewrapper_continuous = Modulewrapper_continuous
 
@@ -24,6 +22,8 @@ def runMain(commandMap=None, feedbackMap=None):
             self.continuous_threads_running = 0
 
             self.modules_defined_vocabulary = []
+
+            self.load_modules()
 
         def load_modules(self):
             self.modules_defined_vocabulary = []
@@ -185,7 +185,7 @@ def runMain(commandMap=None, feedbackMap=None):
                     traceback.print_exc()
                     Log.write('ERROR', 'Modul {} konnte nicht abgefragt werden!'.format(module.__name__), conv_id=str(text), show=True)
 
-            if user is not None and user in Userlist:
+            if user is not None and user in Users.userlist:
                 # ... Und wenn wir nen Nutzer haben, können wir auch noch in seinen Modulen suchen
                 if not user == 'Unknown':
                     # Bei Telegram-Aufrufen zuerst die entsprechenden telegram_isValids abklappern:
@@ -361,10 +361,11 @@ def runMain(commandMap=None, feedbackMap=None):
 
             self.core = Tiane
             self.Analyzer = Tiane.Analyzer
+            self.Users = Tiane.Users
             self.rooms = Tiane.rooms
             self.other_devices = Tiane.other_devices
             self.local_storage = Tiane.local_storage
-            self.userlist = Tiane.userlist
+            self.userlist = Users.userlist
             self.room_list = Tiane.room_list
             self.server_name = Tiane.server_name
             self.system_name = Tiane.system_name
@@ -460,10 +461,11 @@ def runMain(commandMap=None, feedbackMap=None):
 
             self.core = Tiane
             self.Analyzer = Tiane.Analyzer
+            self.Users = Tiane.Users
             self.rooms = Tiane.rooms
             self.other_devices = Tiane.other_devices
             self.local_storage = Tiane.local_storage
-            self.userlist = Tiane.userlist
+            self.userlist = Users.userlist
             self.room_list = Tiane.room_list
             self.server_name = Tiane.server_name
             self.system_name = Tiane.system_name
@@ -479,10 +481,57 @@ def runMain(commandMap=None, feedbackMap=None):
                 user = self.user
             return Tiane.start_module(user, name, text, room)
 
+    class Users:
+        def __init__(self):
+            self.userlist = []
+            self.userdict = {}
+
+            self.load_users()
+
+        def load_users(self):
+            # Nutzer seperat aus dem users-Ordner laden
+            Log.write('', '---------- USERS ---------', show=True)
+            userdict = {}
+            userlist = []
+            telegram_id_table = {}
+            telegram_name_to_id_table = {}
+            telegram_id_to_name_table = {}
+
+            location = os.path.join(absPath, 'users')
+            subdirs = os.listdir(location)
+            try:
+                subdirs.remove("README.txt")
+                subdirs.remove("README.md")
+            except ValueError:
+                pass
+            # Wir gehen jetzt die einzelnen Unterordner von server/users durch, um die Nutzer
+            # einzurichten. Die Unterordner tragen praktischerweise die Namen der Nutzer.
+            for username in subdirs:
+                userpath = os.path.join(location, username)
+                with open(userpath + '/User_Info.json', 'r') as user_file:
+                    user_data = json.load(user_file)
+                user_data['User_Info']['path'] = userpath
+                userdict[username] = user_data['User_Info']
+                userlist.append(username)
+                # Wenn der Nutzer Telegram eingerichtet hat, auch noch diese Formalitäten erledigen
+                if not user_data['User_Info']['telegram_id'] == 0:
+                    telegram_id_table[user_data['User_Info']['telegram_id']] = username
+                    telegram_name_to_id_table[username] = user_data['User_Info']['telegram_id']
+                    telegram_id_to_name_table[int(user_data['User_Info']['telegram_id'])] = username
+                    userdict[username]['room'] = 'Telegram'
+                Log.write('INFO', 'Nutzer {} geladen'.format(username), show=True)
+
+            self.userlist = userlist
+            self.userdict = userdict
+            Local_storage['users'] = userdict
+            Local_storage['TIANE_telegram_allowed_id_table'] = telegram_id_table
+            Local_storage['TIANE_telegram_name_to_id_table'] = telegram_name_to_id_table
+            Local_storage['TIANE_telegram_id_to_name_table'] = telegram_id_to_name_table
 
     class TIANE:
         def __init__(self):
             self.Modules = Modules
+            self.Users = Users
             self.Log = Log
             self.Analyzer = Analyzer
             self.telegram = None
@@ -496,7 +545,7 @@ def runMain(commandMap=None, feedbackMap=None):
             self.telegram_queue_output = {}
 
             self.local_storage = Local_storage
-            self.userlist = Userlist
+            self.userlist = Users.userlist
             self.room_list = Room_list
             self.server_name = Server_name
             self.system_name = System_name
@@ -570,10 +619,10 @@ def runMain(commandMap=None, feedbackMap=None):
 
         def route_say(self, original_command, text, raum, user, output):
             text = self.speechVariation(text) # Danke, Leon :)
-            if self.presentation_mode and user in self.userlist:
+            if self.presentation_mode and user in self.Users.userlist:
                 output = 'speech'
             Log.write('DEBUG', {'Action':'route_say()', 'conv_id':original_command, 'text':text, 'raum':raum, 'user':user, 'output':output}, conv_id=original_command, show=False)
-            if ('telegram' in output.lower()) or (user not in self.userlist and user is not None):
+            if ('telegram' in output.lower()) or (user not in self.Users.userlist and user is not None):
                 if self.telegram is not None:
                     # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, an wen der Text gesendet werden soll. Einfach beenden.
                     if user == None or user == 'Unknown':
@@ -639,7 +688,7 @@ def runMain(commandMap=None, feedbackMap=None):
             # Tiane soll einem bestimmten user zuhören
             current_waiting_room = ('',None)
             if self.telegram is not None:
-                if telegram == True or user not in self.userlist:
+                if telegram == True or user not in self.Users.userlist:
                     # Dem Telegram-Thread Bescheid sagen, dass man auf eine Antwort wartet,
                     # aber erst, wenn kein anderer mehr wartet
                     while True:
@@ -1157,6 +1206,7 @@ def runMain(commandMap=None, feedbackMap=None):
 
     #################################################-MAIN-#################################################
     relPath = str(Path(__file__).parent) + "/"
+    absPath = os.path.dirname(os.path.abspath(__file__))
 
     Log = Logging()
 
@@ -1170,27 +1220,7 @@ def runMain(commandMap=None, feedbackMap=None):
     Local_storage = config_data['Local_storage']
     TNetwork_Key = base64.b64decode(config_data['TNetwork_Key'].encode('utf-8')) # sehr umständliche Decoder-Zeile. Leider nötig :(
 
-    # Nutzer seperat aus dem users-Ordner laden
-    Local_storage['users'] = {}
-    dirname = os.path.dirname(os.path.abspath(__file__))
-    Local_storage['TIANE_PATH'] = dirname
-    location = os.path.join(dirname, 'users')
-    subdirs = os.listdir(location)
-    try:
-        subdirs.remove("README.txt")
-        subdirs.remove("README.md")
-    except ValueError:
-        pass
-    for subdir in subdirs:
-        userpath = os.path.join(location, subdir)
-        with open(userpath + '/User_Info.json', 'r') as user_file:
-            user_data = json.load(user_file)
-        user_data['User_Info']['path'] = userpath
-        Local_storage['users'][subdir] = user_data['User_Info']
-    Userlist = []
-    for name in Local_storage['users'].keys():
-        Userlist.append(name)
-
+    Local_storage['TIANE_PATH'] = absPath
 
     # !!!!!!!!!!!!!!!!! ACHTUNG !!!!!!!!!!!!!!!!! #
     # Open_mode ist nur für Vorführungen und stellt ein enormes Sicherheitsrisiko dar,
@@ -1204,6 +1234,7 @@ def runMain(commandMap=None, feedbackMap=None):
 
     Room_list = []
 
+    Users = Users()
     Modules = Modules()
     Analyzer = Sentence_Analyzer(room_list=Room_list)
     Tiane = TIANE()
@@ -1225,22 +1256,6 @@ def runMain(commandMap=None, feedbackMap=None):
             tgt = Thread(target=Tiane.telegram_thread)
             tgt.daemon = True
             tgt.start()
-            # Alle Nutzer, für die Telegram eingerichtet ist, unter ihren IDs speichern, und umgekehrt
-            telegram_id_table = {}
-            telegram_name_to_id_table = {}
-            telegram_id_to_name_table = {}
-            for name, user in Local_storage['users'].items():
-                try:
-                    if not user['telegram_id'] == 0:
-                        telegram_id_table[user['telegram_id']] = name
-                        telegram_name_to_id_table[name] = user['telegram_id']
-                        telegram_id_to_name_table[int(user['telegram_id'])] = name
-                        Local_storage['users'][user['name']]['room'] = 'Telegram'
-                except KeyError:
-                    continue
-            Local_storage['TIANE_telegram_allowed_id_table'] = telegram_id_table
-            Local_storage['TIANE_telegram_name_to_id_table'] = telegram_name_to_id_table
-            Local_storage['TIANE_telegram_id_to_name_table'] = telegram_id_to_name_table
         Log.write('', '', show=True)
 
 
