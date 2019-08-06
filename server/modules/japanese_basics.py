@@ -56,8 +56,8 @@ def handle(text, tiane, profile):
                 if m[0] == '1':
                     m_a = 'shiuu '
                 else:
-                    m_a = zahlen[m[0]] + ' shiuu '
-                m_b = zahlen[m[1]]
+                    m_a = zahlen[int(m[0])] + ' shiuu '
+                m_b = zahlen[int(m[1])]
                 translation = 'iima wa ' + m_a + m_b + ' pünn des'
     tiane.say(translation)
 
@@ -66,3 +66,16 @@ def isValid(text):
     text = text.lower()
     if 'japanisch' in text or 'japan' in text:
         return True
+
+def main():
+    Tiane = TIANE()
+    handle('Uhrzeit auf japanisch', Tiane, {})
+
+class TIANE:
+    def __init__(self):
+        pass
+    def say(self, text):
+        print(text)
+
+if __name__ == '__main__':
+    main()
