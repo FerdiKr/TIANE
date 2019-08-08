@@ -41,7 +41,11 @@ def isValid(text):
 def handle(text, tiane, profile):
     text = text.lower()
     if 'wie' in text and 'heißt' in text and 'du' in text:
-        tiane.say('Ich heiße TIANE.')
+        sys_name = tiane.system_name
+        if sys_name == 'TIANE':
+            tiane.say('Ich heiße TIANE.')
+        else:
+            tiane.say('Ich heiße ' + sys_name + ', aber eigentlich bin ich TIANE.')
     elif ('wer' in text or 'was' in text) and 'bist' in text and 'du' in text:
         tiane.say('Ich bin TIANE, ein Open-Source-Sprachassistent!')
     elif ('woher' in text or 'bedeutet' in text or 'heißt' in text) and ' name' in text :
@@ -54,6 +58,8 @@ def handle(text, tiane, profile):
                   'Aber ich kann dir zum Beispiel das Wetter ansagen, ein paar allgemeine Wissensfragen beantworten '
                   'rechnen, würfeln und so weiter. '
                   'Und für alles weitere bist du gerne eingeladen, selbst auf in meinem GitHub-Repository aktiv zu werden!')
+        if tiane.telegram_call:
+            tiane.say('Hier der Link: https://github.com/FerdiKr/TIANE')
     elif '😂' in text or 'haha' in text:
         tiane.say('Warum lachst du? 😂')
         response = tiane.listen()
