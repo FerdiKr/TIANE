@@ -144,10 +144,12 @@ class Sentence_Analyzer:
         return town
 
     def get_room(self, text_split_lower):
-        rooms = [self.default_false]
+        rooms = []
         for room in self.room_list:
             if room.lower() in text_split_lower:
                 rooms.append(room)
+        if rooms == []:
+            rooms.append(self.default_false)
         return rooms[0], rooms
 
     def get_time_after_in(self, text_split_lower):
