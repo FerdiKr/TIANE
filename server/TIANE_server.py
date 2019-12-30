@@ -986,8 +986,6 @@ def runMain(commandMap=None, feedbackMap=None):
             listen_requests = []
             query_requests = []
 
-            distribute_dict = {}
-
             while True:
                 # SAY
                 # Neue Aufträge einholen
@@ -1076,22 +1074,15 @@ def runMain(commandMap=None, feedbackMap=None):
                 time.sleep(0.03)
 
         def send_update_information(self):
-            # Verteilt die in keys_to_distribute festgelegten Daten aus dem Local_storage an die Räume,
-            # aber nur, wenn sich diese gegenüber dem letzten Aufruf tatsächlich verändert haben, um
-            # Ressourcen zu schonen.
+            # Verteilt die in keys_to_distribute festgelegten Daten aus dem Local_storage an die Räume
             information_dict = {}
             for key in Tiane.local_storage['keys_to_distribute']:
                 if not key in Tiane.local_storage.keys():
                     Log.write('WARNING', 'Der Schlüssel {} ist in local_storage nicht vorhanden und kann daher nicht an die Räume verteilt werden!'.format(key), show=True)
                     Tiane.local_storage['keys_to_distribute'].remove(key)
                     continue
-                if key in self.distribute_dict.keys():
-                    if self.distribute_dict[key] == Tiane.local_storage[key]:
-                        continue
                 information_dict[key] = Tiane.local_storage[key]
-                self.distribute_dict[key] = Tiane.local_storage[key]
-            if not information_dict == {}:
-                self.Clientconnection.send({'TIANE_server_info':information_dict})
+            self.Clientconnection.send({'TIANE_server_info':information_dict})
 
         def thread_say(self, request):
             Tiane.route_say(request['original_command'],request['text'],request['room'],request['user'], request['output'])
