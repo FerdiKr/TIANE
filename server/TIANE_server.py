@@ -246,7 +246,6 @@ def runMain(commandMap=None, feedbackMap=None):
             # Startet den Thread, in dem die continuous_modules ausgeführt werden (siehe unten).
             Log.write('', '---- STARTE MODULE... ----', show=True)
             self.continuous_threads_running = 0
-            Local_storage['module_counter'] = {}
             no_modules = True
             if not self.common_continuous_modules == []:
                 no_modules = False
@@ -285,7 +284,6 @@ def runMain(commandMap=None, feedbackMap=None):
                 except:
                     #traceback.print_exc()
                     continue
-            Local_storage['module_counter'][user] = 0
             while True:
                 for module in modules:
                     # Continuous_modules können ein Zeitintervall definieren, in dem sie gerne
@@ -294,7 +292,6 @@ def runMain(commandMap=None, feedbackMap=None):
                         Tiane.continuous_modules[user][module.__name__].last_call = time.time()
                         try:
                             module.run(Tiane.continuous_modules[user][module.__name__], Tiane.local_storage)
-                            Tiane.continuous_modules[user][module.__name__].counter += 1
                         except:
                             traceback.print_exc()
                             Log.write('ERROR', 'Runtime-Error in Continuous-Module {} (Nutzer "{}"). Das Modul wird nicht mehr ausgeführt.\n'.format(module.__name__, user), show=True)
@@ -302,7 +299,6 @@ def runMain(commandMap=None, feedbackMap=None):
                             modules.remove(module)
                 if self.continuous_stopped:
                     break
-                Local_storage['module_counter'][user] += 1
                 updateFeedback()  # injected update-local-storage-to-mmap-function
                 time.sleep(0.01)
             self.continuous_threads_running -= 1
