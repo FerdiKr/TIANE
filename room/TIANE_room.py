@@ -144,6 +144,7 @@ class Modules:
         finally:
             del Tiane.active_modules[str(text)]
             Tiane.Conversation.end(str(text))
+            Tiane.request_end_Conversation(str(text))
             Tiane.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--Modul {} ({}) beendet--'.format(module.__name__, Tiane.room_name), 'info':None, 'conv_id':str(text), 'show':True}]})
             return
 
