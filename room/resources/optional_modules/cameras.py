@@ -33,7 +33,7 @@ def run(tiane, profile):
     for camname, cam in profile['TIANE_CAMS'].items():
         if cam[1]:
             # Ist eine PiCam, die sind einfacher zu handlen
-            camsandframes.append(cam[0].read(), camname)
+            camsandframes.append((cam[0].read(), camname))
         else:
             # Webcams bekommen optimalerweise einen zusätzlichen Schritt
             '''if cam[0].grabbed:
