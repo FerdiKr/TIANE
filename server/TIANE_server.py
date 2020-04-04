@@ -11,6 +11,8 @@ import json
 import os
 from pathlib import Path
 import pickle
+from urllib.request import urlopen, Request
+import urllib.parse
 
 def runMain(commandMap=None, feedbackMap=None):
     class Modules:
@@ -438,6 +440,9 @@ def runMain(commandMap=None, feedbackMap=None):
                 user = self.user
             return Tiane.start_module(user, name, text, room)
 
+        def translate(self, ttext, targetLang='de'):
+            return Tiane.translate(ttext, targetLang)
+
 
     class Modulewrapper_continuous:
         # Dieselbe Klasse für continuous_modules. Die Besonderheit: Die say- und listen-Funktionen
@@ -841,6 +846,17 @@ def runMain(commandMap=None, feedbackMap=None):
         def end_Conversation(self,original_command):
             for room in self.rooms.values():
                 room.request_end_Conversation(original_command)
+
+        def translate(self, text, targetLang='de'):
+            try:
+                request = Request(
+                'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + urllib.parse.quote(targetLang) + '&dt=t&q=' + urllib.parse.quote(
+                     text))
+                response = urlopen(request)
+                answer = json.loads(response.read())
+                return answer[0][0][0]
+            except:
+                return text
 
     class Logging:
         def __init__(self):

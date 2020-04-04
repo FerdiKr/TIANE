@@ -33,5 +33,6 @@ def handle(text, tiane, profile):
              'Warum verwechseln Informatiker Halloween und Weihnachten? oct(31)=dec(25)',
              '1337*Pi/100 = 42',
              'Was macht eine Ente auf dem Router? NAT NAT NAT NAT NAT!',
-             'HTML ist eine ernstzunehmende Programmiersprache.']
+             'HTML ist eine ernstzunehmende Programmiersprache.',
+             'Was haben Windows und ein U-Boot gemeinsam? Kaum macht man ein Fenster auf, gehen die Probleme los.']
     tiane.say(random.choice(jokes))

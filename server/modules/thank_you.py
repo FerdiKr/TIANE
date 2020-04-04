@@ -1,4 +1,4 @@
-PRIORITY = -1
+PRIORITY = -2
 
 def isValid(text):
     text = text.lower()

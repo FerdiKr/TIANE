@@ -81,7 +81,7 @@ def handle(text, tiane, profile):
             if len(antwort.split()) == 1:
                 o = antwort
             elif 'hier' in antwort or 'zu hause' in antwort:
-                o = 'weitersburg'
+                o = tiane.local_storage['home_location'].lower()
             else:
                 sonst = 'der dem den einer'
                 satz = {}
@@ -112,7 +112,7 @@ def handle(text, tiane, profile):
     else:
         o = o
     ort = o.lower()
-    web = 'http://api.openweathermap.org/data/2.5/forecast?q=' + ort + '&appid=bd4d17c6eedcff6efc70b9cefda99082'
+    web = 'http://api.openweathermap.org/data/2.5/forecast?q=' + urllib.parse.quote(ort) + '&appid=bd4d17c6eedcff6efc70b9cefda99082'
     request = Request(web)
     try:
         response = urlopen(request)
