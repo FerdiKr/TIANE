@@ -150,7 +150,7 @@ class Sentence_Analyzer:
                 rooms.append(room)
         return rooms[0], rooms
 
-    def get_time_after_in(self, text_split_lower):
+    def get_time_after_in(self, text_split_lower, keyword = 'in'):
         add_times = []
         offset = 0
         time_amount = None
@@ -158,7 +158,7 @@ class Sentence_Analyzer:
         try:
             while True:
                 # Sucht das nächste "in" im Text
-                in_index = text_split_lower[offset:].index('in')
+                in_index = text_split_lower[offset:].index(keyword)
                 try:
                     # Versucht, die Zeit inkl. Einheit zu extrahieren
                     time_amount = text_split_lower[offset:][in_index+1]
@@ -243,6 +243,14 @@ class Sentence_Analyzer:
         except IndexError:
             pass
         return offset, add_times
+
+    def get_time_after_vor(self, text_split_lower):
+        times = self.get_time_after_in(text_split_lower, keyword='vor')
+        new_times = []
+        for value, unit in times:
+            new_times.append((-value, unit))
+        return new_times
+
 
     def get_time_after_um(self, text_split_lower):
         set_hours = None
@@ -382,6 +390,8 @@ class Sentence_Analyzer:
         return set_hours, set_minutes, daytime
 
     def get_time_after_am(self, text_split_lower):
+        match_list = ['am', 'vom', 'für den']
+
         set_month = None
         set_day = None
         set_year = None
@@ -390,7 +400,17 @@ class Sentence_Analyzer:
         try:
             while set_month is None and set_day is None and set_weekday is None:
                 # Sucht das nächste "am" im Text
-                am_index = text_split_lower[offset:].index('am')
+                am_index = -1
+                for match in match_list:
+                    try:
+                        new_index = text_split_lower[offset:].index(match)
+                        if am_index < 0 or new_index < am_index:
+                            am_index = new_index
+                    except ValueError:
+                        '''Ignorieren'''
+
+                if (am_index < 0):
+                    raise ValueError #Schleife beenden.
 
                 # Fall 1: "Am 23.""
                 try:
@@ -528,6 +548,10 @@ class Sentence_Analyzer:
             add_times.append((1, 'days'))
         if 'übermorgen' in text_split_lower:
             add_times.append((2, 'days'))
+        if 'gestern' in text_split_lower:
+            add_times.append((-1, 'days'))
+        if 'vorgestern' in text_split_lower:
+            add_times.append((-2, 'days'))
         return add_times
 
     def zeit_setzen(self, start_time, microsecond=None, second=None, minute=None, hour=None, day=None, month=None, year=None):
@@ -596,6 +620,8 @@ class Sentence_Analyzer:
         set_weekday = set_weekday if set_weekday is not None else set_weekday_2
 
         for add_time in self.get_time_after_in(text_split_lower):
+            add_times.append(add_time)
+        for add_time in self.get_time_after_vor(text_split_lower):
             add_times.append(add_time)
         for add_time in self.get_other_relative_times(text_split_lower):
             add_times.append(add_time)

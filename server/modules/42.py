@@ -1,6 +1,8 @@
+PRIORITY = -1
+
 def isValid(text):
     text = text.lower()
-    if 'was' in text and 'antwort' in text:
+    if ('was' in text or 'wie' in text) and 'die antwort' in text:
         return True
     else:
         return False

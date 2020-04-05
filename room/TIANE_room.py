@@ -12,6 +12,9 @@ import json
 import time
 import sys
 import os
+from urllib.request import urlopen, Request
+import urllib.parse
+
 
 class Modules:
     def __init__(self):
@@ -465,6 +468,17 @@ class TIANE:
         self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--{}--@{} ({}): {}'.format(self.system_name.upper(),user,self.room_name,text), 'info':None, 'conv_id':original_command, 'show':True}]})
         self.Audio_Output.say(text)
 
+    def translate(self, text, targetLang='de'):
+        try:
+            request = Request(
+            'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + urllib.parse.quote(targetLang) + '&dt=t&q=' + urllib.parse.quote(
+                 text))
+            response = urlopen(request)
+            answer = json.loads(response.read())
+            return answer[0][0][0]
+        except:
+            return text
+
 class Modulewrapper:
     # Diese Klasse ist wichtig: Module bekommen sie anstelle einer "echten" Tiane-Instanz
     # vorgesetzt. Denn es gibt nur eine Tiane-Instanz, um von dort aus alles regeln zu
@@ -593,6 +607,9 @@ class Modulewrapper_continuous:
 
     def start_module_and_confirm(self, user=None, name=None, text=None):
         return Tiane.start_module(user, name, text)
+
+    def translate(self, ttext, targetLang='de'):
+        return Tiane.translate(ttext, targetLang)
 
 class Conversation:
     # Anders als man denken könnte, wird das hier nicht wie ein Objekt mehrmals initialisiert

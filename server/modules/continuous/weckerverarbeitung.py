@@ -10,10 +10,23 @@ def run(tiane, profile):
             benutzer = item['Benutzer']
             zeit = item['Zeit']
             '''zeit = datetime.datetime.strptime(zeit, '%Y-%m-%d %H:%M:%S.%f')'''
-            ausgabe = 'Guten Morgen {}. Ich hoffe, du hast gut geschlafen'.format(benutzer)
             differenz = zeit - now
-            dic = {'Benutzer': benutzer, 'Text': ausgabe}
             if differenz.total_seconds() <= 0:
+
+                ausgabe = 'Guten Morgen {}. Ich hoffe, du hast gut geschlafen'.format(benutzer)
+                try:
+                    geburtsdatum = tiane.local_storage['users'][tiane.user]['date_of_birth']
+                    month = int(geburtsdatum['month'])
+                    day = int(geburtsdatum['day'])
+                    now = datetime.datetime.now()
+                    if now.month == month and now.day == day:
+                        ausgabe = 'Herzlichen Glückwunsch zum Geburtstag {}. Ich hoffe, du hast einen großartigen Tag.'.format(
+                            benutzer)
+                except KeyError:
+                    '''Do nothing'''
+
+                dic = {'Benutzer': benutzer, 'Text': ausgabe}
+
                 tiane.start_module(user=benutzer, name='weckerausgabe', text=dic)
                 erinnerungen.remove(item)
                 tiane.local_storage['Wecker'] = erinnerungen

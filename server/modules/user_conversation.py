@@ -31,7 +31,7 @@ def get_inhalt(txt, tiane):
     if sag_ind != 500:
         nutzer = satz.get(sag_ind + 1)
         vorhandene_nutzer = tiane.local_storage.get('users')
-        vn = ''
+        vn = 'allen'
         for nr in vorhandene_nutzer.keys():
             vn = vn + nr
         vn = vn.lower()
@@ -92,7 +92,13 @@ def get_aufruf(text, tiane):
     inhalt = inhalt.replace(' er ', ' du ')
     inhalt = inhalt.replace(' sie ', ' du ')
     nutzer = i_und_n[1]
-    aufruf = nutzer + ', ' + tiane.user + ' möchte dir sagen, dass ' + inhalt
+
+    nutzer_str = ''
+    anrede_wort = 'euch'
+    if nutzer.lower() != 'allen':
+        nutzer_str = nutzer + ', '
+        anrede_wort = 'dir'
+    aufruf = nutzer_str + tiane.user + ' möchte ' + anrede_wort + ' sagen, dass ' + inhalt
     x = aufruf[-1:]
     if x == ' ':
         aufruf = aufruf[:-1]
@@ -129,7 +135,11 @@ def handle(text, tiane, profile):
         i_und_n = get_inhalt(text, tiane)
         nutzer = i_und_n[1]
         tiane.say(antwort, user = tiane.user)
-        tiane.say(aufruf, user = nutzer)
+        if (nutzer.lower() == 'allen'):
+            for nn in tiane.local_storage['users'].keys():
+                tiane.say(aufruf, user = nn)
+        else:
+            tiane.say(aufruf, user = nutzer)
         '''neuertext = tiane.listen(user = nutzer)
         if neuertext != 'TIMEOUT_OR_INVALID':
             if 'wo ist ' in neuertext.lower() and tiane.user in neuertext:
