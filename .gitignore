@@ -4,9 +4,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-# Ignore Gradle project-specific cache directory
 java/.gradle
-
-# Ignore Gradle build output directory
 java/build
+java/jiane.jar
+java/jiane.so
