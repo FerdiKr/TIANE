@@ -3,30 +3,66 @@
 #
 # Do not make changes to this file unless you know what you are doing--modify
 # the SWIG interface file instead.
-
-
-
-
+#
+# Nevertheless changes were made to this file.
 
 from sys import version_info as _swig_python_version_info
+import os.path
+import platform
+import inspect
+
+def _get_lib_path(dfl_arch = 'arm', dfl_os = 'lin', dfl_bits = '32'):
+    target_arch = dfl_arch
+    target_os = dfl_os
+    target_bits = dfl_bits
+
+    bits, linkage = platform.architecture()
+    bits = bits.lower()
+    arch = platform.machine().lower()
+    system_os = platform.system().lower()
+
+    if ('arm' in arch):
+        target_arch = 'arm'
+    elif ('86' in arch):
+        target_arch = 'x86'
+
+    if ('ix' in system_os or 'ux' in system_os):
+        target_os = 'lin'
+    elif ('mac' in system_os or 'osx' in system_os):
+        target_os = 'mac'
+
+    if ("32" in bits):
+        target_bits = '32'
+    elif ('64' in bits):
+        target_bits = '64'
+
+    target = target_arch + '_' + target_os + '_' + target_bits
+
+    if (os.path.exists(os.path.join(os.path.dirname(os.path.abspath(inspect.getframeinfo(inspect.currentframe()).filename)), target))):
+        return target
+    print('ERROR: Snowboy not found for current installation: \'' + target + '\' Returning default.')
+    print('  You could build _snowboydetect.so yourself. A detailed guide can be found in the repository root.')
+    return dfl_arch + '_' + dfl_os + '_' + dfl_bits
+
 if _swig_python_version_info >= (2, 7, 0):
     def swig_import_helper():
         import importlib
         pkg = __name__.rpartition('.')[0]
-        mname = '.'.join((pkg, '_snowboydetect')).lstrip('.')
+        mname = '.'.join((pkg, _get_lib_path(), '_snowboydetect')).lstrip('.')
         try:
             return importlib.import_module(mname)
         except ImportError:
-            return importlib.import_module('_snowboydetect')
+            return importlib.import_module(_get_lib_path() + '._snowboydetect')
     _snowboydetect = swig_import_helper()
     del swig_import_helper
 elif _swig_python_version_info >= (2, 6, 0):
     def swig_import_helper():
         from os.path import dirname
+        from os.path import join
         import imp
         fp = None
         try:
-            fp, pathname, description = imp.find_module('_snowboydetect', [dirname(__file__)])
+            fp, pathname, description = imp.find_module('_snowboydetect', [join(dirname(__file__), _get_lib_path())])
         except ImportError:
             import _snowboydetect
             return _snowboydetect
@@ -39,7 +75,8 @@ elif _swig_python_version_info >= (2, 6, 0):
     _snowboydetect = swig_import_helper()
     del swig_import_helper
 else:
-    import _snowboydetect
+    # This will still just work on ARM-LIN-32 like before ... But tiane is running python3 anyways
+    import arm_lin_32._snowboydetect as _snowboydetect
 del _swig_python_version_info
 try:
     _swig_property = property
