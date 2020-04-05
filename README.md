@@ -1,3 +1,5 @@
+Dieser Branch soll die Möglichkeit geben server module in Java zu programmieren.
+
 # TIANE
 TIANE - an open smart-home-speech-assistant!
 
