@@ -6,5 +6,5 @@ __pycache__/
 *.so
 java/.gradle
 java/build
-java/jiane.jar
-java/jiane.so
+server/jiane.jar
+server/jiane.so

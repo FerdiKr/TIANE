@@ -9,8 +9,10 @@ import base64
 import time
 import json
 import os
+import sys
 from pathlib import Path
 import pickle
+import pyjiane
 
 def runMain(commandMap=None, feedbackMap=None):
     class Modules:
@@ -1191,7 +1193,15 @@ def runMain(commandMap=None, feedbackMap=None):
             time.sleep(0.25)
             # TODO: check command-mmap and execute corresponding commands
 
-    #################################################-MAIN-#################################################
+    #################################################-MAIN-################################################
+    java_start = False
+    if len(sys.argv) > 0 and sys.argv[1].lower() == 'jni':
+        java_start = True
+        print('TIANE was started from java.')
+
+    if (java_start):
+        pyjiane.javaPrint("Hello Java from Python!!!")
+
     relPath = str(Path(__file__).parent) + "/"
     absPath = os.path.dirname(os.path.abspath(__file__))
 
