@@ -18,11 +18,11 @@ sourceSets {
     test.java.srcDirs = []
     test.resources.srcDirs = []
 
-    headers.java.srcDirs = ['src/headers']
-    headers.resources.srcDirs = []
+    headers.java.srcDirs = []
+    headers.resources.srcDirs = ['src/headers']
 
-    c.java.srcDirs = ['src/c']
-    c.resources.srcDirs = []
+    c.java.srcDirs = []
+    c.resources.srcDirs = ['src/c']
 }
 
 final ConfigObject cfg = file('build.properties').withReader { def p = new Properties(); p.load(it); return (new ConfigSlurper().parse(p)) }
@@ -36,22 +36,46 @@ dependencies {
 }
 
 compileJava {
-    outputs.files sourceSets.headers.java
+    outputs.files sourceSets.headers.resources
 
-    options.compilerArgs += ['-h', sourceSets.headers.java.srcDirs.iterator().next().toPath().toAbsolutePath().normalize().toString()]
+    options.compilerArgs += ['-h', sourceSets.headers.resources.srcDirs.iterator().next().toPath().resolve('java').toAbsolutePath().normalize().toString()]
+
+    doFirst {
+        sourceSets.headers.resources.srcDirs.iterator().forEachRemaining{f -> if (Files.exists(f.toPath().resolve('java')))
+        {}//Files.walk(f.toPath().resolve('java')).filter{p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".h")}.forEach{p -> Files.delete(p)}
+        else
+            Files.createDirectories(f.toPath().resolve('java'))
+        }
+    }
 }
 
 jar {
     archivesBaseName = 'jiane'
 
     configurations.shade.each { dep -> from(project.zipTree(dep)) { exclude 'META-INF', 'META-INF/**' } }
+
+    if (!cfg.mainClass.isEmpty()) {
+        manifest {
+            attributes 'Main-Class': cfg.mainClass
+        }
+    }
 }
+
+task setPythonVersion {
+
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        Files.write(file('src/resources/tiane/java/COMPILED_PYTHON').toPath(), Collections.singletonList(cfg.pythonLibrary))
+    }
+}
+processResources.dependsOn setPythonVersion
 
 task compileGcc {
     dependsOn compileJava
 
-    inputs.files sourceSets.headers.java
-    inputs.files sourceSets.c.java
+    inputs.files sourceSets.headers.resources
+    inputs.files sourceSets.c.resources
 
     outputs.files fileTree('build/gcc/compile')
 
@@ -60,14 +84,16 @@ task compileGcc {
 
         file('build/gcc/compile').mkdirs()
 
-        sourceSets.c.java.srcDirs.stream().map{f -> f.toPath()}.forEach{ppath -> Files.walk(ppath).filter{pp -> Files.isRegularFile(pp)}.filter{pp -> pp.getFileName().toString().matches('^.*?\\.c(c|pp)?$')}.forEach{pp ->
-            StringBuilder args = new StringBuilder(cfg.gccExecutable).append(' -fPIC')
+        String headerArgs = getHeaders(sourceSets.headers, cfg.headers)
+
+        sourceSets.c.resources.srcDirs.stream().map{f -> f.toPath()}.forEach{ppath -> Files.walk(ppath).filter{pp -> Files.isRegularFile(pp)}.filter{pp -> pp.getFileName().toString().matches('^.*?\\.c(c|pp)?$')}.forEach{pp ->
+            StringBuilder args = new StringBuilder(cfg.gccExecutable).append(' -fPIC').append(headerArgs)
             java.nio.file.Path parentPath = file('build/gcc/compile').toPath().resolve(ppath.relativize(pp)).getParent()
             Files.createDirectories(parentPath)
             args.append(' -o').append(parentPath.resolve(pp.getFileName().toString().substring(0, pp.getFileName().toString().lastIndexOf('.')) + '.o').toAbsolutePath().normalize().toString())
             args.append(' -c ').append(pp.toAbsolutePath().normalize().toString())
 
-            println(args)
+            //println(args)
             Process process = Runtime.getRuntime().exec(args.toString())
             process.inputStream.newReader().eachLine { line -> System.out.println(line) }
             process.errorStream.newReader().eachLine { line -> System.err.println(line) }
@@ -92,18 +118,7 @@ task linkGcc {
     doLast {
         file('build/gcc/shared').mkdirs()
 
-        StringBuilder headers = new StringBuilder()
-        sourceSets.headers.java.iterator().forEachRemaining{f -> headers.append(' -I').append(f.toPath().toAbsolutePath().normalize().toString())}
-        if (System.properties.'java.home' == null)
-            throw new IllegalStateException('java.home is not set.')
-        java.nio.file.Path javaHome = Paths.get(System.properties.'java.home'.toString())
-        if (javaHome.getFileName().toString().equalsIgnoreCase('jre'))
-            javaHome = javaHome.getParent()
-        if (!Files.exists(javaHome) || !Files.isDirectory(javaHome))
-            throw new IllegalStateException('java.home was not found: \'' + javaHome.toAbsolutePath().normalize().toString() + '\'')
-        Files.walk(javaHome.resolve('include')).filter{p-> Files.isDirectory(p)}.forEach{p -> headers.append(' -I').append(p.toAbsolutePath().normalize().toString())}
-        (cfg.headers as String).split(':').iterator().forEachRemaining{s -> if (!s.isEmpty()) headers.append(' -I').append(s)}
-        String headerArgs = headers.toString()
+        String headerArgs = getHeaders(sourceSets.headers, cfg.headers)
 
         StringBuilder args = new StringBuilder(cfg.gccExecutable).append(' -fPIC -shared').append(headerArgs).append(' -o').append(file('build/gcc/shared/jiane.so').toPath().toAbsolutePath().normalize().toString())
 
@@ -113,8 +128,17 @@ task linkGcc {
             hasInput = true
         }
 
+        (cfg.libraryPath as String).split(':').iterator().forEachRemaining{s -> if (!s.isEmpty()) args.append(' -Wl,-L').append(s)}
+
+        args.append(' -Wl,-l').append(cfg.pythonLibrary)
+
+        cfg.libraries.split(':').iterator().forEachRemaining{s -> if (!s.isEmpty()) args.append(' -Wl,-l').append(s)}
+
+
+        args.append(' -Wl,-no-undefined')
+
         if (hasInput) {
-            println(args)
+            //println(args)
             Process process = Runtime.getRuntime().exec(args.toString())
             process.inputStream.newReader().eachLine { line -> System.out.println(line) }
             process.errorStream.newReader().eachLine { line -> System.err.println(line) }
@@ -129,13 +153,30 @@ build {
 
     dependsOn linkGcc
 
+    outputs.upToDateWhen { false }
+
     doLast {
-        Files.deleteIfExists(file('jiane.so').toPath())
-        Files.deleteIfExists(file('jiane.jar').toPath())
+        Files.deleteIfExists(file('.').toPath().resolve("../server/jiane.so"))
+        Files.deleteIfExists(file('.').toPath().resolve("../server/jiane.jar"))
 
         if (Files.exists(file('build/gcc/shared/jiane.so').toPath()))
-            Files.copy(file('build/gcc/shared/jiane.so').toPath(), file('jiane.so').toPath())
+            Files.copy(file('build/gcc/shared/jiane.so').toPath(), file('.').toPath().resolve("../server/jiane.so"))
         if (Files.exists(file('build/libs/jiane.jar').toPath()))
-            Files.copy(file('build/libs/jiane.jar').toPath(), file('jiane.jar').toPath())
+            Files.copy(file('build/libs/jiane.jar').toPath(), file('.').toPath().resolve("../server/jiane.jar"))
     }
+}
+
+private static String getHeaders(SourceSet srcHeaders, String additionalHeaders) {
+    StringBuilder headers = new StringBuilder()
+    srcHeaders.resources.srcDirs.iterator().forEachRemaining{f -> Files.walk(f.toPath()).filter{p -> Files.isDirectory(p)}.forEach{p -> headers.append(' -I').append(p.toAbsolutePath().normalize().toString())}}
+    if (System.properties.'java.home' == null)
+        throw new IllegalStateException('java.home is not set.')
+    java.nio.file.Path javaHome = Paths.get(System.properties.'java.home'.toString())
+    if (javaHome.getFileName().toString().equalsIgnoreCase('jre'))
+        javaHome = javaHome.getParent()
+    if (!Files.exists(javaHome) || !Files.isDirectory(javaHome))
+        throw new IllegalStateException('java.home was not found: \'' + javaHome.toAbsolutePath().normalize().toString() + '\'')
+    Files.walk(javaHome.resolve('include')).filter{p-> Files.isDirectory(p)}.forEach{p -> headers.append(' -I').append(p.toAbsolutePath().normalize().toString())}
+    additionalHeaders.split(':').iterator().forEachRemaining{s -> if (!s.isEmpty()) headers.append(' -I').append(s)}
+    return headers.toString()
 }
