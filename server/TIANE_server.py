@@ -15,6 +15,7 @@ import pickle
 from urllib.request import urlopen, Request
 import urllib.parse
 import pyjiane
+import pyjiane
 
 def runMain(commandMap=None, feedbackMap=None):
     class Modules:
