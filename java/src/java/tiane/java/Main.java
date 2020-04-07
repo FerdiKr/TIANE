@@ -57,7 +57,7 @@ public class Main {
             if (lib.found()) {
                 try {
                     System.load(lib.path().toAbsolutePath().normalize().toString());
-                    System.out.println("Bibliothek geladen: " + lib.name());
+                    System.out.println("Bibliothek geladen - " + lib.name() + ": " + lib.path());
                 } catch (UnsatisfiedLinkError e) {
                     System.err.println("Konnte Bibliothek '" + lib.name() + "' nicht laden: " + e.getMessage());
                     System.exit(1);
@@ -68,7 +68,7 @@ public class Main {
             }
         }
 
-        System.load("/usr/lib/x86_64-linux-gnu/libpython3.6m.so");
+        //System.load("/usr/lib/x86_64-linux-gnu/libpython3.6m.so");
         //System.load("/usr/lib/python3/dist-packages/Crypto/Cipher/_AES.cpython-36m-x86_64-linux-gnu.so");
 
         System.out.println("TIANE wird gestartet...");

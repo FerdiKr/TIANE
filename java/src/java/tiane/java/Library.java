@@ -54,11 +54,7 @@ public final class Library {
     public static Queue<Library> getLibraries() {
         Queue<Library> libs = new LinkedList<>();
 
-        String name = System.getProperty("os.name").toLowerCase();
-        if (name.contains("ix") || name.contains("nux")) {
-            libs.add(new Library(Main.pycompile(), locateOne("lib" + Main.pycompile(), Pattern.compile("^/usr(/local)?/lib/.*?lib" + Main.pycompile() + ".*?\\.so$"))));
-        }
-
+        libs.add(new Library(Main.pycompile(), locateOne("lib" + Main.pycompile(), Pattern.compile("^/usr(/local)?/lib/.*?lib" + Main.pycompile() + ".*?\\.so$"))));
         libs.add(new Library("jiane", Main.path().resolve("server").resolve("jiane.so")));
 
         return libs;

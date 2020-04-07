@@ -14,8 +14,7 @@ from pathlib import Path
 import pickle
 from urllib.request import urlopen, Request
 import urllib.parse
-import pyjiane
-import pyjiane
+import pyjiane as jiane
 
 def runMain(commandMap=None, feedbackMap=None):
     class Modules:
@@ -33,11 +32,17 @@ def runMain(commandMap=None, feedbackMap=None):
         def load_modules(self):
             self.modules_defined_vocabulary = []
             Log.write('', '----- COMMON_MODULES -----', show=True)
-            self.common_modules = self.get_modules('modules')
+
+            self.common_modules = self.get_modules('modules') + jiane.loadModules('modules')
+            self.common_modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY') else 0, reverse=True)
+
             if self.common_modules == []:
                 Log.write('INFO', '-- (Keine vorhanden)', show=True)
             Log.write('', '------ CONTINUOUS', show=True)
-            self.common_continuous_modules = self.get_modules('modules/continuous',continuous=True)
+
+            self.common_continuous_modules = self.get_modules('modules/continuous',continuous=True) + jiane.loadModulesContinuous('modules')
+            self.common_continuous_modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY') else 0, reverse=True)
+
             if self.common_continuous_modules == []:
                 Log.write('INFO', '-- (Keine vorhanden)', show=True)
 
@@ -1215,9 +1220,6 @@ def runMain(commandMap=None, feedbackMap=None):
     if len(sys.argv) > 0 and sys.argv[1].lower() == 'jni':
         java_start = True
         print('TIANE was started from java.')
-
-    if (java_start):
-        pyjiane.javaPrint("Hello Java from Python!!!")
 
     relPath = str(Path(__file__).parent) + "/"
     absPath = os.path.dirname(os.path.abspath(__file__))

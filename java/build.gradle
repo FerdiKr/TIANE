@@ -166,6 +166,43 @@ build {
     }
 }
 
+task genCMakeList() {
+
+    doLast {
+        BufferedWriter w = Files.newBufferedWriter(file('.').toPath().resolve('CMakeLists.txt'))
+        w.write("cmake_minimum_required(VERSION 3.13)\n")
+        w.write("project(jiane)\n")
+        w.write("set(CMAKE_CXX_STANDARD 14)\n")
+
+        sourceSets.c.resources.srcDirs.stream().map{f -> f.toPath()}.forEach{ppath -> Files.walk(ppath).filter{p -> Files.isRegularFile(p) && p.getFileName().toString().matches('^.*?\\.c(c|pp)?$')}.forEach{p ->
+            w.write("set(SOURCE_FILES ${p.toAbsolutePath().normalize().toString()})\n")
+        }}
+
+        String headerArgs = getHeaders(sourceSets.headers, cfg.headers)
+        for (String str : headerArgs.split(' ')) {
+            if (!str.isEmpty())
+                w.write("include_directories(${str.substring(2)})\n")
+        }
+
+        (cfg.libraryPath as String).split(':').iterator().forEachRemaining{s -> if (!s.isEmpty())
+            w.write("link_directories(${Paths.get(s).toAbsolutePath().normalize().toString()})\n")
+        }
+
+        StringBuilder sb = new StringBuilder('add_library(jiane SHARED')
+        sourceSets.c.resources.srcDirs.stream().map{f -> f.toPath()}.forEach{ppath -> Files.walk(ppath).filter{p -> Files.isRegularFile(p) && p.getFileName().toString().matches('^.*?\\.c(c|pp)?$')}.forEach{p ->
+            sb.append(' ').append(p.toAbsolutePath().normalize().toString())
+        }}
+        w.write(sb.append(')\n').toString())
+
+        w.write("target_link_libraries(jiane ${cfg.pythonLibrary})\n")
+        cfg.libraries.split(':').iterator().forEachRemaining{s -> if (!s.isEmpty())
+            w.write("target_link_libraries(jiane ${s})\n")
+        }
+
+        w.close()
+    }
+}
+
 private static String getHeaders(SourceSet srcHeaders, String additionalHeaders) {
     StringBuilder headers = new StringBuilder()
     srcHeaders.resources.srcDirs.iterator().forEachRemaining{f -> Files.walk(f.toPath()).filter{p -> Files.isDirectory(p)}.forEach{p -> headers.append(' -I').append(p.toAbsolutePath().normalize().toString())}}
