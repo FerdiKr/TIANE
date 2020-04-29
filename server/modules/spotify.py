@@ -35,6 +35,21 @@ def handle(text, tiane, profile):
     access_token = json.loads(open(cachepath, "r").readlines()[0])["access_token"]
     sp = spotipy.Spotify(auth=access_token)
 
+    # prüfen, ob ein Gerät aktiv ist
+    devices = sp.devices()["devices"]
+    devicesCount = len(devices)
+
+    activeDevice = False
+
+    for i in range(devicesCount):
+        if devices[i]["is_active"]:
+            activeDevice = True
+            break
+
+    if not activeDevice:
+        tiane.say("Bitte starte Spotify auf deinem Gerät")
+        return
+
     # Steuerbefehle ausführen
     if ("play" in text and "playlist" not in text) or "fortsetzen" in text or "pause" in text:
         # kontrolliere start / stop

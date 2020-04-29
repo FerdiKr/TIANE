@@ -12,4 +12,11 @@
   * Stelle sicher, dass die Datei `spotify-auth` in diesem Ordner liegt.
 
 #### FERTIG
-Du kannst nun die Wiedergabe steuern sowie Lieder und Playlists abspielen. Beachte jedoch, dass bereits ein Abspielgerät aktiv ist.
+Du kannst nun die Wiedergabe steuern sowie Lieder und Playlists abspielen.
+
+**Beachte jedoch, dass bereits ein Abspielgerät aktiv ist**. Ansonsten gibt TIANE einen entsprechenden Hinweis aus.
+
+## Raspberry Pi als Spotify Client
+Du kannst Spotify auch auf einem Raspberry Pi nutzen, der als TIANE-Raumclient fungiert.
+Installiere dazu _raspotify_ mit `curl -sL https://dtcooper.github.io/raspotify/install.sh | sh` nach [dieser](https://github.com/dtcooper/raspotify) Anleitung.
+Nun kannst du den Client in der Spotify-App auswählen und anschließend TIANE zur Steuerung nutzen.
