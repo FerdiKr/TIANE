@@ -247,8 +247,10 @@ def runMain(commandMap=None, feedbackMap=None):
                 Log.write('ERROR', 'Runtime-Error in Modul {}. Das Modul wurde beendet.\n'.format(module.__name__), show=True)
                 Tiane.active_modules[str(text)].say('Entschuldige, es gab ein Problem mit dem Modul {}.'.format(module.__name__))
             finally:
-
-                del Tiane.active_modules[str(text)]
+                try:
+                    del Tiane.active_modules[str(text)]
+                except KeyError:
+                    pass
                 Tiane.end_Conversation(text)
                 return
 
