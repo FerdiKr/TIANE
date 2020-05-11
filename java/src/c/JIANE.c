@@ -1,7 +1,5 @@
 #include "JIANE.h"
 
-#include <jni.h>
-
 int JIANE_get_env(JNIEnv **env) {
   int stat = (*JIANE_jvm)->GetEnv(JIANE_jvm, (void **)env, JIANE_jni_version);
   if (stat == JNI_EDETACHED) {
@@ -9,8 +7,8 @@ int JIANE_get_env(JNIEnv **env) {
     args.version = JIANE_jni_version;
     args.name = NULL;
     args.group = NULL;
-    stat = (*JIANE_jvm)->AttachCurrentThread(JIANE_jvm, (void **)&env, &args);
-    if (stat = JNI_OK) {
+    stat = (*JIANE_jvm)->AttachCurrentThread(JIANE_jvm, (void **)env, &args);
+    if (stat == JNI_OK) {
       return 2;
     } else {
       return 0;

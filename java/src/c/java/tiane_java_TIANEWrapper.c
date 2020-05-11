@@ -1,18 +1,10 @@
-#include "tiane_java_TIANEWrapper.h"
-
-#define PY_SSIZE_T_CLEAN
-
-#include <jni.h>
-#include <Python.h>
-
-#include <unistd.h>
-#include <dlfcn.h>
-
 #include <JIANE.h>
 
-JNIEXPORT void JNICALL Java_tiane_java_TIANEWrapper_startTiane(JNIEnv *env, jclass clazz, jstring runPy, jstring runDir, jobjectArray dlopens) {
+#include "tiane_java_TIANEWrapper.h"
 
-  //printf("a");
+#include <dlfcn.h>
+
+JNIEXPORT void JNICALL Java_tiane_java_TIANEWrapper_startTiane(JNIEnv *env, jclass clazz, jstring runPy, jstring runDir, jobjectArray dlopens) {
 
   if ((*env)->GetJavaVM(env, &JIANE_jvm) == 0) {
     JIANE_jni_version = (*env)->GetVersion(env);
@@ -33,11 +25,12 @@ JNIEXPORT void JNICALL Java_tiane_java_TIANEWrapper_startTiane(JNIEnv *env, jcla
 
   Py_SetProgramName(Py_DecodeLocale("TIANE_server", NULL));
   Py_Initialize();
+
   wchar_t *runPyW[] = {Py_DecodeLocale((*env)->GetStringUTFChars(env, runPy, NULL), NULL), Py_DecodeLocale("jni", NULL)};
   PySys_SetArgv(2, runPyW);
 
   if (PyRun_SimpleFile(script, (*env)->GetStringUTFChars(env, runPy, NULL)) < 0) {
-    jclass exClass = (*env)->FindClass(env, "java/lang/RuntimeException");
+    jclass exClass = (*env)->FindClass(env, "tiane/java/TianeException");
     (*env)->ThrowNew(env, exClass, "TIANE raised an error.");
   }
 }

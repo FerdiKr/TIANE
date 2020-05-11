@@ -1,5 +1,7 @@
 package tiane.java;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,13 +11,22 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
 
+/**
+ * Eine native Bibliothek, die geladen werden kann.
+ */
 public final class Library {
 
     private final String name;
     private final Path path;
     private final boolean found;
 
-    public Library(String name, String path) {
+    /**
+     * Erstellt ein neues {@code Library} Objekt.
+     *
+     * @param name Der Name der Bibliothek
+     * @param path Der absolute Pfad zur Biblothek.
+     */
+    public Library(@Nonnull String name, @Nullable String path) {
         if (path == null) {
             this.found = false;
             this.name = Objects.requireNonNull(name);
@@ -27,7 +38,13 @@ public final class Library {
         }
     }
 
-    public Library(String name, Path path) {
+    /**
+     * Erstellt ein neues {@code Library} Objekt.
+     *
+     * @param name Der Name der Bibliothek
+     * @param path Der absolute Pfad zur Biblothek.
+     */
+    public Library(@Nonnull String name, @Nullable Path path) {
         if (path == null) {
             this.found = false;
             this.name = Objects.requireNonNull(name);
@@ -39,18 +56,33 @@ public final class Library {
         }
     }
 
+    /**
+     * Gibt zurück, ob die Bibliothek gefunden wurde. Dazu muss {@code path != null} sein.
+     */
     public boolean found() {
         return found;
     }
 
+    /**
+     * Gibt den Namen der Bibliothek zurück.
+     */
+    @Nonnull
     public String name() {
         return name;
     }
 
+    /**
+     * Gibt den Pfad zur Bibliothek zurück.
+     */
+    @Nullable
     public Path path() {
         return found ? path : null;
     }
 
+    /**
+     * Gibt alle Bibliotheken zurück, die JIANE zum starten benötigt.
+     */
+    @Nonnull
     public static Queue<Library> getLibraries() {
         Queue<Library> libs = new LinkedList<>();
 
@@ -60,7 +92,8 @@ public final class Library {
         return libs;
     }
 
-    private static String locateOne(String str, Pattern predicate) {
+    @Nullable
+    private static String locateOne(@Nonnull String str, @Nonnull Pattern predicate) {
         try {
             List<String> allMatch = new ArrayList<>(locate(str));
             allMatch.removeIf(predicate.asPredicate().negate());
@@ -75,11 +108,12 @@ public final class Library {
         }
     }
 
-    private static List<String> locate(String str) throws IOException {
+    @Nonnull
+    private static List<String> locate(@Nonnull String str) throws IOException {
         Process process = Runtime.getRuntime().exec("locate " + str);
         BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
         List<String> paths = new ArrayList<>();
-        for (String line = in.readLine();line != null;line = in.readLine()) {
+        for (String line = in.readLine(); line != null; line = in.readLine()) {
             paths.add(line);
         }
         try {

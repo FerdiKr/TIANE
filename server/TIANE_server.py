@@ -891,7 +891,7 @@ def runMain(commandMap=None, feedbackMap=None):
                 print(self.format(logentry, last_logentry))
 
         def format(self, logentry, last_logentry):
-            if logentry['type'] == 'ERROR' or logentry['type'] == 'WARNING' or logentry['type'] == 'DEBUG' or logentry['type'] == 'INFO':
+            if logentry['type'] == 'ERROR' or logentry['type'] == 'WARNING' or logentry['type'] == 'DEBUG' or logentry['type'] == 'INFO' or logentry['type'] == 'TRACE':
                 spaces = ''
                 if last_logentry['type'] == 'ACTION':
                     spaces = '\n\n'
@@ -1221,12 +1221,15 @@ def runMain(commandMap=None, feedbackMap=None):
     java_start = False
     if len(sys.argv) > 0 and sys.argv[1].lower() == 'jni':
         java_start = True
-        print('TIANE was started from java.')
+        print('TIANE wurde von java aus gestartet.')
 
     relPath = str(Path(__file__).parent) + "/"
     absPath = os.path.dirname(os.path.abspath(__file__))
 
     Log = Logging()
+
+    if java_start:
+        jiane.createJavalogger(Log)
 
     # aus TIANE_config.json laden
     with open(relPath+'TIANE_config.json', 'r') as config_file:
@@ -1294,13 +1297,25 @@ def runMain(commandMap=None, feedbackMap=None):
 
     sock.listen(True)
     time.sleep(1.5)
+
+    if (java_start):
+        jiane.setSignalHandlers()
+        sock.settimeout(0.1)
+        # Da Signal-Handling nicht wie gewohnt funktioniert, wenn Python von
+        # java gestartet wird, muss regelmäßig geprüft werden, ob TIANE beendet
+        # werden soll. Deswegen der Timeout.
+
     Log.write('', '--------- FERTIG ---------\n\n', show=True)
 
     # "Hauptschleife"
     while True:
         # Socket steht, auf Verbindung warten
         try:
+            if java_start and jiane.shouldStop():
+                raise KeyboardInterrupt
             conn, addr = sock.accept()
+        except socket.timeout:
+            continue
         except KeyboardInterrupt:
             Log.write('', '\n', show=True)
             break

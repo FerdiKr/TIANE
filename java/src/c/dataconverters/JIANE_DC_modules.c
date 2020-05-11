@@ -1,13 +1,6 @@
-#include "JIANE_DataConverters.h"
-
-#define PY_SSIZE_T_CLEAN
-
-#include <jni.h>
-#include <Python.h>
-
 #include <JIANE.h>
 
-#include <stdio.h>
+#include "JIANE_DataConverters.h"
 
 static int nextId = 0;
 
@@ -41,94 +34,118 @@ static jobject JIANEDC_get_java_instance(PyObject *pythonModule) {
     return NULL;
   } else {
     int moduleId = PyLong_AsSize_t(id_key);
-    printf("JAVA-KEY: %d\n", moduleId);
     return JIANEDC_get_modmap(moduleId);
   }
 }
 
-static PyObject *JDC_PY_isValid(PyObject *self, PyObject *args) {
+static PyObject *JDC_PY_module_isValidGeneric(PyObject *self, PyObject *args, jboolean isTelegram) {
+  PyObject *module;
   char* text;
-  if (!PyArg_ParseTuple(args, "s", &text))
+  if (!PyArg_ParseTuple(args, "Os", &module, &text))
     return NULL;
 
-  JNIEnv * env;
+  JNIEnv *env;
   int JNI_mode = JIANE_get_env(&env);
 
   jboolean isValid = JNI_FALSE;
-  jobject modObj = JIANEDC_get_java_instance(self);
+  jobject modObj = JIANEDC_get_java_instance(module);
   if (modObj != NULL) {
     jclass clazz = (*env)->FindClass(env, "tiane/java/api/Module");
-    jmethodID mid_isValid = (*env)->GetMethodID(env, clazz, "isValid", "(Ljava/lang/String;)Z");
+    jmethodID mid_isValid;
+    if (isTelegram == JNI_TRUE) {
+      mid_isValid = (*env)->GetMethodID(env, clazz, "isValidTelegram", "(Ljava/lang/String;)Z");
+    } else {
+      mid_isValid = (*env)->GetMethodID(env, clazz, "isValid", "(Ljava/lang/String;)Z");
+    }
     isValid = (*env)->CallBooleanMethod(env, modObj, mid_isValid, (*env)->NewStringUTF(env, text));
   }
 
   JIANE_end_env(JNI_mode);
 
   if (isValid == JNI_TRUE) {
-    printf("TRUE\n");
+    Py_XINCREF(Py_True);
     return Py_True;
   } else {
-    printf("FALSE\n");
+    Py_XINCREF(Py_False);
     return Py_False;
   }
 }
 
-static PyObject *JDC_PY_handle(PyObject *self, PyObject *args) {
-  /*JNIEnv * env;
+PyObject *JDC_PY_module_isValid(PyObject *self, PyObject *args) {
+  return JDC_PY_module_isValidGeneric(self, args, JNI_FALSE);
+}
+
+PyObject *JDC_PY_module_isValidTelegram(PyObject *self, PyObject *args) {
+  return JDC_PY_module_isValidGeneric(self, args, JNI_TRUE);
+}
+
+PyObject *JDC_PY_module_handle(PyObject *self, PyObject *args) {
+  PyObject *module;
+  char* text;
+  PyObject *tiane;
+  PyObject *lstorage;
+  if (!PyArg_ParseTuple(args, "OsOO", &module, &text, &tiane, &lstorage))
+    return NULL;
+
+  JNIEnv *env;
   int JNI_mode = JIANE_get_env(&env);
 
-  jobject modObj = JIANEDC_get_java_instance(self);
+  jobject modObj = JIANEDC_get_java_instance(module);
+  if (modObj != NULL) {
+    jobject j_tiane = JIANEDC_createLazyPythonWrapper(env, (*env)->FindClass(env, "tiane/java/api/ModuleWrapper"), tiane, JNI_TRUE);
+    jobject j_lstorage = JIANEDC_createLazyPythonWrapper(env, (*env)->FindClass(env, "tiane/java/api/LocalStorage"), lstorage, JNI_TRUE);
+    jclass clazz = (*env)->FindClass(env, "tiane/java/api/Module");
+    jmethodID mid_handle = (*env)->GetMethodID(env, clazz, "handle", "(Ljava/lang/String;Ltiane/java/api/ModuleWrapper;Ltiane/java/api/LocalStorage;)V");
+    (*env)->CallVoidMethod(env, modObj, mid_handle, (*env)->NewStringUTF(env, text), j_tiane, j_lstorage);
+  }
 
-  JIANE_end_env(JNI_mode);*/
+  JIANE_end_env(JNI_mode);
+  Py_XINCREF(Py_None);
   return Py_None;
 }
 
-PyObject *JIANEDC_toModule(JNIEnv *env, jobject *module) {
+PyObject *JIANEDC_toModule(JNIEnv *env, jobject module) {
   jclass clazz = (*env)->FindClass(env, "tiane/java/api/Module");
-  jobject glob = (*env)->NewGlobalRef(env, *module);
+  jobject glob = (*env)->NewGlobalRef(env, module);
+
+  jmethodID mid_active = (*env)->GetMethodID(env, clazz, "active", "()Z");
+  jboolean active = (*env)->CallBooleanMethod(env, glob, mid_active);
+
+  if (active != JNI_TRUE) {
+    Py_XINCREF(Py_None);
+    return Py_None;
+  }
 
   jmethodID mid_priority = (*env)->GetMethodID(env, clazz, "priority", "()I");
   int priority = (*env)->CallIntMethod(env, glob, mid_priority);
 
   jmethodID mid_words = (*env)->GetMethodID(env, clazz, "words", "()[Ljava/lang/String;");
-  jobjectArray words = (jobjectArray) (*env)->CallObjectMethod(env, glob, mid_words);
+  jobjectArray words = (jobjectArray)(*env)->CallObjectMethod(env, glob, mid_words);
 
   jmethodID mid_name = (*env)->GetMethodID(env, clazz, "name", "()Ljava/lang/String;");
-  jstring jmodname = (jstring) (*env)->CallObjectMethod(env, glob, mid_name);
+  jstring jmodname = (jstring)(*env)->CallObjectMethod(env, glob, mid_name);
 
   int words_length = (*env)->GetArrayLength(env, words);
   PyObject *wordlist = PyList_New(words_length);
-  for (int words_index = 0;words_index < words_length;words_index++) {
+  for (int words_index = 0; words_index < words_length; words_index++) {
     jstring elem = (jstring)(*env)->GetObjectArrayElement(env, words, words_index);
     PyList_SetItem(wordlist, words_index, PyUnicode_FromString((*env)->GetStringUTFChars(env, elem, NULL)));
   }
 
-  char *modulename_generated = malloc((*env)->GetStringUTFLength(env, jmodname) + 6 + 4);
+  char *modulename_generated = calloc((*env)->GetStringUTFLength(env, jmodname) + 10 + 4, sizeof(char));
   int moduleId = nextId;
   nextId += 1;
-  sprintf(modulename_generated, "jiane.%s_%d", (*env)->GetStringUTFChars(env, jmodname, NULL), moduleId);
+  sprintf(modulename_generated, "jiane.mod%s_%d", (*env)->GetStringUTFChars(env, jmodname, NULL), moduleId);
   JIANEDC_push_modmap(moduleId, glob);
 
-  PyObject *pymodule = PyImport_AddModule(modulename_generated);
+  PyObject *pymodule = PyModule_New(modulename_generated);
   PyModule_AddIntConstant(pymodule, "JAVA_MODULE_MAP_ID", moduleId);
   PyModule_AddObject(pymodule, "PRIORITY", PyLong_FromSize_t(priority));
   PyModule_AddObject(pymodule, "WORDS", wordlist);
-  PyMethodDef method_define[] = {
-      {"isValid",  JDC_PY_isValid, METH_VARARGS, ""},
-      {"handle",  JDC_PY_handle, METH_VARARGS, ""},
-      {NULL, NULL, 0, NULL} //Must be the last entry, do not delete
-  };
-  PyModule_AddFunctions(pymodule, method_define);
-  printf("%d\n", (PyCFunction_GET_FLAGS(PyDict_GetItemString(PyModule_GetDict(pymodule), "isValid"))) & ~(METH_CLASS | METH_STATIC | METH_COEXIST));
-  if (
-      PyCFunction_Call(
-          PyDict_GetItemString(
-              PyModule_GetDict(pymodule),
-              "isValid"),
-          PyTuple_Pack(1, PyUnicode_FromString("HaLLo WelT dfsihbdisfvdaisbvpinguindhiwbcqwibcdqlibvqa")),
-          NULL) == Py_True) { printf("YES\n"); } else { printf("NO\n"); }
-  return pymodule;
-}
+  PyModule_AddObject(pymodule, "MODNAME", PyUnicode_FromString((*env)->GetStringUTFChars(env, jmodname, NULL)));
 
-PyObject *JIANEDC_toContinuousModule(JNIEnv * env, jobject *module) {
+  PyDict_SetItemString(PySys_GetObject("modules"), modulename_generated, pymodule);
+  PyObject *imported_module = PyImport_ImportModule(modulename_generated);
+  Py_XINCREF(imported_module);
+  return pymodule;
 }
