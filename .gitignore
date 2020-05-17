@@ -4,3 +4,16 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.so
+
+# Things related to JIANE
+java/.gradle
+java/build
+server/jiane.jar
+server/jiane.so
+java/CMakeLists.txt
+java/cmake-build-debug
+**/hs_err_pid*.log
+java/src/headers/java
+java/doc
+server/modules/javaModules.jar
+java/src/resources/tiane/java/COMPILED_PYTHON
