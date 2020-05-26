@@ -9,10 +9,12 @@ import base64
 import time
 import json
 import os
+import sys
 from pathlib import Path
 import pickle
 from urllib.request import urlopen, Request
 import urllib.parse
+import pyjiane as jiane
 
 def runMain(commandMap=None, feedbackMap=None):
     class Modules:
@@ -30,11 +32,17 @@ def runMain(commandMap=None, feedbackMap=None):
         def load_modules(self):
             self.modules_defined_vocabulary = []
             Log.write('', '----- COMMON_MODULES -----', show=True)
-            self.common_modules = self.get_modules('modules')
+
+            self.common_modules = self.get_modules('modules') + jiane.loadModules('modules')
+            self.common_modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY') else 0, reverse=True)
+
             if self.common_modules == []:
                 Log.write('INFO', '-- (Keine vorhanden)', show=True)
             Log.write('', '------ CONTINUOUS', show=True)
-            self.common_continuous_modules = self.get_modules('modules/continuous',continuous=True)
+
+            self.common_continuous_modules = self.get_modules('modules/continuous',continuous=True) + jiane.loadModulesContinuous('modules')
+            self.common_continuous_modules.sort(key=lambda mod: mod.PRIORITY if hasattr(mod, 'PRIORITY') else 0, reverse=True)
+
             if self.common_continuous_modules == []:
                 Log.write('INFO', '-- (Keine vorhanden)', show=True)
 
@@ -239,8 +247,10 @@ def runMain(commandMap=None, feedbackMap=None):
                 Log.write('ERROR', 'Runtime-Error in Modul {}. Das Modul wurde beendet.\n'.format(module.__name__), show=True)
                 Tiane.active_modules[str(text)].say('Entschuldige, es gab ein Problem mit dem Modul {}.'.format(module.__name__))
             finally:
-
-                del Tiane.active_modules[str(text)]
+                try:
+                    del Tiane.active_modules[str(text)]
+                except KeyError:
+                    pass
                 Tiane.end_Conversation(text)
                 return
 
@@ -881,7 +891,7 @@ def runMain(commandMap=None, feedbackMap=None):
                 print(self.format(logentry, last_logentry))
 
         def format(self, logentry, last_logentry):
-            if logentry['type'] == 'ERROR' or logentry['type'] == 'WARNING' or logentry['type'] == 'DEBUG' or logentry['type'] == 'INFO':
+            if logentry['type'] == 'ERROR' or logentry['type'] == 'WARNING' or logentry['type'] == 'DEBUG' or logentry['type'] == 'INFO' or logentry['type'] == 'TRACE':
                 spaces = ''
                 if last_logentry['type'] == 'ACTION':
                     spaces = '\n\n'
@@ -1207,11 +1217,19 @@ def runMain(commandMap=None, feedbackMap=None):
             time.sleep(0.25)
             # TODO: check command-mmap and execute corresponding commands
 
-    #################################################-MAIN-#################################################
+    #################################################-MAIN-################################################
+    java_start = False
+    if len(sys.argv) > 0 and sys.argv[1].lower() == 'jni':
+        java_start = True
+        print('TIANE wurde von java aus gestartet.')
+
     relPath = str(Path(__file__).parent) + "/"
     absPath = os.path.dirname(os.path.abspath(__file__))
 
     Log = Logging()
+
+    if java_start:
+        jiane.createJavalogger(Log)
 
     # aus TIANE_config.json laden
     with open(relPath+'TIANE_config.json', 'r') as config_file:
@@ -1279,13 +1297,25 @@ def runMain(commandMap=None, feedbackMap=None):
 
     sock.listen(True)
     time.sleep(1.5)
+
+    if (java_start):
+        jiane.setSignalHandlers()
+        sock.settimeout(0.1)
+        # Da Signal-Handling nicht wie gewohnt funktioniert, wenn Python von
+        # java gestartet wird, muss regelmäßig geprüft werden, ob TIANE beendet
+        # werden soll. Deswegen der Timeout.
+
     Log.write('', '--------- FERTIG ---------\n\n', show=True)
 
     # "Hauptschleife"
     while True:
         # Socket steht, auf Verbindung warten
         try:
+            if java_start and jiane.shouldStop():
+                raise KeyboardInterrupt
             conn, addr = sock.accept()
+        except socket.timeout:
+            continue
         except KeyboardInterrupt:
             Log.write('', '\n', show=True)
             break

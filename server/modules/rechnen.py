@@ -157,30 +157,10 @@ def handle(txt, tiane, profile):
 
 def isValid(text):
     text = text.lower()
-    if not 'wie viel ist' in text and not 'wie viel ergibt' in text and not 'was ergibt' in text and not 'was macht' in text and not 'was ist' in text and not 'was sind' in text:
+    if not 'wie viel ist' in text and not 'wie viel sind' in text and not 'wie viel ergibt' in text and not 'was ergibt' in text and not 'was macht' in text and not 'was ist' in text and not 'was sind' in text:
         return False
-    if '+' in text or '*' in text or ' x ' in text or '- ' in text or ' / ' in text or ' geteilt ' in text or ' hoch ' in text or ' minus ' in text or ' plus ' in text or ' durch ' in text or 'wurzel ' in text or 'sinus ' in text or ' tangens ' in text or ' quadrat ' in text:
+    if '+' in text or '*' in text or ' x ' in text or '- ' in text or ' / ' in text or ' geteilt ' in text or ' hoch ' in text or ' minus ' in text or ' plus ' in text or ' durch ' in text or 'wurzel ' in text or 'sinus ' in text or ' tangens ' in text or ' quadrat ' in text or ' pi ' in text:
         return True
     if bruchFinder.match(text) is not None:
         return True
     return False
-
-class Tiane:
-    def __init__(self):
-        self.local_storage = {}
-        self.user = 'Baum'
-        self.analysis = {'room': 'None', 'time': {'month': '08', 'hour': '06', 'year': '2018', 'minute': '00', 'day': '27'}, 'town': 'None'}
-
-    def say(self, text):
-        print(text)
-    def listen(self):
-        neuertext = input()
-        return neuertext
-
-def main():
-    profile = {}
-    tiane = Tiane()
-    handle('0 / 0', tiane, profile)
-
-if __name__ == '__main__':
-    main()
