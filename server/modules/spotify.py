@@ -12,7 +12,7 @@ Für genauere Infos siehe ReadMe in server/resources/spotify
 def isValid(text):
     text = text.lower()
 
-    triggers = ["play", "fortsetzen", "pause", "nächstes lied", "weiter", "vorheriges lied", "zurück", "spotify"]
+    triggers = ["play", "fortsetzen", "pause", "nächstes lied", "weiter", "vorheriges lied", "zurück", "spotify", "shuffle", "zufall"]
     for trigger in triggers:
         if trigger in text:
             return True
@@ -147,3 +147,10 @@ def handle(text, tiane, profile):
                 new_volume = int(volume_str)
 
                 sp.volume(new_volume)
+
+    elif "shuffle" in text or "zufall" in text:
+        # Shuffle-Modus
+        if "beende" in text or "stoppe" in text or "aus" in text:
+            sp.shuffle(False)
+        else:
+            sp.shuffle(True)
