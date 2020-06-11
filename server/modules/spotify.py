@@ -7,6 +7,8 @@ import re
 '''
 Spotify Steuerung
 Für genauere Infos siehe ReadMe in server/resources/spotify
+
+Entwickelt von Peter Elsen und Simon Tebeck
 '''
 
 def isValid(text):
