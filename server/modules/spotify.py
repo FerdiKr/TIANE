@@ -101,14 +101,14 @@ def handle(text, tiane, profile):
             if match != None:
                 startName = match.end() + 1
                 trackname = text[startName:length]
-
-                tracks = sp.search("Hells Bells", limit=10, offset=0, type='track', market=None)["tracks"]["items"]
+                tracks = sp.search(trackname, limit=10, offset=0, type='track', market=None)["tracks"]["items"]
 
                 tiane.say("Verstanden")
-                sp.start_playback(uris=[tracks[0]["uri"]])
+                trackuris = []
+                for i in range(10):
+                    trackuris.append(tracks[i]["uri"])
 
-                for i in range(9):
-                    sp.add_to_queue(tracks[i+1]["uri"])
+                sp.start_playback(uris=trackuris)
 
     elif "spotify" in text and "warteschlange" in text:
         # Lied in die Warteschlange
