@@ -55,7 +55,7 @@ def handle(text, tiane, profile):
         # kontrolliere start / stop
         is_playing = sp.current_playback()['is_playing']
 
-        tiane.say("Verstanden")
+        #tiane.say("Verstanden")
 
         if is_playing:
             sp.pause_playback()
@@ -64,12 +64,12 @@ def handle(text, tiane, profile):
 
     elif "nächstes lied" in text or "weiter" in text:
         # nächstes lied
-        tiane.say("Verstanden")
+        #tiane.say("Verstanden")
         sp.next_track()
 
     elif "vorheriges lied" in text or "zurück" in text:
         # vorheriges lied
-        tiane.say("Verstanden")
+        #tiane.say("Verstanden")
         sp.previous_track()
 
     elif "spotify" in text and "spiele" in text:
@@ -80,7 +80,7 @@ def handle(text, tiane, profile):
                 startName = match.end() + 1
                 artistname = text[startName:length]
                 artist_uri = sp.search(artistname, limit=1, offset=0, type='artist', market=None)["artists"]["items"][0]["uri"]
-                tiane.say("Verstanden")
+                #tiane.say("Verstanden")
                 sp.start_playback(context_uri=artist_uri)
 
         elif "playlist" in text:
@@ -89,7 +89,7 @@ def handle(text, tiane, profile):
                 startName = match.end() + 1
                 playlistname = text[startName:length]
                 playlist_uri = sp.search(playlistname, limit=1, offset=0, type='playlist', market=None)["playlists"]["items"][0]["uri"]
-                tiane.say("Verstanden")
+                #tiane.say("Verstanden")
                 sp.start_playback(context_uri=playlist_uri)
 
         else:
@@ -103,7 +103,7 @@ def handle(text, tiane, profile):
                 trackname = text[startName:length]
                 tracks = sp.search(trackname, limit=10, offset=0, type='track', market=None)["tracks"]["items"]
 
-                tiane.say("Verstanden")
+                #tiane.say("Verstanden")
                 trackuris = []
                 for i in range(10):
                     trackuris.append(tracks[i]["uri"])
@@ -122,7 +122,7 @@ def handle(text, tiane, profile):
 
         trackname = text[startName:startEnd]
         track_uri = sp.search(trackname, limit=1, offset=0, type='track', market=None)["tracks"]["items"][0]["uri"]
-        tiane.say("Verstanden")
+        #tiane.say("Verstanden")
         sp.add_to_queue(track_uri)
 
     elif "spotify" in text and ("lauter" in text or "leiser" in text):
