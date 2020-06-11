@@ -1,0 +1,315 @@
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.attribute.BasicFileAttributes
+
+
+plugins {
+    // Apply the java-library plugin to add support for Java Library
+    id 'java-library'
+}
+
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
+final ConfigObject cfg = file('build.properties').withReader { def p = new Properties(); p.load(it); return (new ConfigSlurper().parse(p)) }
+
+sourceSets {
+    main.java.srcDirs = ['src/java']
+    main.resources.srcDirs = ['src/resources']
+
+    test.java.srcDirs = []
+    test.resources.srcDirs = []
+
+    headers.java.srcDirs = []
+    headers.resources.srcDirs = ['src/headers']
+
+    c.java.srcDirs = []
+    c.resources.srcDirs = ['src/c']
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+}
+
+dependencies {
+    shade 'com.google.code.findbugs:annotations:3.0.1'
+    shade 'org.apache.logging.log4j:log4j-api:2.13.2'
+}
+
+compileJava {
+    outputs.files sourceSets.headers.resources
+
+    options.compilerArgs += ['-h', sourceSets.headers.resources.srcDirs.iterator().next().toPath().resolve('java').toAbsolutePath().normalize().toString()]
+
+    doFirst {
+        sourceSets.headers.resources.srcDirs.iterator().forEachRemaining{f -> if (Files.exists(f.toPath().resolve('java')))
+        {}//Files.walk(f.toPath().resolve('java')).filter{p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".h")}.forEach{p -> Files.delete(p)}
+        else
+            Files.createDirectories(f.toPath().resolve('java'))
+        }
+    }
+}
+
+jar {
+    archivesBaseName = 'jiane'
+
+    configurations.shade.each { dep -> from(project.zipTree(dep)) { exclude 'META-INF', 'META-INF/**' } }
+
+    if (!cfg.mainClass.isEmpty()) {
+        manifest {
+            attributes 'Main-Class': cfg.mainClass
+        }
+    }
+}
+
+task setPythonVersion {
+    outputs.upToDateWhen { false }
+
+    doFirst {
+        Files.write(file('src/resources/tiane/java/COMPILED_PYTHON').toPath(), Collections.singletonList(cfg.pythonLibrary))
+    }
+}
+processResources.dependsOn setPythonVersion
+
+task compileGcc {
+    dependsOn compileJava
+
+    inputs.files sourceSets.headers.resources
+    inputs.files sourceSets.c.resources
+
+    outputs.files fileTree('build/gcc/compile')
+
+    doLast {
+        boolean failed = false
+
+        file('build/gcc/compile').mkdirs()
+
+        String headerArgs = getHeaders(sourceSets.headers, cfg.headers)
+
+        sourceSets.c.resources.srcDirs.stream().map{f -> f.toPath()}.forEach{ppath -> Files.walk(ppath).filter{pp -> Files.isRegularFile(pp)}.filter{pp -> pp.getFileName().toString().matches('^.*?\\.c(c|pp)?$')}.forEach{pp ->
+            StringBuilder args = new StringBuilder(cfg.gccExecutable).append(' -fPIC').append(headerArgs)
+            java.nio.file.Path parentPath = file('build/gcc/compile').toPath().resolve(ppath.relativize(pp)).getParent()
+            Files.createDirectories(parentPath)
+            args.append(' -o').append(parentPath.resolve(pp.getFileName().toString().substring(0, pp.getFileName().toString().lastIndexOf('.')) + '.o').toAbsolutePath().normalize().toString())
+            args.append(' -c ').append(pp.toAbsolutePath().normalize().toString())
+
+            //println(args)
+            Process process = Runtime.getRuntime().exec(args.toString())
+            process.inputStream.newReader().eachLine { line -> System.out.println(line) }
+            process.errorStream.newReader().eachLine { line -> System.err.println(line) }
+            if (process.waitFor() != 0) {
+                failed = true
+                println()
+            }
+        }}
+
+        if (failed)
+            throw new IllegalThreadStateException('GCC returned an error code')
+    }
+}
+
+task linkGcc {
+    dependsOn compileGcc
+
+    inputs.files fileTree('build/gcc/compile')
+
+    outputs.files fileTree('build/gcc/shared')
+
+    doLast {
+        file('build/gcc/shared').mkdirs()
+
+        String headerArgs = getHeaders(sourceSets.headers, cfg.headers)
+
+        StringBuilder args = new StringBuilder(cfg.gccExecutable).append(' -fPIC -shared').append(headerArgs).append(' -o').append(file('build/gcc/shared/jiane.so').toPath().toAbsolutePath().normalize().toString())
+
+        boolean hasInput = false
+        Files.walk(file('build/gcc/compile').toPath()).filter{ pp -> Files.isRegularFile(pp) && pp.getFileName().toString().endsWith('.o') }.forEach{ p ->
+            args.append(' ').append(p.toAbsolutePath().normalize().toString())
+            hasInput = true
+        }
+
+        (cfg.libraryPath as String).split(File.pathSeparator).iterator().forEachRemaining{s -> if (!s.isEmpty()) args.append(' -Wl,-L').append(s)}
+
+        args.append(' -Wl,-l').append(cfg.pythonLibrary)
+
+        cfg.libraries.split(File.pathSeparator).iterator().forEachRemaining{s -> if (!s.isEmpty()) args.append(' -Wl,-l').append(s)}
+
+
+        args.append(' -Wl,-no-undefined')
+
+        if (hasInput) {
+            //println(args)
+            Process process = Runtime.getRuntime().exec(args.toString())
+            process.inputStream.newReader().eachLine { line -> System.out.println(line) }
+            process.errorStream.newReader().eachLine { line -> System.err.println(line) }
+            if (process.waitFor() != 0) {
+                throw new IllegalStateException('The linker returned an error code')
+            }
+        }
+    }
+}
+
+javadoc {
+    destinationDir = file('./doc')
+
+    source sourceSets.main.java.asFileTree
+
+    options.addStringOption('encoding', 'utf8')
+    options.addStringOption('docencoding', 'utf8')
+    options.addStringOption('charset', 'utf8')
+
+    doFirst {
+        file('./doc').mkdirs()
+    }
+}
+
+task genCMakeList() {
+
+    doLast {
+        BufferedWriter w = Files.newBufferedWriter(file('.').toPath().resolve('CMakeLists.txt'))
+        w.write("# This file is autogenerated by `gradle gengenCMakeList`.\n")
+        w.write("# It is not used to build anything, it's just there to import the project in an IDE.\n")
+        w.write("# Changes made here will not change anything in the build process.\n\n")
+        w.write("cmake_minimum_required(VERSION 3.13)\n")
+        w.write("project(jiane)\n")
+        w.write("set(CMAKE_CXX_STANDARD 14)\n")
+
+        sourceSets.c.resources.srcDirs.stream().map{f -> f.toPath()}.forEach{ppath -> Files.walk(ppath).filter{p -> Files.isRegularFile(p) && p.getFileName().toString().matches('^.*?\\.c(c|pp)?$')}.forEach{p ->
+            w.write("set(SOURCE_FILES ${p.toAbsolutePath().normalize().toString()})\n")
+        }}
+
+        String headerArgs = getHeaders(sourceSets.headers, cfg.headers)
+        for (String str : headerArgs.split(' ')) {
+            if (!str.isEmpty())
+                w.write("include_directories(${str.substring(2)})\n")
+        }
+
+        (cfg.libraryPath as String).split(File.pathSeparator).iterator().forEachRemaining{s -> if (!s.isEmpty())
+            w.write("link_directories(${Paths.get(s).toAbsolutePath().normalize().toString()})\n")
+        }
+
+        StringBuilder sb = new StringBuilder('add_library(jiane SHARED')
+        sourceSets.c.resources.srcDirs.stream().map{f -> f.toPath()}.forEach{ppath -> Files.walk(ppath).filter{p -> Files.isRegularFile(p) && p.getFileName().toString().matches('^.*?\\.c(c|pp)?$')}.forEach{p ->
+            sb.append(' ').append(p.toAbsolutePath().normalize().toString())
+        }}
+        w.write(sb.append(')\n').toString())
+
+        w.write("target_link_libraries(jiane ${cfg.pythonLibrary})\n")
+        cfg.libraries.split(File.pathSeparator).iterator().forEachRemaining{s -> if (!s.isEmpty())
+            w.write("target_link_libraries(jiane ${s})\n")
+        }
+
+        w.close()
+    }
+}
+
+clean {
+    final List<String> deletes = [
+            "CMakeLists.txt",
+            "doc",
+            "src/headers/java",
+            "src/resources/tiane/java/COMPILED_PYTHON",
+            "../server/jiane.so",
+            "../server/jiane.jar",
+            "../server/modules/javaModules.jar"
+    ]
+
+    doLast {
+        for (String str : deletes) {
+            File f = file(str)
+            if (f.exists()) {
+                if (f.isDirectory()) {
+                    Files.walkFileTree(f.toPath(), new java.nio.file.FileVisitor<java.nio.file.Path>() {
+                        @Override
+                        FileVisitResult preVisitDirectory(java.nio.file.Path path, BasicFileAttributes basicFileAttributes) throws IOException {
+                            return FileVisitResult.CONTINUE
+                        }
+
+                        @Override
+                        FileVisitResult visitFile(java.nio.file.Path path, BasicFileAttributes basicFileAttributes) throws IOException {
+                            Files.deleteIfExists(path)
+                            return FileVisitResult.CONTINUE
+                        }
+
+                        @Override
+                        FileVisitResult visitFileFailed(java.nio.file.Path path, IOException e) throws IOException {
+                            return FileVisitResult.CONTINUE
+                        }
+
+                        @Override
+                        FileVisitResult postVisitDirectory(java.nio.file.Path path, IOException e) throws IOException {
+                            Files.deleteIfExists(path)
+                            return FileVisitResult.CONTINUE
+                        }
+                    })
+                } else {
+                    f.delete()
+                }
+            }
+        }
+    }
+}
+
+build {
+
+    dependsOn linkGcc
+    dependsOn javadoc
+    dependsOn genCMakeList
+
+    //dependsOn javaModules:build
+
+    outputs.upToDateWhen { false }
+
+    doLast {
+        Files.deleteIfExists(file('.').toPath().resolve("../server/jiane.so"))
+        Files.deleteIfExists(file('.').toPath().resolve("../server/jiane.jar"))
+
+        if (Files.exists(file('build/gcc/shared/jiane.so').toPath()))
+            Files.copy(file('build/gcc/shared/jiane.so').toPath(), file('.').toPath().resolve("../server/jiane.so"))
+        if (Files.exists(file('build/libs/jiane.jar').toPath()))
+            Files.copy(file('build/libs/jiane.jar').toPath(), file('.').toPath().resolve("../server/jiane.jar"))
+    }
+}
+
+private static String getHeaders(SourceSet srcHeaders, String additionalHeaders) {
+    StringBuilder headers = new StringBuilder()
+    srcHeaders.resources.srcDirs.iterator().forEachRemaining{f -> Files.walk(f.toPath()).filter{p -> Files.isDirectory(p)}.forEach{p -> headers.append(' -I').append(p.toAbsolutePath().normalize().toString())}}
+    if (System.properties.'java.home' == null)
+        throw new IllegalStateException('java.home is not set.')
+    java.nio.file.Path javaHome = Paths.get(System.properties.'java.home'.toString())
+    if (javaHome.getFileName().toString().equalsIgnoreCase('jre'))
+        javaHome = javaHome.getParent()
+    if (!Files.exists(javaHome) || !Files.isDirectory(javaHome))
+        throw new IllegalStateException('java.home was not found: \'' + javaHome.toAbsolutePath().normalize().toString() + '\'')
+    Files.walk(javaHome.resolve('include')).filter{p-> Files.isDirectory(p)}.forEach{p -> headers.append(' -I').append(p.toAbsolutePath().normalize().toString())}
+    additionalHeaders.split(':').iterator().forEachRemaining{s -> if (!s.isEmpty()) headers.append(' -I').append(s)}
+    return headers.toString()
+}
+
+project(':javaModules') {
+    apply plugin: 'java'
+
+    dependencies {
+        compile parent
+
+        compile parent.configurations.compile.asFileTree
+    }
+
+    jar {
+        archivesBaseName = 'javaModules'
+    }
+
+    build {
+        doLast {
+            Files.deleteIfExists(parent.file('.').toPath().resolve("../server/modules/javaModules.jar"))
+
+            if (Files.exists(file('build/libs/javaModules.jar').toPath()))
+                Files.copy(file('build/libs/javaModules.jar').toPath(), parent.file('.').toPath().resolve("../server/modules/javaModules.jar"))
+        }
+    }
+}
