@@ -4,7 +4,7 @@ FROM ubuntu:18.04
 RUN ["apt", "update"]
 RUN ["apt", "install", "-y", "portaudio19-dev", "sox", "flac", "ffmpeg", "libttspico0", "libttspico-utils", "python3-pip", "ca-certificates", "python3-certifi"]
 RUN ["pip3", "install", "pyaudio", "telepot", "SpeechRecognition", "sklearn"]
-RUN ["pip3", "install", "wikipedia", "googlemaps", "spacex_py", "html5lib", "python_dateutil"]
+RUN ["pip3", "install", "wikipedia", "googlemaps", "spacex_py", "html5lib", "python_dateutil", "spotipy"]
 RUN ["apt", "install", "-y", "fortunes-de"]
 
 RUN ["pip3", "install", "flask", "gevent", "werkzeug"]

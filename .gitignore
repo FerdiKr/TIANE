@@ -6,6 +6,8 @@ __pycache__/
 *.so
 .idea
 
+/server/resources/spotify/spotify-auth
+
 # Things related to JIANE
 java/.gradle
 java/build
