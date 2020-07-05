@@ -1,5 +1,7 @@
 import random
 
+SECURE = True
+
 # Beschreibung
 '''
 In diesem Spiel geht es darum, eine Zufallszahl in möglichst wenigen Schritten zu erraten.

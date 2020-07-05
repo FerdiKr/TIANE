@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup # needs html5lib
 import time
 import traceback
 
+SECURE = True
+
 __author__     = "olagino"
 __email__      = "olaginos-buero@outlook.de"
 __status__     = "Developement"

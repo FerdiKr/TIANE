@@ -1,5 +1,7 @@
 import time
 
+SECURE = False
+
 def reload_own(tiane):
     print('\n\n--------- RELOAD ---------')
     # Eigene Module neu laden

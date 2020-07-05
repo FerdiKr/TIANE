@@ -3,6 +3,8 @@ import spotipy.util as util
 import json
 import re
 
+SECURE = False
+
 # Beschreibung
 '''
 Spotify Steuerung

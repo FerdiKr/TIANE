@@ -1,3 +1,5 @@
+SECURE = True
+
 def isValid(txt):
     tt = txt.replace('.', (''))
     tt = tt.replace('?', (''))

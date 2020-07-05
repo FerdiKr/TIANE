@@ -5,6 +5,8 @@ import wikipedia
 import re
 wikipedia.set_lang("de")
 
+SECURE = True
+
 __author__     = "olagino"
 __email__      = "olaginos-buero@outlook.de"
 __status__     = "Developement"

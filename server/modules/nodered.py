@@ -1,6 +1,8 @@
 import requests
 import re
 
+SECURE = False # Verstößt gegen Punkt 2
+
 # Beschreibung
 '''
 Mit diesem Modul lassen sich an NodeRed angebundene SmartHome-Geräte steuern.

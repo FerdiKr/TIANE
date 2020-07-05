@@ -1,5 +1,7 @@
 import time
 
+SECURE = False
+
 def isValid(text):
     text = text.lower()
     if 'lad' in text and 'nutzer' in text:

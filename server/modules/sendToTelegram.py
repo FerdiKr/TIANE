@@ -1,5 +1,8 @@
 import re
 
+SECURE = False # Nicht SECURE, da Nachrichten an Telegram bei einer Verbindung per WebSocket
+               # nicht speziell behandelt werden. Deshalb macht das keinen Sinn.
+
 # Beschreibung
 '''
 Mit diesem Modul kann man sich Nachrichten per Telegram zuschicken lassen.

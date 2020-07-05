@@ -1,5 +1,7 @@
 import random
 
+SECURE = True
+
 def isValid(text):
     text = text.lower()
     if 'wie' in text and (('geht' in text and 'dir' in text) or 'läuft' in text or 'geht\'s' in text or 'gehts' in text):

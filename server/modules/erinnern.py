@@ -1,5 +1,7 @@
 import datetime
 
+SECURE = True
+
 def get_text(tiane, txt):
     remembrall = ''
     e_ind = 0

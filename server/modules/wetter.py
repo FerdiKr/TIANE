@@ -5,6 +5,7 @@ import urllib.parse
 import ast
 import re
 
+SECURE = True
 
 def get_weather(place):
     place = place.lower()

@@ -1,5 +1,7 @@
 import random
 
+SECURE = True
+
 def get_ausgabe(txt, tiane):
     output = ''
     output_zwei = ''

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+SECURE = True
+
 from spacex_py import launches
 
 def isValid(text):

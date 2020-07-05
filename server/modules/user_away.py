@@ -1,5 +1,7 @@
 import random
 
+SECURE = False
+
 def handle(text, tiane, profile):
     user = tiane.user
     '''farewells = ['Auf wiedersehen, {}!',

@@ -1,6 +1,8 @@
 import datetime
 import random
 
+SECURE = False # Verstößt gegen Punkt 5
+
 def get_inhalt(txt, tiane):
     inhalt = ''
     start_index = 0

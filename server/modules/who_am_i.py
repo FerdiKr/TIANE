@@ -1,5 +1,7 @@
 import random
 
+SECURE = True
+
 def handle(text, tiane, profile):
     if tiane.user is not None:
         if not tiane.user == 'Unknown':

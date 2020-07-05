@@ -1,6 +1,8 @@
 import datetime
 import random
 
+SECURE = True
+
 has_dateutil = True # Wenn `python_dateutil` installiert ist gibt TIANE eine Altersangabe in jahren, monaten und tagen an.
 try:
     from dateutil import relativedelta
@@ -117,7 +119,7 @@ def handle(text, tiane, profile):
                 output = output + output_days
 
             if (output == ''):
-                tiane.say('Hast du deine Systemzeit verstellt? Heute sind ncht die ersten Tests.')
+                tiane.say('Hast du deine Systemzeit verstellt? Heute sind nicht die ersten Tests.')
             else:
                 tiane.say('{} seit den ersten Tests.'.format(output))
 

@@ -1,3 +1,5 @@
+SECURE = False
+
 def isValid(text):
     text = text.lower()
     if 'präsentation' in text and 'modus' in text:

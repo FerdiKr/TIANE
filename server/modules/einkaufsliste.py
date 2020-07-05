@@ -2,6 +2,8 @@ import datetime
 from datetime import date
 import random
 
+SECURE = True
+
 def get_item(txt, tiane):
     item = ''
     tt = txt.replace('.', (''))

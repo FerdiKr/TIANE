@@ -9,6 +9,8 @@ import imutils
 import cv2
 import os
 
+SECURE = False
+
 def list_user_image_paths(user, local_storage):
     # Gibt eine Liste mit den vollen Pfaden zu allen Bildern eines Nutzers aus
     image_folder_path = local_storage['users'][user]['path'] + '/pictures'
