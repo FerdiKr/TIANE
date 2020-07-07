@@ -1219,9 +1219,10 @@ def runMain(commandMap=None, feedbackMap=None):
 
     #################################################-MAIN-################################################
     java_start = False
-    if len(sys.argv) > 0 and sys.argv[1].lower() == 'jni':
-        java_start = True
-        print('TIANE wurde von java aus gestartet.')
+    if len(sys.argv) > 0:
+        if sys.argv[1].lower() == 'jni':
+            java_start = True
+            print('TIANE wurde von java aus gestartet.')
 
     relPath = str(Path(__file__).parent) + "/"
     absPath = os.path.dirname(os.path.abspath(__file__))
