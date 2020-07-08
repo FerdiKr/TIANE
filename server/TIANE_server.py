@@ -10,6 +10,7 @@ import base64
 import time
 import json
 import os
+import sys
 from pathlib import Path
 import pickle
 from urllib.request import urlopen, Request
@@ -1243,9 +1244,10 @@ def runMain(commandMap=None, feedbackMap=None):
 
     #################################################-MAIN-################################################
     java_start = False
-    #if len(sys.argv) > 0 and sys.argv[1].lower() == 'jni':
-    #    java_start = True
-    #    print('TIANE wurde von java aus gestartet.')
+    if len(sys.argv) > 0:
+        if sys.argv[1].lower() == 'jni':
+            java_start = True
+            print('TIANE wurde von java aus gestartet.')
 
     relPath = str(Path(__file__).parent) + "/"
     absPath = os.path.dirname(os.path.abspath(__file__))
@@ -1285,6 +1287,7 @@ def runMain(commandMap=None, feedbackMap=None):
     Analyzer = Sentence_Analyzer(room_list=Room_list)
     Tiane = TIANE()
     Tiane.local_storage['TIANE_starttime'] = time.time()
+
 
     time.sleep(2)
 
