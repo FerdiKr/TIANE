@@ -63,13 +63,11 @@ def speechVariation(input):
     else:
         parse = input
     while "[" in parse and "]" in parse:
-        t_a = time.time()
         sp0 = parse.split("[",1)
         front = sp0[0]
         sp1 = sp0[1].split("]",1)
         middle = sp1[0].split("|",1)
         end = sp1[1]
-        t_b = time.time()
         parse = front + random.choice(middle) + end
     return parse
 
@@ -94,10 +92,10 @@ class MainBlock(object):
         if len(start) > 0 and len(end) > 0:
             self.setTrainStationsByString(start, end, self.time)
 
-    def setTrainStationsByString(self, start, end, time):
+    def setTrainStationsByString(self, start, end, timeStamp):
         self.start = TrainStation(start)
         self.end = TrainStation(end)
-        self.time = time
+        self.time = timeStamp
 
     def interactive(self):
         startRaw = input("Bitte geben Sie Ihren Startbahnhof ein: ")
@@ -193,7 +191,7 @@ class ConnectionGroup(object):
             types = trafficType
         else:
             types = '1111111111'
-        time = self.date.strftime('%H:%M')
+        timeStamp = self.date.strftime('%H:%M')
         date = self.date.strftime('%d.%m.%Y')
         weekday = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][int(self.date.strftime('%w'))]
         start = self.start.replace(' ', '+')
@@ -259,7 +257,7 @@ class ConnectionGroup(object):
             'REQ0JourneyStopsZ0a': '131072',
             'REQ0JourneyStopsZ0G': end,
             'REQ0JourneyStopsZ0o': '8',
-            'REQ0JourneyTime': time,
+            'REQ0JourneyTime': timeStamp,
             'REQ0Tariff_Class': '2',
             'REQ0Tariff_TravellerAge.1': '',
             'REQ0Tariff_TravellerReductionClass.1': '0',
@@ -516,19 +514,18 @@ def refineTime(timeRaw, mainTime):
 
 def handle(text, tiane, profile):
     text = text.lower().replace("ß", "ss")
-    journey = False
+    ziel = None
     try:
         start = tiane.analysis["town"]
-        print(tiane.analysis)
         if start == 'None' or start == None:
-            tiane.say(speechVariation("Ich weiß noch gar nicht, wo [wir hier gerade sind|es losgehen soll]."))
-            tiane.say(speechVariation("An welche[m Bahnhof|r Station] [willst|möchtest] du [|denn] [|gerne] [ab|los]fahren?"))
+            textOut = "Ich weiß noch gar nicht, wo [wir hier gerade sind|es losgehen soll]. "
+            textOut += "An welche[m Bahnhof|r Station] [willst|möchtest] du [|denn] [|gerne] [ab|los]fahren?"
+            tiane.say(speechVariation(textOut))
             start = tiane.listen().strip()
         startB = TrainStation(start)
         if "nach " in text:
-            tiane.say(speechVariation(["Mal sehen, was so auf den Schienen los ist.", "Einen Augenblick bitte."]))
+            sayAsync(tiane, speechVariation(["Mal sehen, was so auf den Schienen los ist.", "Einen Augenblick bitte."]))
             ziel = text.split("nach ")[1]
-            journey = True
         if "planen" in text or "reise" in text:
             tiane.say(speechVariation([
                 "[So,|] und wohin soll [die|deine] Reise gehen?",
@@ -536,25 +533,35 @@ def handle(text, tiane, profile):
                 "Wohin soll es denn gehen?"
             ]))
             ziel = tiane.listen().strip()
-            journey = True
-        if journey:
+        if ziel == None:
+            deps = startB.nextDepartures()
+            try:
+                dest = deps["destination"].replace("Hbf", "Hauptbahnhof").replace("(", "").replace(")", "")
+                text = "[Der nächste Zug, der|Die nächste Bahn, die] in " + startB.name + " abfährt, heißt "
+                text += deps["name"]["name"] + ", [fährt nach|hat als Fahrziel] " + dest
+                text += " und fährt planmäßig in " + str(round(deps["departure_rel"]/60))
+                text += " Minuten ab."
+            except TypeError:
+                text = "Im Moment konnte ich keine [passenden|] Abfahrten finden. [Vielleicht|Eventuell] schaust du mal im Bahn Navigator nach?"
+            tiane.say(speechVariation(text))
+        else:
             zielB = TrainStation(ziel)
             DeltaLat = abs(startB.lat - zielB.lat) * 111.11
             DeltaLong = abs(startB.long - zielB.long) * 111.11
             airdist = round((DeltaLat**2 + DeltaLong**2)**0.5)
-            time = datetime.datetime.now()
+            timeStamp = datetime.datetime.now()
             bridgeText = "Gut, dann schau[|e] ich mal, was ich für [Optionen|Möglichkeiten] finde."
             if airdist > 150:
-                bridgeText += " Oh, da hast du dir aber eine lange [|Reise][strecke|route] [ausgesucht|gewählt]."
+                bridgeText += " Oh, da hast du dir aber eine lange [|Reise][strecke|route] ausgesucht."
             else:
                 bridgeText += " Bitte [gedulde ich noch ein wenig|habe einen Moment Geduld]."
             sayAsync(tiane, speechVariation(bridgeText))
             # check nahverkehr
-            cGNV = ConnectionGroup(time, startB.id, zielB.id)
+            cGNV = ConnectionGroup(timeStamp, startB.id, zielB.id)
             cGNV.requestConnections("0011111111")
             cNV = cGNV.connections
             cNV = cNV[0]
-            ttnNV = abs((time - cNV.startTime).total_seconds()) / 60
+            ttnNV = abs((timeStamp - cNV.startTime).total_seconds()) / 60
             durNV = cNV.duration
             try:
                 priceNV = min(cNV.price)
@@ -566,10 +573,10 @@ def handle(text, tiane, profile):
                 kurzstrecke = False
                 try:
                     # check fernverkehr
-                    cGFV = ConnectionGroup(time, startB.id, zielB.id)
+                    cGFV = ConnectionGroup(timeStamp, startB.id, zielB.id)
                     cGFV.requestConnections("1111111111")
                     cFV = cGFV.connections[0]
-                    ttnFV = abs((cFV.startTime - time).total_seconds()) / 60
+                    ttnFV = abs((cFV.startTime - timeStamp).total_seconds()) / 60
                     durFV = cFV.duration
                     try:
                         priceFV = min(cFV.price)
@@ -639,17 +646,17 @@ def handle(text, tiane, profile):
 
                 for t in cNV.trainList:
                     typeTranslate = {
-                    "NJ": "[dein Nachtzug|deine Bahn]",
-                    "RJ": "[dein Zug|deine Bahn]",
-                    "ICE": "[dein I C E|deine Bahn]",
-                    "IC": "[dein Intercity|deine Bahn]",
-                    "EC": "[dein Eurocity|deine Bahn]",
-                    "IRE": "[dein Zug|deine Bahn]",
-                    "RE": "[dein Regionalexpress|deine Bahn]",
-                    "RB": "[dein Zug|deine Regionalbahn]",
+                    "NJ": "dein Nachtzug",
+                    "RJ": "dein Railjet",
+                    "ICE": "dein I C E",
+                    "IC": "dein Intercity",
+                    "EC": "dein Eurocity",
+                    "IRE": "dein Inter-Regionalexpress",
+                    "RE": "dein Regionalexpress",
+                    "RB": "deine Regionalbahn",
                     "S": "deine Ess-Bahn",
                     "U": "deine U-Bahn",
-                    "STR": "[deine Tram|deine Straßenbahn]",
+                    "STR": "deine Straßenbahn",
                     "Bus": "dein Bus"
                     }
                     if t.trainNumber.split(" ")[0].strip() in typeTranslate:
@@ -657,11 +664,25 @@ def handle(text, tiane, profile):
                     else:
                         startTrainName = "deine Bahn"
 
-                    startTrainNameB = startTrainName.replace("dein", "deinen")
-                    startTrainNameC = startTrainName.replace("dein", "den").replace("deine", "die")
+                    startTrainNameB = startTrainName.replace("dein ", "deinen ")
+                    startTrainNameC = startTrainName.replace("dein ", "den ").replace("deine ", "die ")
 
-                    startTrainNameNumber = " ".join(t.trainNumber.split(" ")[1]).strip()
-                    startTrainNameNumber = "  ".join(startTrainNameNumber.split())
+                    # generate TrainNumber. For Number-Lengths under 4 speak the number-code as a number. for longer train-names split those into groups of two or three.
+                    tempTrainNameNumber = t.trainNumber.split(" ")[1].strip()
+                    if len(tempTrainNameNumber) <=3:
+                        startTrainNameNumber = tempTrainNameNumber
+                    elif len(tempTrainNameNumber) == 5:
+                        startTrainNameNumber = tempTrainNameNumber[0:1] + " " + tempTrainNameNumber[2] + " " + tempTrainNameNumber[3:4]
+                    else:
+                        startTrainNameNumber = ""
+                        ct = 0
+                        for char in tempTrainNameNumber:
+                            if ct % 2 == 0:
+                                startTrainNameNumber += " "
+                            startTrainNameNumber += char
+                            ct += 1
+                    # startTrainNameNumber = " ".join(t.trainNumber.split(" ")[1]).strip()
+                    # startTrainNameNumber = "  ".join(startTrainNameNumber.split())
                     print(startTrainNameNumber)
 
                     startTrainNamePronoun = "Er" if "dein" in startTrainName else "Sie"
@@ -673,15 +694,21 @@ def handle(text, tiane, profile):
                         text += "Um " + t.startTime.strftime("%-H Uhr %-M ") + "fährt " + startTrainName + track + " ab."
 
                     elif first and len(cNV.trainList) > 1: # first train in a longer travel chain
-                        text += "Als erstes steigst du um " + t.startTime.strftime("%-H Uhr %-M ") +  track + "in " + startTrainNameB + " " + startTrainNameNumber + "ein."
+                        text += "Als erstes steigst du um " + t.startTime.strftime("%-H Uhr %-M ") + " " + track + " in " + startTrainNameB + " " + startTrainNameNumber + " ein."
 
                     elif not first and len(cNV.trainList) > 1:
                         varA = "[|Nach deiner Ankunft] in " + t.startStation
-                        varA += " [wechselst|steigst] du [als nächstes|dann] in " + startTrainNameC  + " " + startTrainNameNumber + " nach " + t.endStation + "[|ein]. "
+                        varA += random.choice([
+                            " steigst du [als nächstes|dann] in " + startTrainNameC + " " + startTrainNameNumber + " nach " + t.endStation + " ein. ",
+                            " wechselst du [|dann] in " + startTrainNameC + " " + startTrainNameNumber + " nach " + t.endStation + ". "
+                        ])
                         varA += startTrainNamePronoun + " fährt um " + t.startTime.strftime("%-H Uhr %-M ") + track + " [los|ab]. "
 
                         if len(str(t.startTrack).strip()) >= 1:
-                            varB = "[Wenn du in " + t.startStation + " angekommen bist,| Nach deiner Ankunft in " + t.startStation + "] "
+                            varB = random.choice([
+                                "Wenn du in " + t.startStation + " angekommen bist, ",
+                                "Nach deiner Ankunft in " + t.startStation + " "
+                            ])
                             varB += "[gehst|läufst] du dann zum " + track + " "
                             varB += "und steigst [kurz vor|um] " + t.startTime.strftime("%-H Uhr %-M ") + "in " + startTrainNameC  + " " + startTrainNameNumber + " ein. "
                         else:
@@ -696,22 +723,10 @@ def handle(text, tiane, profile):
                 tiane.say(speechVariation(text))
             else:
                 tiane.say(speechVariation("[Okay|keine Ursache]"))
-
-        else:
-            deps = startB.nextDepartures()
-            try:
-                dest = deps["destination"].replace("Hbf", "").replace("(", "").replace(")", "")
-                text = "[Der nächste Zug, der|Die nächste Bahn, die] in " + startB.name + " abfährt, heißt "
-                text += deps["name"] + ", [fährt nach|hat als Fahrziel] " + dest
-                text += " und fährt planmäßig in " + str(round(deps["departure_rel"]/60))
-                text += " Minuten ab."
-            except TypeError:
-                text = "Im Moment konnte ich keine [passenden|] Abfahrten finden. [Vielleicht|Eventuell] schaust du mal im Bahn Navigator nach?"
-            tiane.say(speechVariation(text))
     except IndexError as e:
+        tiane.say(speechVariation("[ooh je|ups], irgend[et|]was ist da [schiefgegangen|nicht nach plan gelaufen]. Wie wäre es, wenn du es einfach [später|noch einmal] versuchst?"))
         print(e)
         traceback.print_exc()
-        tiane.say(speechVariation("[ooh je|ups], irgend[et|]was ist da [schiefgegangen|nicht nach plan gelaufen]. Wie wäre es, wenn du es einfach [später|noch einmal] versuchst?"))
 
 def isValid(text):
     text = text.lower()
