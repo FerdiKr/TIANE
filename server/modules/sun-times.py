@@ -200,8 +200,6 @@ def handle(text, tiane, profile):
 def isValid(text):
     text = text.lower()
     if "sonne" in text and ("auf" in text or "unter" in text):
-        print("MODULCHECK TRIGGER")
         return True
     else:
-        print("MODULCHECK TRIGGER N")
         return False

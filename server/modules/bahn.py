@@ -87,8 +87,11 @@ these "APIs" may or may not be depracted instantly when deutschebahn or marudor 
 
 class MainBlock(object):
     """Main Class to handle everything."""
-    def __init__(self, start='', end=''):
-        self.time = datetime.datetime.now()
+    def __init__(self, start='', end='', timestamp=None):
+        if timestamp != None:
+            self.time = timestamp
+        else:
+            self.time = datetime.datetime.now()
         if len(start) > 0 and len(end) > 0:
             self.setTrainStationsByString(start, end, self.time)
 
@@ -533,6 +536,10 @@ def handle(text, tiane, profile):
                 "Wohin soll es denn gehen?"
             ]))
             ziel = tiane.listen().strip()
+        if "Nahverkehr" in text or "Regionalverkehr" in text:
+            vehicleSelection = "0011111111"
+        else:
+            vehicleSelection = "1111111111"
         if ziel == None:
             deps = startB.nextDepartures()
             try:
@@ -549,7 +556,11 @@ def handle(text, tiane, profile):
             DeltaLat = abs(startB.lat - zielB.lat) * 111.11
             DeltaLong = abs(startB.long - zielB.long) * 111.11
             airdist = round((DeltaLat**2 + DeltaLong**2)**0.5)
-            timeStamp = datetime.datetime.now()
+            # timeStamp = datetime.datetime.now()
+            if "datetime" in tiane.analysis:
+                timeStamp = tiane.analysis["datetime"]
+            else:
+                timeStamp = datetime.datetime.now()
             bridgeText = "Gut, dann schau[|e] ich mal, was ich für [Optionen|Möglichkeiten] finde."
             if airdist > 150:
                 bridgeText += " Oh, da hast du dir aber eine lange [|Reise][strecke|route] ausgesucht."
@@ -557,80 +568,29 @@ def handle(text, tiane, profile):
                 bridgeText += " Bitte [gedulde ich noch ein wenig|habe einen Moment Geduld]."
             sayAsync(tiane, speechVariation(bridgeText))
             # check nahverkehr
-            cGNV = ConnectionGroup(timeStamp, startB.id, zielB.id)
-            cGNV.requestConnections("0011111111")
-            cNV = cGNV.connections
-            cNV = cNV[0]
-            ttnNV = abs((timeStamp - cNV.startTime).total_seconds()) / 60
-            durNV = cNV.duration
+            connectionGroup = ConnectionGroup(timeStamp, startB.id, zielB.id)
+            connectionGroup.requestConnections(vehicleSelection)
+            connectionList = connectionGroup.connections
+            connection = connectionList[0]
+            timeToDepart = abs((timeStamp - connection.startTime).total_seconds()) / 60
+            duration = connection.duration
             try:
-                priceNV = min(cNV.price)
+                price = min(connection.price)
             except ValueError:
-                priceNV = -1
-            hopsNV = len(cNV.trainList)
-            # only check Fernverkehr if distance over 150km
-            if airdist > 75:
-                kurzstrecke = False
-                try:
-                    # check fernverkehr
-                    cGFV = ConnectionGroup(timeStamp, startB.id, zielB.id)
-                    cGFV.requestConnections("1111111111")
-                    cFV = cGFV.connections[0]
-                    ttnFV = abs((cFV.startTime - timeStamp).total_seconds()) / 60
-                    durFV = cFV.duration
-                    try:
-                        priceFV = min(cFV.price)
-                    except ValueError:
-                        priceFV = -1
-                    hopsFV = len(cFV.trainList)
-                except IndexError:
-                    kurzstrecke = True
-            else:
-                kurzstrecke = True
-
-            if kurzstrecke:
-                cFV = cNV
-                ttnFV = ttnNV
-                durFV = durNV
-                priceFV = priceNV
-                hopsFV = hopsNV
-
-            timespan = ttnFV
-            timespanRaw = timespan
-            if timespan <= 1:
+                price = -1
+            hopCount = len(connection.trainList)
+            if timeToDepart <= 1:
                 timespan = "sofort"
             else:
-                timespan = "in " + str(round(timespan)) + " Minuten" if timespan < 60 else str(round(timespan//60)) + " Stunden und " + str(round(timespan%60)) + " Minuten"
+                timespan = "in " + str(round(timeToDepart)) + " Minuten" if timeToDepart < 60 else str(round(timeToDepart//60)) + " Stunden und " + str(round(timeToDepart%60)) + " Minuten"
 
-            dur = durFV
-            duration = str(round(dur)) + " Minuten" if dur < 60 else str(round(dur//60)) + " Stunden und " + str(round(dur%60)) + " Minuten"
+            duration = str(round(duration)) + " Minuten" if duration < 60 else str(round(duration//60)) + " Stunden und " + str(round(duration%60)) + " Minuten"
 
-            durdiff = durNV-durFV
-            durdiffRaw = durdiff
-            durdiff = str(round(durdiff)) + " Minuten" if durdiff < 60 else str(round(durdiff//60)) + " Stunden und " + str(round(durdiff%60)) + " Minuten"
-            if hopsFV-1 == 0:
+            if hopCount-1 == 0:
                 text = "Die nächste Verbindung von " + startB.name + " nach " + zielB.name + " [fährt|kommt] " + timespan + " und dauert ungefähr " + duration + "."
             else:
                 text = "Die nächste Verbindung [fährt|kommt] " + timespan + " und dauert bei "
-                text += str(hopsFV-1) + " [Zugwechsel|Umstieg]" + ("" if hopsFV-1 == 1 else "n") + " ungefähr " + duration + "."
-
-            if priceNV < priceFV:
-                text += " Wenn du [Fernzüge ausschliesst|nur den Nahverkehr nutzt], sparst du " + str(round(priceFV-priceNV)) + " Euro " + (str(round(((priceFV-priceNV)-round(priceFV-priceNV))*100)) + "." if ((priceFV-priceNV)-round(priceFV-priceNV))*100 > 0 else ".")
-                if durFV < durNV:
-                    if durdiffRaw < 10:
-                        text += " Und du bist nichteimal zehn minuten länger [auf der Reise|unterwegs]"
-                    if durdiffRaw/timespanRaw > 0.7:
-                        text += "Dafür bist du mehr als doppelt so lange unterwegs"
-                    else:
-                        text += "Dafür bist du " + str(durdiff) + " Minuten länger unterwegs"
-                if ttnNV > ttnFV:
-                    text += " und wartest " + str(round(ttnNV-ttnFV)) + " Minuten [länger|mehr] am Startbahnhof."
-                else:
-                    text += "."
-            elif priceNV > 0 or priceFV > 0:
-                text += " Das Ticket [dafür|für diese Strecke|für diese Route] kostet [aktuell|im Moment] " + str(round(priFV)) + " Euro " + (str(round(((priFV)-round(priFV))*100)) if ((priFV)-round(priFV))*100 > 0 else "")
-            else:
-                text += ""
+                text += str(hopCount-1) + " [Zugwechsel|Umstieg]" + ("" if hopCount-1 == 1 else "n") + " ungefähr " + duration + "."
 
             text = text.replace("Hbf", "[|Hauptbahnhof]").replace("(", " ").replace(")", " ").replace("  ", " ")
             tiane.say(speechVariation(text))
@@ -638,13 +598,13 @@ def handle(text, tiane, profile):
             tiane.say(speechVariation(text))
             instr = tiane.listen()
             if batchMatch("[ja|ja gerne|gern|okay]", instr):
-                if len(cNV.trainList) > 1:
+                if len(connection.trainList) > 1:
                     text = "Okay, [aufgepasst|dann hol dir am besten einen Zettel zum mitschreiben]. "
                 else:
                     text = "Okay."
                 first = True
 
-                for t in cNV.trainList:
+                for t in connection.trainList:
                     typeTranslate = {
                     "NJ": "dein Nachtzug",
                     "RJ": "dein Railjet",
@@ -689,14 +649,13 @@ def handle(text, tiane, profile):
 
                     track = " [am Bahnsteig|an Gleis] " + str(t.startTrack) if len(str(t.startTrack).strip()) >= 1 else ""
 
-                    if first and len(cNV.trainList) == 1: # only one single train in connection
-
+                    if first and len(connection.trainList) == 1: # only one single train in connection
                         text += "Um " + t.startTime.strftime("%-H Uhr %-M ") + "fährt " + startTrainName + track + " ab."
 
-                    elif first and len(cNV.trainList) > 1: # first train in a longer travel chain
-                        text += "Als erstes steigst du um " + t.startTime.strftime("%-H Uhr %-M ") + " " + track + " in " + startTrainNameB + " " + startTrainNameNumber + " ein."
+                    elif first and len(connection.trainList) > 1: # first train in a longer travel chain
+                        text += "Als erstes steigst du um " + t.startTime.strftime("%-H Uhr %-M ") + " " + track + " in " + startTrainNameB + " " + startTrainNameNumber + " ein. "
 
-                    elif not first and len(cNV.trainList) > 1:
+                    elif not first and len(connection.trainList) > 1:
                         varA = "[|Nach deiner Ankunft] in " + t.startStation
                         varA += random.choice([
                             " steigst du [als nächstes|dann] in " + startTrainNameC + " " + startTrainNameNumber + " nach " + t.endStation + " ein. ",
@@ -713,7 +672,7 @@ def handle(text, tiane, profile):
                             varB += "und steigst [kurz vor|um] " + t.startTime.strftime("%-H Uhr %-M ") + "in " + startTrainNameC  + " " + startTrainNameNumber + " ein. "
                         else:
                             varB = "Spätestens um " + t.startTime.strftime("%-H Uhr %-M ") + "solltest du in " + t.startStation + " sein, damit"
-                            varB += " du noch " + startTrainNameC + " nach " + t.endStation + " [erreichst|bekommst|erwischst]. "
+                            varB += " du noch " + startTrainNameC + " nach " + t.endStation + " [erreichst|bekommst]. "
 
                         text += random.choice([varA, varB])
 
