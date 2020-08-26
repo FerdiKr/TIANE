@@ -132,10 +132,14 @@ def handle(text, tiane, profile):
             "Welchen Ort soll ich denn für meine Berechnungen annehmen?"
         ]
         tiane.say(speechVariation(textOut))
-        if "in " in text:
-            place = text.split("in ")[1].strip("?").strip()
+        if "in " in text or "aus" in text:
+            place = text.split("in ")[1].replace("?", "").strip()
         else:
-            place = tiane.listen().replace("von").strip()
+            try:
+                place = tiane.listen().replace("von").strip()
+            except:
+                textOut = "Im Moment konnte ich leider keinen Ort erkennen. [Vielleicht|Eventuell] versuchst du es später nochmal oder etwas anders formuliert?"
+                tiane.say(speechVariation(textOut))
     else:
         place = tiane.analysis["town"]
 

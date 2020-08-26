@@ -36,8 +36,8 @@ class Text_to_Speech:
         # audio-buffer ausgibt (und "notification_audio_format" entsprechend anpasst)(siehe Beispiel).
         # Denkbar wäre z.B. espeak oder google cloud text-to-speech.
         if not text == '':
-            # wav = self.synth_wav(text)
-            wav = self.synth_mary(text)
+            wav = self.synth_wav(text)
+            # wav = self.synth_mary(text)
             format = {'format': 8,
                       'channels':1,
                       'rate':self.rate,
