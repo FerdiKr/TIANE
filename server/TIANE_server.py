@@ -1219,7 +1219,7 @@ def runMain(commandMap=None, feedbackMap=None):
 
     #################################################-MAIN-################################################
     java_start = False
-    if len(sys.argv) > 0:
+    if len(sys.argv) > 1:
         if sys.argv[1].lower() == 'jni':
             java_start = True
             print('TIANE wurde von java aus gestartet.')
