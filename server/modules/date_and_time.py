@@ -1,7 +1,7 @@
 import datetime
 import random
 
-
+SECURE = True
 
 def get_time(i):
     now = datetime.datetime.now()
@@ -152,7 +152,7 @@ def handle(txt, tiane, profile):
                 antwort_zwei = tiane.listen()
                 antwort_zwei = antwort_zwei.lower()
                 if 'ja' in antwort_zwei or 'gerne' in antwort_zwei or 'wäre jetzt gut' in antwort_zwei or 'warum nicht' in antwort_zwei:
-                    tiane.say('Wenn endlich mal jemand ein Kaffeemaschienen Modul programmieren würde, würde ich dir jetzt sehr gerne Kaffee kochen.') #Das ist gut, er wird dich aufwecken.
+                    tiane.say('Wenn endlich mal jemand ein Kaffeemaschienen Modul programmieren würde, würde ich dir jetzt sehr gerne Kaffee kochen.') #Das ist gut, er wird dich aufwecken. (Vielleicht ist HTCPCP ja doch für was gut xD)
                 elif 'nein' in antwort_zwei or 'nicht' in antwort_zwei:
                     tiane.say('In Ordnung')
                 else:

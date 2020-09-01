@@ -1,3 +1,5 @@
+SECURE = True
+
 def isValid(text):
     return text.lower().startswith('wiederhole')
 

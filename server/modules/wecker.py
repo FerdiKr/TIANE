@@ -1,5 +1,7 @@
 import datetime
 
+SECURE = True
+
 def get_reply(tiane, dicanalyse):
     time = dicanalyse.get('time')
     jahr = str(time['year'])

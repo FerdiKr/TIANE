@@ -1,5 +1,7 @@
 #Information on TIANE's developers and their contact details
 
+SECURE = True
+
 import random
 
 def get_answer(text, tiane):

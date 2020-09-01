@@ -2,6 +2,8 @@
 
 import urllib.request
 
+SECURE = True
+
 def isValid(text):
     text = text.lower()
     if 'qr' in text:

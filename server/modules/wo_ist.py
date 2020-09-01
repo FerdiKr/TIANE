@@ -1,4 +1,8 @@
+
+SECURE = True
+
 PRIORITY = 1
+
 
 def isValid(txt):
     tt = txt.replace('.', (''))

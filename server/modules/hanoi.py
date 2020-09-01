@@ -3,6 +3,7 @@ import re
 import random
 
 PRIORITY = 2
+SECURE = True
 
 def faculty(x):
     if x == 0:

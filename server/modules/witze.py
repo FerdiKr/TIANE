@@ -1,6 +1,8 @@
 import random
 import datetime
 
+SECURE = True
+
 def isValid(text):
     text = text.lower()
     if 'witz' in text and ('kennst' in text or 'erzähl' in text):

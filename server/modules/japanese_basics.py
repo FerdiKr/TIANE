@@ -1,4 +1,5 @@
 PRIORITY = 2
+SECURE = True
 
 import random
 import datetime

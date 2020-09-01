@@ -1,5 +1,6 @@
 import random
 
+SECURE = True
 
 def reply(txt, tiane):
     output = ''

@@ -1,5 +1,7 @@
 import json
 
+SECURE = False # Verstößt gegen Punkt 2
+
 def isValid(text):
     text = text.lower()
     if ('erstell' in text or 'mach' in text or 'sicher' in text) and ('backup' in text or 'speicher' in text or 'date' in text):

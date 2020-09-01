@@ -1,6 +1,8 @@
 import googlemaps
 import re
 
+SECURE = True
+
 # Beschreibung
 '''
 Dieses Modul fragt die Distanz und Fahrzeit zwischen zwei Orten von Google Maps ab.

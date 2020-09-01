@@ -1,6 +1,8 @@
 import random
 import re
 
+SECURE = True
+
 zwischenPattern = re.compile(r'.*(von|zwischen) (-?\d+) (und|bis) (-?\d+).*', re.I)
 bisPattern = re.compile(r'.*(bis|kleiner gleich) (-?\d+).*', re.I)
 kleinerPattern = re.compile(r'.*(unter|kleiner) (als)? (-?\d+).*', re.I)

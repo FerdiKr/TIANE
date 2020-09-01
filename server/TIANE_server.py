@@ -1,4 +1,5 @@
 from TNetwork import TNetwork_Connection_Server
+import TWebsocket
 from analyze import Sentence_Analyzer
 from threading import Thread
 import traceback
@@ -125,7 +126,7 @@ def runMain(commandMap=None, feedbackMap=None):
                 usermodules[username] = modules
             return usermodules
 
-        def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None): #direct: True = Sprachaufruf
+        def query_threaded(self, user, name, text, direct=False, origin_room=None, data=None, must_be_secure=False): #direct: True = Sprachaufruf
             if text == None or text == '':
                 text = random.randint(0,1000000000)
                 analysis = {}
@@ -142,7 +143,7 @@ def runMain(commandMap=None, feedbackMap=None):
             if name is not None:
                 # Modul wurde direkt aufgerufen
                 for module in self.common_modules:
-                    if module.__name__ == name:
+                    if module.__name__ == name and ((not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
                         Log.write('ACTION', '--Modul {} direkt aufgerufen (Parameter: {})--'.format(name, text), conv_id=str(text), show=True)
                         Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                         mt = Thread(target=self.run_threaded_module, args=(text,module,))
@@ -153,7 +154,7 @@ def runMain(commandMap=None, feedbackMap=None):
 
                         return True
                 for module in self.user_modules[user]:
-                    if module.__name__ == name:
+                    if module.__name__ == name and ((not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
                         Log.write('ACTION', '--Modul {} (Nutzer: {}) direkt aufgerufen (Parameter: {})--'.format(name, user, text), conv_id=str(text), show=True)
                         Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                         mt = Thread(target=self.run_threaded_module, args=(text,module,))
@@ -168,7 +169,7 @@ def runMain(commandMap=None, feedbackMap=None):
             if origin_room == 'Telegram':
                 for module in self.common_modules:
                     try:
-                        if module.telegram_isValid(data):
+                        if module.telegram_isValid(data) and ((not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
                             Log.write('ACTION', '--Modul {} via telegram_isValid gestartet--'.format(module.__name__), conv_id=str(text), show=True)
                             Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                             mt = Thread(target=self.run_threaded_module, args=(text,module,))
@@ -182,7 +183,7 @@ def runMain(commandMap=None, feedbackMap=None):
             # Ansonsten halt ohne spezielle Telegram-Features
             for module in self.common_modules:
                 try:
-                    if module.isValid(text):
+                    if module.isValid(text) and ((not must_be_secure) or (hasattr(module, 'SECURE') and getattr(module, 'SECURE'))):
                         Log.write('ACTION', '--Modul {} gestartet--'.format(module.__name__), conv_id=str(text), show=True)
                         Tiane.active_modules[str(text)] = self.Modulewrapper(text, analysis, user, origin_room, data)
                         mt = Thread(target=self.run_threaded_module, args=(text,module,))
@@ -450,6 +451,9 @@ def runMain(commandMap=None, feedbackMap=None):
                 user = self.user
             return Tiane.start_module(user, name, text, room)
 
+        def sendWebSocketEvent(self, event: str, data: dict):
+            TWebsocket.sendEvent(event, data)
+
         def translate(self, ttext, targetLang='de'):
             return Tiane.translate(ttext, targetLang)
 
@@ -491,6 +495,9 @@ def runMain(commandMap=None, feedbackMap=None):
             if user == None or user == 'Unknown':
                 user = self.user
             return Tiane.start_module(user, name, text, room)
+
+        def sendWebSocketEvent(self, event: str, data: dict):
+            TWebsocket.sendEvent(event, data)
 
     class Users:
         def __init__(self):
@@ -647,10 +654,16 @@ def runMain(commandMap=None, feedbackMap=None):
                 else:
                     Log.write('ERROR', 'Der Text "{}" sollte via Telegram gesendet werden, obwohl Telegram nicht eingerichtet ist!'.format(text), conv_id=original_command, show=True)
                     return
+            # Vielleicht ist es ein WebSocket output type?
+            if (TWebsocket.tellUserVia(user, output, text)):
+                return
             if raum == None:
                 # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wo der Text gesagt werden soll. Einfach beenden.
                 if user == None or user == 'Unknown':
                     Log.write('WARNING', 'Der Text "{}" konnte nicht gesagt werden, weil weder ein Raum noch ein Nutzer als Ziel angegeben wurden'.format(text), conv_id=original_command, show=True)
+                    return
+                #Vielleicht ist der user einem WebSocket-Raum zugeordnet?
+                if TWebsocket.tellUser(user, text, self.local_storage):
                     return
                 # Der Text soll zu einem bestimmten user gesagt werden
                 current_waiting_room = ('',None)
@@ -682,6 +695,10 @@ def runMain(commandMap=None, feedbackMap=None):
                     time.sleep(0.03)
             else:
                 # Der Text soll in einem bestimmten Raum gesagt werden
+                # Zuerst mal WebSocket fragem, ob der Raum bekannt ist
+                if TWebsocket.tellUserInRoom(user, raum, text):
+                    # Der Raum war ein WebSocket-Raum und der Text wurde gesendet.
+                    return
                 for name, room in self.rooms.items():
                     if name.lower() == raum.lower():
                         # Dem Raum den Auftrag erteilen, es zu sagen
@@ -697,6 +714,10 @@ def runMain(commandMap=None, feedbackMap=None):
                 Log.write('WARNING', 'Für einen Aufruf von tiane.listen() konnte kein user als Ziel ermittelt werden.', conv_id=original_command, show=True)
                 return 'TIMEOUT_OR_INVALID'
             # Tiane soll einem bestimmten user zuhören
+            # Ist der user in einem WebSocket raum?
+            ws_answer = TWebsocket.listen(user, self.local_storage)
+            if ws_answer is not None:
+                return ws_answer
             current_waiting_room = ('',None)
             if self.telegram is not None:
                 if telegram == True or user not in self.Users.userlist:
@@ -743,25 +764,26 @@ def runMain(commandMap=None, feedbackMap=None):
                                 return response
                 time.sleep(0.03)
 
-        def route_query_modules(self, user, name=None, text=None, room=None, direct=False, origin_room=None, data=None): #direct: True = Sprachaufruf
+        def route_query_modules(self, user, name=None, text=None, room=None, direct=False, origin_room=None, data=None, must_be_secure=False): #direct: True = Sprachaufruf , must_be_secure: True = Nur server module die SECURE markiert sind.
             room, name = self.get_context(user, name, text, room, direct, origin_room)
             if not room == None:
                 if room == self.server_name:
-                    return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room, data=data)
+                    return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room, data=data, must_be_secure=must_be_secure)
                 else:
-                    for room_name, raum in self.rooms.items():
-                        if room_name.lower() == room.lower():
-                            response = raum.request_query_modules(user, name=name, text=text, direct=direct, origin_room=origin_room, data=data)
-                            # Bin mir mit dem folgenden Abschnitt noch nicht ganz sicher. Eigentlich ist ein möglicher Zielraum doch (bei Sprachaufruf) das letzte,
-                            # was durchsucht werden muss... oder meint get_context was anderes..? Sagen wir mal, das hier kann man entfernen, wenn das Programm mal gut über mehrere Räume getestet ist :)
-                            '''if response == False:
-                                # Die Anfrage könnte auch "aus Versehen" an den Raum gegangen sein, man sollte
-                                # zumindest noch die eigenen user- und common-modules befragen.
-                                return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room)
-                            else:'''
-                            return response
+                    if not must_be_secure:
+                        for room_name, raum in self.rooms.items():
+                            if room_name.lower() == room.lower():
+                                response = raum.request_query_modules(user, name=name, text=text, direct=direct, origin_room=origin_room, data=data)
+                                # Bin mir mit dem folgenden Abschnitt noch nicht ganz sicher. Eigentlich ist ein möglicher Zielraum doch (bei Sprachaufruf) das letzte,
+                                # was durchsucht werden muss... oder meint get_context was anderes..? Sagen wir mal, das hier kann man entfernen, wenn das Programm mal gut über mehrere Räume getestet ist :)
+                                '''if response == False:
+                                    # Die Anfrage könnte auch "aus Versehen" an den Raum gegangen sein, man sollte
+                                    # zumindest noch die eigenen user- und common-modules befragen.
+                                    return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room)
+                                else:'''
+                                return response
             else:
-                return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room, data=data)
+                return self.Modules.query_threaded(user, name, text, direct=direct, origin_room=origin_room, data=data, must_be_secure=must_be_secure)
 
         def speechVariation(self, input):
             """
@@ -856,6 +878,9 @@ def runMain(commandMap=None, feedbackMap=None):
         def end_Conversation(self,original_command):
             for room in self.rooms.values():
                 room.request_end_Conversation(original_command)
+
+        def sendWebSocketEvent(self, event: str, data: dict):
+            TWebsocket.sendEvent(event, data)
 
         def translate(self, text, targetLang='de'):
             try:
@@ -1240,6 +1265,7 @@ def runMain(commandMap=None, feedbackMap=None):
     Server_name = config_data['Server_name']
     Home_location = config_data["Home_location"]
     Local_storage = config_data['Local_storage']
+    websocket_mode = config_data['websocket']
     TNetwork_Key = base64.b64decode(config_data['TNetwork_Key'].encode('utf-8')) # sehr umständliche Decoder-Zeile. Leider nötig :(
 
     Local_storage['TIANE_PATH'] = absPath
@@ -1282,6 +1308,17 @@ def runMain(commandMap=None, feedbackMap=None):
 
 
     Tiane.Modules.start_continuous()
+
+    if websocket_mode.lower() == 'disabled':
+        pass
+    elif websocket_mode.lower() == 'enabled':
+        Log.write('INFO', 'Starte WebSocket...', show=True)
+        TWebsocket.startWsServer(Tiane, config_data['websocket_port'], True, config_data['websocket_timeout'])
+    elif websocket_mode.lower() == 'secure':
+        Log.write('INFO', 'Starte WebSocket... (secure)', show=True)
+        TWebsocket.startWsServer(Tiane, config_data['websocket_port'], False, config_data['websocket_timeout'])
+    else:
+        Log.write('ERROR', 'Fehlerhaft Konfiguration: WebSocket-Modus nicht bekannt.', show=True)
 
     # Setzt einen socket auf einem freien Port >= 50000 auf.
     port = 50000

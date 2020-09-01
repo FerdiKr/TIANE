@@ -2,6 +2,7 @@ import math # Wird wegen eval gebraucht
 import re
 
 PRIORITY = 5
+SECURE = False # Verstößt gegen Punkt 1
 
 termFinder = re.compile(r'.*?((\d|\(|-|minus|sinus|pi|cosinus|kosinus|tangens|kubikwurzel|quadratwurzel|wurzel|ein|null|antwort|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf).*)', re.I)
 bruchFinder = re.compile(r'^(.*?)(\d+|ein|zwei|drei|vier|fünf|sechs|sieben|acht|neun|zehn|elf|zwölf) (ganzes|ganze|halbes|halbe|halb|drittel|viertel|fünftel|sechstel|siebtel|achtel|neuntel|zehntel|elftel|zwölftel|4tel|5tel|6tel|8tel|9tel|10tel|11tel|12tel)(.*?)$', re.I)

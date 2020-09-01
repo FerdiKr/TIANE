@@ -1,6 +1,7 @@
 import subprocess
 
 PRIORITY = -1
+SECURE = False # Verstößt gegen Punk 1
 
 # Nutzt das fortunes-de package verfügbar auf debian und ubuntu.
 # Das paket stellt irgendwelche sätze oder zitate bereit.

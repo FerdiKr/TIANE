@@ -34,5 +34,8 @@
     "telegram": false,
     "TNetwork_Key": "",
     "use_interface": false,
-    "System_name": "TIANE"
+    "System_name": "TIANE",
+    "websocket": "enabled",
+    "websocket_port": 19526,
+    "websocket_timeout": 20
 }

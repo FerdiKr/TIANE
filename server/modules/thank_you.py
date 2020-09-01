@@ -1,3 +1,5 @@
+SECURE = True
+
 PRIORITY = -2
 
 def isValid(text):
