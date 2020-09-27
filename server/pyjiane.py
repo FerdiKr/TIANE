@@ -10,6 +10,7 @@ class JavaModule:
     def __init__(self, jianeModule):
         self.mod = jianeModule
         self.PRIORITY = jianeModule.PRIORITY
+        self.SECURE = jianeModule.SECURE
         self.WORDS = jianeModule.WORDS
         self.__name__ = jianeModule.MODNAME
 
