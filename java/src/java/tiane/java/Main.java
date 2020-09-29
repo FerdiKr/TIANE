@@ -84,6 +84,7 @@ public class Main {
                     new String[]{"lib" + COMPILED_PYTHON + ".so"}
             );
             System.out.println("Der TIANE-Haupthread ist fertig.");
+            System.exit(0);
         });
         TIANE_THREAD.setUncaughtExceptionHandler((thread, throwable) -> {
             if (throwable instanceof TianeException) {

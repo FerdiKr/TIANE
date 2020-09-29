@@ -161,6 +161,12 @@ public class Tiane extends LazyPythonObject {
      */
     public native Analysis analyze(String text);
 
+    /**
+     * Sendet ein event an alle WebSocket-Verbindungen. Diese können dann darauf
+     * reagieren. Der Name des events ist frei wählbar. Das Disctionary wird später
+     * zu JSON-Daten umgewandelt.
+     */
+    public native void sendWebSocketEvent(String event, Dictionary data);
 
     private native Dictionary userListRaw();
 

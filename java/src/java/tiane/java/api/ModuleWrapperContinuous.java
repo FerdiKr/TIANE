@@ -149,6 +149,15 @@ public class ModuleWrapperContinuous extends LazyPythonObject {
 
     public native boolean startModule(@Nullable String name, @Nullable String text, @Nullable String user, @Nullable String room);
 
+    /**
+     * Sendet ein event an alle WebSocket-Verbindungen. Diese können dann darauf
+     * reagieren. Der Name des events ist frei wählbar. Das Disctionary wird später
+     * zu JSON-Daten umgewandelt.
+     */
+    public void sendWebSocketEvent(String event, Dictionary data) {
+        core().sendWebSocketEvent(event, data);
+    }
+
     private native LocalStorage lstorageRaw();
 
     private native String pathRaw();
