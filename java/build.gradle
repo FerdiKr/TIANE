@@ -71,6 +71,9 @@ task setPythonVersion {
     outputs.upToDateWhen { false }
 
     doFirst {
+        if (!Files.exists(file('src/resources/tiane/java').toPath())) {
+            Files.createDirectories(file('src/resources/tiane/java').toPath());
+        }
         Files.write(file('src/resources/tiane/java/COMPILED_PYTHON').toPath(), Collections.singletonList(cfg.pythonLibrary))
     }
 }
@@ -162,6 +165,7 @@ javadoc {
     options.addStringOption('encoding', 'utf8')
     options.addStringOption('docencoding', 'utf8')
     options.addStringOption('charset', 'utf8')
+    options.addStringOption('Xdoclint:none', '-quiet')
 
     doFirst {
         file('./doc').mkdirs()

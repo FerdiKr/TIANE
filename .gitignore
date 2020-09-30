@@ -11,6 +11,7 @@ __pycache__/
 # Things related to JIANE
 java/.gradle
 java/build
+java/javaModules/build
 server/jiane.jar
 server/jiane.so
 java/CMakeLists.txt

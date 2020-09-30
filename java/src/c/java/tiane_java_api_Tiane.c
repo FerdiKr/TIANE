@@ -44,6 +44,13 @@ JNIEXPORT jobject JNICALL Java_tiane_java_api_Tiane_analyze(JNIEnv *env, jobject
   return ret;
 }
 
+JNIEXPORT void JNICALL Java_tiane_java_api_Tiane_sendWebSocketEvent(JNIEnv *env, jobject inst, jstring event, jobject data) {
+    ENSURE_GIL;
+    PyObject *obj = JIANEDC_getLazyWrapped(env, inst);
+    JDC_call(obj, "sendWebSocketEvent", 2, JIANEDC_toPythonString(env, event), JIANEDC_getLazyWrapped(env, data));
+    RELEASE_GIL;
+}
+
 JNIEXPORT jobject JNICALL Java_tiane_java_api_Tiane_userListRaw(JNIEnv *env, jobject inst) {
   ENSURE_GIL;
   PyObject *obj = JIANEDC_getLazyWrapped(env, inst);

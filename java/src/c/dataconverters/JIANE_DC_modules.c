@@ -119,6 +119,9 @@ PyObject *JIANEDC_toModule(JNIEnv *env, jobject module) {
   jmethodID mid_priority = (*env)->GetMethodID(env, clazz, "priority", "()I");
   int priority = (*env)->CallIntMethod(env, glob, mid_priority);
 
+  jmethodID mid_secure = (*env)->GetMethodID(env, clazz, "secure", "()Z");
+  jboolean secure = (*env)->CallBooleanMethod(env, glob, mid_priority);
+
   jmethodID mid_words = (*env)->GetMethodID(env, clazz, "words", "()[Ljava/lang/String;");
   jobjectArray words = (jobjectArray)(*env)->CallObjectMethod(env, glob, mid_words);
 
@@ -141,6 +144,13 @@ PyObject *JIANEDC_toModule(JNIEnv *env, jobject module) {
   PyObject *pymodule = PyModule_New(modulename_generated);
   PyModule_AddIntConstant(pymodule, "JAVA_MODULE_MAP_ID", moduleId);
   PyModule_AddObject(pymodule, "PRIORITY", PyLong_FromSize_t(priority));
+  if (secure == JNI_TRUE) {
+    Py_XINCREF(Py_True);
+    PyModule_AddObject(pymodule, "SECURE", Py_True);
+  } else {
+    Py_XINCREF(Py_False);
+    PyModule_AddObject(pymodule, "SECURE", Py_False);
+  }
   PyModule_AddObject(pymodule, "WORDS", wordlist);
   PyModule_AddObject(pymodule, "MODNAME", PyUnicode_FromString((*env)->GetStringUTFChars(env, jmodname, NULL)));
 

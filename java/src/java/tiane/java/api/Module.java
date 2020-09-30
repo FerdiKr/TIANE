@@ -26,6 +26,14 @@ public interface Module {
     }
 
     /**
+     * Gibt an ob das Modul "sicher" ist. Siehe SecureModules.md im repository root.
+     */
+    @NativeEntryPoint
+    default boolean secure() {
+        return false;
+    }
+
+    /**
      * Ein array von Wörtern, die als Hilfe für die Sprcherkennung verwendet werden sollen.
      */
     @NativeEntryPoint

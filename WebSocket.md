@@ -1,6 +1,6 @@
 # TIANE WebSocket
 
-Tiane hat einen eingebauten WebSocket-Server, der es anderen Anwendungen Tiane zu benutzen um zum Beispiel Nutzern Nachrichten zu schicken, egal wo sie sind oder auf `events` zu reagieren.
+Tiane hat einen eingebauten WebSocket-Server, der es anderen Anwendungen erlaubt Tiane zu benutzen um zum Beispiel Nutzern Nachrichten zu schicken, egal wo sie sind oder auf `events` zu reagieren.
 
 ## WebSocket aktivieren
 

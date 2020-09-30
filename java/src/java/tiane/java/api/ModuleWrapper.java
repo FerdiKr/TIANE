@@ -615,6 +615,15 @@ public class ModuleWrapper extends LazyPythonObject {
      */
     public native void endConversation();
 
+    /**
+     * Sendet ein event an alle WebSocket-Verbindungen. Diese können dann darauf
+     * reagieren. Der Name des events ist frei wählbar. Das Disctionary wird später
+     * zu JSON-Daten umgewandelt.
+     */
+    public void sendWebSocketEvent(String event, Dictionary data) {
+        core().sendWebSocketEvent(event, data);
+    }
+
     private native void sayRaw(String text, @Nullable String room, @Nullable String user, @Nullable String type);
 
     private native String listenRaw(@Nullable String user, @Nullable String type);
