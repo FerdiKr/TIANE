@@ -57,7 +57,7 @@ def play_audio_file(fname=DETECT_DING):
     a Ding sound.
     :param str fname: wave file name
     :return: None
-    """
+    
     ding_wav = wave.open(fname, 'rb')
     ding_data = ding_wav.readframes(ding_wav.getnframes())
     with no_alsa_error():
@@ -72,6 +72,7 @@ def play_audio_file(fname=DETECT_DING):
     stream_out.stop_stream()
     stream_out.close()
     audio.terminate()
+    """
 
 
 class HotwordDetector(object):
