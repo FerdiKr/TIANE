@@ -253,7 +253,33 @@ class TIANE:
         srt = Thread(target=self.handle_online_requests)
         srt.daemon = True
         srt.start()
+        
+    def hotword_detected(self):
+        # Der Name wurde bewusst mit Hinsicht auf weitere Reaktionen (wie z.B. Leuchten, etc.) gewählt
 
+        # playing Bling-Sound
+        TOP_DIR = os.path.dirname(os.path.abspath(__file__))
+        DETECT_DING = os.path.join(TOP_DIR, "resources/snowboy/resources/ding.wav")
+        DETECT_DONG = os.path.join(TOP_DIR, "resources/snowboy/resources/dong.wav")
+
+        audiofile = wave.open(DETECT_DONG, 'rb')
+        chunk = 1024
+        frame_rate = audiofile.getframerate() * 2
+
+        format = {'format': 8,
+                  'channels': 1,
+                  'rate': frame_rate,
+                  'chunk': chunk}
+
+        wav_data = audiofile.readframes(chunk)
+        audio_buffer = []
+        while wav_data:
+            audio_buffer.append(wav_data)
+            wav_data = audiofile.readframes(chunk)
+        audio_buffer.append('Endederdurchsage')
+        self.Audio_Output.notification_audio_format = format
+        self.Audio_Output.priority_play(audio_buffer)
+        
     def handle_voice_call(self, text, user):
         self.Conversation.transform_blockage(text, user)
         # Immer erst mal den Server fragen, der fragt dann auch direkt den passenden Raum, falls nötig...
@@ -272,6 +298,7 @@ class TIANE:
     def handle_online_requests(self):
         say_requests = []
         listen_requests = []
+        play_requests = []
         query_requests = []
         while True:
             # SAY
@@ -299,6 +326,31 @@ class TIANE:
                     self.say(request['original_command'],request['text'],request['room'],request['user'])
                     self.Serverconnection.send({'TIANE_room_confirms_say_{}'.format(request['original_command']):True})
                     say_requests.remove(request)
+                    
+            # PLAY
+            # Neue Aufträge einholen
+            new_play_requests = self.Serverconnection.readanddelete('Tiane_room_play')
+            if new_play_requests is not None:
+                for request in new_play_requests:
+                    play_requests.append(request)
+            # Zu cancelnde Aufträge bearbeiten
+            cancel_requests = self.Serverconnection.readanddelete('Tiane_room_cancel_play')
+            if cancel_requests is not None:
+                for request in cancel_requests:
+                    for play_request in play_requests:
+                        if request == play_request['original_command']:
+                            play_requests.remove(play_request)
+                            self.Serverconnection.send({'Tiane_room_confirms_cancel_play_{}'.format(request): True})
+                            cancel_requests.remove(request)
+                    else:
+                        self.Serverconnection.send({'Tiane_room_confirms_cancel_play_{}'.format(request): False})
+                        cancel_requests.remove(request)
+            # Aufträge bearbeiten
+            for request in play_requests:
+                if self.Conversation.query(request['original_command']) == True:
+                    self.play(request['original_command'], request['audiofile'], request['room'], request['user'])
+                    self.Serverconnection.send({'Tiane_room_confirms_play_{}'.format(request['original_command']): True})
+                    play_requests.remove(request)
 
             # LISTEN
             # Neue Aufträre einholen
@@ -383,7 +435,16 @@ class TIANE:
             if not self.Serverconnection.connected:
                 raise ConnectionAbortedError
             time.sleep(0.03)
-
+            
+    def request_play(self, original_command, audiofile, raum, user, output):
+        self.Serverconnection.send_buffer({'Tiane_server_play': [
+            {'original_command': original_command, 'audiofile': audiofile, 'room': raum, 'user': user,
+             'output': output}]})
+        while not self.Serverconnection.readanddelete('Tiane_server_confirms_play_{}'.format(original_command)) == True:
+            if not self.Serverconnection.connected:
+                raise ConnectionAbortedError
+            time.sleep(0.03)
+            
     def request_listen(self, original_command, user, telegram=False):
         self.Serverconnection.send_buffer({'TIANE_server_listen':[{'original_command':original_command,'user':user,'telegram':telegram}]})
         while True:
@@ -468,6 +529,14 @@ class TIANE:
         self.Serverconnection.send_buffer({'TIANE_LOG':[{'type':'ACTION','content':'--{}--@{} ({}): {}'.format(self.system_name.upper(),user,self.room_name,text), 'info':None, 'conv_id':original_command, 'show':True}]})
         self.Audio_Output.say(text)
 
+    def play(self, original_command, audiofile, room, user):
+        self.Serverconnection.send_buffer({'Tiane_LOG': [{'type': 'ACTION', 'content': '--{}--@{} ({}): {}'.format(
+            self.system_name.upper(), user, self.room_name, text), 'info': None, 'conv_id': original_command,
+                                                         'show': True}]})
+        self.Audio_Output.playback_audio_format = audiofile["format"]
+        self.Audio_Output.play(audiofile["buffer"])
+
+        
     def translate(self, text, targetLang='de'):
         try:
             request = Request(
@@ -527,7 +596,11 @@ class Modulewrapper:
             if not 'telegram' in output.lower():
                 output = 'telegram'
         Tiane.request_say(self.text, text, room, user, output)
-
+    
+    def play(self, audiofile, room=None, user=None):
+        #ToDo: Audio soll an Server geschickt werden und dann von diesem abgearbeitet werden
+        self.Audio_Output.play(audiofile)
+    
     def listen(self, user=None, input='auto'):
         if user == None or user == 'Unknown':
             user = self.user
@@ -719,6 +792,7 @@ try:
             if not Local_storage['TIANE_Hotword_detected'] == {}:
                 # Wir haben noch keine wirkliche Konversation, aber wir blockieren sie schon mal
                 Tiane.Conversation.blocked = True
+                Tiane.hotword_detected()
                 print('\n\nUser --{}-- detected'.format(Local_storage['TIANE_Hotword_detected']['user'].upper()))
                 # Server knows best. Einfach den schon mal fragen, dann wissen wir gleich (wenn der Text vorliegt), wer da überhaupt spricht...
                 Tiane.Serverconnection.send({'TIANE_user_voice_recognized':Local_storage['TIANE_Hotword_detected']['user']})
