@@ -399,7 +399,45 @@ def runMain(commandMap=None, feedbackMap=None):
                 if not 'telegram' in output.lower():
                     output = 'telegram'
             Tiane.route_say(self.text, text, room, user, output)
+            
+        def play(self, path=None, audiofile=None, room=None, user=None, priority=None, output='auto'):
+            # gucken, ob ein Pfad angegeben wurde
+            if path is not None:
+                # Ja? Dann die Datei zum Pfad laden
+                audiofile = wave.open(path, 'rb')
+            if user == None or user == 'Unknown':
+                user = self.user
+            if user == None or user == 'Unknown':  # Immer noch? Kann durchaus sein...
+                room = self.room
+            try:
+                if self.local_storage['users'][user]['room'] == 'Telegram' and not 'telegram' in output.lower():
+                    output = 'telegram'
+            except KeyError:
+                print("KeyError")
+            if output == 'auto':
+                output = 'telegram' if self.room == 'Telegram' else 'speech'
+            # Noch ne Variante: Der Nutzer ist nur über Telegram bekannt...
+            if user not in self.userlist and user in self.local_storage['TIANE_telegram_name_to_id_table'].keys():
+                if not 'telegram' in output.lower():
+                    output = 'telegram'
 
+            chunk = 4096
+            frame_rate = audiofile.getframerate() * 2
+
+            format = {'format': 8,
+                      'channels': 1,
+                      'rate': frame_rate,
+                      'chunk': chunk}
+
+            wav_data = audiofile.readframes(chunk)
+            audio_buffer = []
+            while wav_data:
+                audio_buffer.append(wav_data)
+                wav_data = audiofile.readframes(chunk)
+            audio_buffer.append('Endederdurchsage')
+            audio_data = {"buffer": audio_buffer, "format": format}
+            Tiane.route_play(self.text, audio_data, room, user, output, priority)
+            
         def listen(self, user=None, input='auto'):
             if user == None or user == 'Unknown':
                 user = self.user
@@ -707,7 +745,85 @@ def runMain(commandMap=None, feedbackMap=None):
                         while room.request_say(original_command, text, raum, user) == False:
                             time.sleep(0.03)
                         return
-
+                    
+        def route_play(self, original_command, audiofile, raum, user, output, priority):
+            if self.presentation_mode and user in self.Users.userlist:
+                output = 'speech'
+            Log.write('DEBUG', {'Action': 'route_play()', 'conv_id': original_command, 'raum': raum, 'user': user,
+                                'output': output, 'priority': priority}, conv_id=original_command, show=False)
+            if ('telegram' in output.lower()) or (user not in self.Users.userlist and user is not None):
+                if self.telegram is not None:
+                    # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, an wen die Audio gesendet werden soll. Einfach beenden.
+                    if user == None or user == 'Unknown':
+                        Log.write('WARNING',
+                                  'Eine Audiodatei konnte nicht abgespielt werden, da kein Nutzer als Ziel angegeben wurde',
+                                  conv_id=original_command, show=True)
+                        return
+                    try:
+                        uid = self.local_storage['TIANE_telegram_name_to_id_table'][user]
+                        self.telegram.sendAudio(audiofile, self.local_storage['TIANE_telegram_name_to_id_table'][user],
+                                                original_command)
+                    except KeyError:
+                        Log.write('WARNING',
+                                  'Eine Audiodatei konnte nicht abgespielt werden, da kein Nutzer als Ziel angegeben wurde',
+                                  conv_id=original_command, show=True)
+                    return
+                else:
+                    Log.write('ERROR',
+                              'Eine Audiodatei sollte via Telegram gesendet werden, obwohl Telegram nicht eingerichtet ist!'.format(
+                                  audiofile), conv_id=original_command, show=True)
+                    return
+            if raum == None:
+                # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wo die Audio abgespielt werden soll. Einfach beenden.
+                if user == None or user == 'Unknown':
+                    Log.write('WARNING',
+                              'Eine Audiodatei konnte nicht abgespielt werden, da kein Nutzer als Ziel angegeben wurde',
+                              conv_id=original_command, show=True)
+                    return
+                # Die Audio soll bei einem bestimmten user abgespielt werden
+                current_waiting_room = ('', None)
+                while True:
+                    for name, room in self.rooms.items():
+                        if user in room.users:
+                            if current_waiting_room[0] == '':
+                                current_waiting_room = (name, room)
+                                room.request_play(original_command, audiofile, raum, user, priority, send=True)
+                            if not name == current_waiting_room[0]:
+                                # Der Benutzer hat gerade den Raum gewechselt, die Audio muss folgen!
+                                current_waiting_room[1].request_play(original_command, audiofile, raum, user, priority,
+                                                                     cancel=True,
+                                                                     send=True)
+                                while True:
+                                    cancel_response = current_waiting_room[1].request_play(original_command, audiofile,
+                                                                                           raum,
+                                                                                           user, priority, cancel=True)
+                                    if not cancel_response == 'ongoing':
+                                        break
+                                    time.sleep(0.03)
+                                if cancel_response == False:
+                                    # Konnte nicht abgebrochen werden, wurde bereits abgespielt
+                                    # Und Ja, das heißt wirklich "wurde bereits abgespielt" und nicht "wird gerade abgespielt",
+                                    # weil in dem Fall im Raum die Requests gar nicht erst bearbeitet werden können...
+                                    return
+                                # Alles okay, wir fragen bei einem anderen Raum nach
+                                current_waiting_room[1].request_end_Conversation(original_command)
+                                current_waiting_room = (name, room)
+                                room.request_play(original_command, audiofile, raum, user, priority, send=True)
+                            if room.request_play(original_command, audiofile, raum, user, priority) == True:
+                                return
+                    time.sleep(0.03)
+            else:
+                # Die Audio soll in einem bestimmten Raum abgespielt werden
+                for name, room in self.rooms.items():
+                    if name.lower() == raum.lower():
+                        # Dem Raum den Auftrag erteilen, es abzuspielen
+                        room.Clientconnection.send({'TIANE_audio_play': audiofile})
+                        room.request_play(original_command, audiofile, raum, user, send=True)
+                        # Warten, bis der Raum bestätigt, es abgespielt zu haben
+                        while room.request_play(original_command, audiofile, raum, user) == False:
+                            time.sleep(0.03)
+                        return
+                    
         def route_listen(self, original_command, user, telegram=False):
             # Spezialfall berücksichtigen: Es kann beim besten Willen nicht ermittelt werden, wem TIANE zuhören soll. Einfach beenden.
             if user == None or user == 'Unknown':
@@ -982,7 +1098,37 @@ def runMain(commandMap=None, feedbackMap=None):
                     return True
                 else:
                     return False
-
+                
+        def request_play(self, original_command, audiofile, raum, user, priority, cancel=False, send=False):
+            # Verschickt Audiodateien zum Abspielen an den Raum und returnt True, wenn diese abgespielt wurden
+            # user hat den Raum gewechselt; Anfrage abbrechen, sofern noch möglich!
+            try:
+                if cancel == True:
+                    if send == True:
+                        self.Clientconnection.send_buffer({'TIANE_room_cancel_play': [original_command]})
+                        return
+                    response = self.Clientconnection.readanddelete(
+                        'TIANE_room_confirms_cancel_play_{}'.format(original_command))
+                    if response is not None:
+                        return response
+                    else:
+                        return 'ongoing'
+                # alles normal, einfach auf Bestätigung warten
+                else:
+                    if send == True:
+                        self.Clientconnection.send_buffer({'TIANE_room_play': [
+                            {'original_command': original_command, 'audiofile': audiofile, 'room': raum,
+                             'user': user, 'priority': priority}]})
+                        return
+                    response = self.Clientconnection.readanddelete(
+                        'TIANE_room_confirms_play_{}'.format(original_command))
+                    if response is not None:
+                        return True
+                    else:
+                        return False
+            except:
+                traceback.print_exc()
+                
         def request_listen(self, original_command, user, cancel=False, send=False):
             # Verschickt Anfragen zum Zuhören an den Raum und returnt den gesprochenen Text, sofern fertig
             # user hat den Raum gewechselt; Anfrage abbrechen, sofern noch möglich!
@@ -1031,6 +1177,7 @@ def runMain(commandMap=None, feedbackMap=None):
         def handle_online_requests(self):
             say_requests = []
             listen_requests = []
+            play_requests = []
             query_requests = []
 
             while True:
@@ -1050,7 +1197,24 @@ def runMain(commandMap=None, feedbackMap=None):
                     rst.daemon = True
                     rst.start()
                     say_requests.remove(request)
-
+                
+                # PLAY
+                # Neue Aufträge einholen
+                new_play_requests = self.Clientconnection.readanddelete('TIANE_server_play')
+                if new_play_requests is not None:
+                    for request in new_play_requests:
+                        for existing_request in play_requests:
+                            if request['original_command'] == existing_request['original_command']:
+                                break
+                        else:
+                            play_requests.append(request)
+                # Aufträge bearbeiten
+                for request in play_requests:
+                    rst = Thread(target=self.thread_play, args=(request,))
+                    rst.daemon = True
+                    rst.start()
+                    play_requests.remove(request)
+                    
                 # LISTEN
                 # Neue Aufträge einholen
                 new_listen_requests = self.Clientconnection.readanddelete('TIANE_server_listen')
@@ -1134,7 +1298,12 @@ def runMain(commandMap=None, feedbackMap=None):
         def thread_say(self, request):
             Tiane.route_say(request['original_command'],request['text'],request['room'],request['user'], request['output'])
             self.Clientconnection.send({'TIANE_server_confirms_say_{}'.format(request['original_command']):True})
-
+        
+        def thread_play(self, request):
+            Tiane.route_play(request['original_command'], request['audiofile'], request['room'], request['user'],
+                            request['output'])
+            self.Clientconnection.send({'TIANE_server_confirms_say_{}'.format(request['original_command']): True})
+        
         def thread_listen(self, request):
             response = Tiane.route_listen(request['original_command'],request['user'], telegram=request['telegram'])
             self.Clientconnection.send({'TIANE_server_confirms_listen_{}'.format(request['original_command']):response})
